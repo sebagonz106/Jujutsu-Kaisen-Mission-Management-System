@@ -1,27 +1,33 @@
-import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '../hooks/useAuth';
+import { authApi } from '../api/authApi';
+import { toast } from 'sonner';
+
+const schema = z.object({
+  email: z.string().email('Email inválido'),
+  password: z.string().min(6, 'Mínimo 6 caracteres'),
+});
+type FormValues = z.infer<typeof schema>;
 
 export const LoginPage = () => {
   const { login } = useAuth();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<FormValues>({ resolver: zodResolver(schema) });
 
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
+  const onSubmit = handleSubmit(async (values) => {
     try {
-      // TODO: replace with real call /auth/login
-      await new Promise((r) => setTimeout(r, 500));
-      login('FAKE_TOKEN', { id: 1, role: 'support', name: 'Temp', rank: 'especial' });
+      const { accessToken, user } = await authApi.login(values);
+      login(accessToken, user);
+      toast.success('Bienvenido');
     } catch {
-      setError('Credenciales inválidas');
-    } finally {
-      setLoading(false);
+      toast.error('Credenciales inválidas');
     }
-  };
+  });
 
   return (
     <div className="max-w-sm mx-auto p-6">
@@ -32,27 +38,26 @@ export const LoginPage = () => {
           <input
             type="email"
             className="w-full border rounded px-3 py-2 text-black"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            {...register('email')}
             required
           />
+          {errors.email && <p className="text-red-400 text-sm">{errors.email.message}</p>}
         </div>
         <div>
           <label className="block text-sm mb-1">Password</label>
           <input
             type="password"
             className="w-full border rounded px-3 py-2 text-black"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            {...register('password')}
             required
           />
+          {errors.password && <p className="text-red-400 text-sm">{errors.password.message}</p>}
         </div>
-        {error && <p className="text-red-400 text-sm">{error}</p>}
         <button
-          disabled={loading}
+          disabled={isSubmitting}
           className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white px-4 py-2 rounded w-full"
         >
-          {loading ? 'Entrando...' : 'Entrar'}
+          {isSubmitting ? 'Entrando...' : 'Entrar'}
         </button>
       </form>
     </div>
