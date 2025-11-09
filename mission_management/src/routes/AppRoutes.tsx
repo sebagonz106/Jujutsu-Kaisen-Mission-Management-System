@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { LoginPage } from '../pages/LoginPage.tsx';
+import { RegisterPage } from '../pages/RegisterPage.tsx';
 import { ProtectedRoute } from './ProtectedRoute.tsx';
 import { RoleGuard } from './RoleGuard.tsx';
 
@@ -30,6 +31,7 @@ export const AppRoutes = () => (
     <Routes>
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/login" element={<LoginPage />} />
+  <Route path="/register" element={<RegisterPage />} />
       <Route
         path="/dashboard/sorcerer"
         element={

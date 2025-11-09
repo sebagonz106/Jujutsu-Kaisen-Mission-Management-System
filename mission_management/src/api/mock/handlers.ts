@@ -3,7 +3,7 @@ import { sorcerers, curses, missions, createSorcerer, updateSorcerer, removeSorc
 import type { Sorcerer } from '../../types/sorcerer';
 import type { Curse } from '../../types/curse';
 import type { Mission } from '../../types/mission';
-import type { LoginRequest, LoginResponse, MeResponse } from '../../types/auth';
+import type { LoginRequest, LoginResponse, MeResponse, RegisterRequest, RegisterResponse } from '../../types/auth';
 
 // Use relative paths so MSW intercepts regardless of VITE_API_URL base.
 // This avoids mismatch issues between axios baseURL and handler URLs.
@@ -26,6 +26,15 @@ export const handlers = [
   http.get('/auth/me', () => {
     const me: MeResponse = { user: { id: 1, role: 'support', name: 'Mock User', rank: 'especial' } };
     return HttpResponse.json(me);
+  }),
+  http.post('/auth/register', async ({ request }) => {
+    const body = (await request.json()) as RegisterRequest;
+    // Always assign observer role in mock
+    const resp: RegisterResponse = {
+      accessToken: 'MOCK_TOKEN_REGISTER',
+      user: { id: Date.now(), role: 'observer', name: body.name, rank: 'novato' },
+    };
+    return HttpResponse.json(resp, { status: 201 });
   }),
   // Sorcerers
   http.get('/sorcerers', () => HttpResponse.json(sorcerers)),
