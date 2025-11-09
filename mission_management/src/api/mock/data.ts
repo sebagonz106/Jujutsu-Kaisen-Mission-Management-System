@@ -1,6 +1,7 @@
 import type { Sorcerer } from '../../types/sorcerer';
 import type { Curse } from '../../types/curse';
 import type { Mission } from '../../types/mission';
+import type { AuditEntry } from '../../types/audit';
 import { MISSION_STATE, MISSION_URGENCY } from '../../types/mission';
 import { CURSE_GRADE, CURSE_TYPE, CURSE_STATE, CURSE_DANGER_LEVEL } from '../../types/curse';
 import { SORCERER_GRADE, SORCERER_STATUS } from '../../types/sorcerer';
@@ -8,6 +9,7 @@ import { SORCERER_GRADE, SORCERER_STATUS } from '../../types/sorcerer';
 let sorcererId = 3;
 let curseId = 3;
 let missionId = 2;
+let auditId = 0;
 
 export const sorcerers: Sorcerer[] = [
   { id: 1, name: 'Yuta Okkotsu', grado: SORCERER_GRADE.alto, experiencia: 1200, estado: SORCERER_STATUS.activo, tecnicaPrincipal: 'Copy' },
@@ -33,6 +35,31 @@ export const missions: Mission[] = [
     curseIds: [1],
   },
 ];
+
+/**
+ * In-memory audit log of recent actions.
+ */
+export const auditLog: AuditEntry[] = [];
+
+/**
+ * Appends a new audit entry to the in-memory log.
+ */
+export const createAuditEntry = (entry: Omit<AuditEntry, 'id' | 'timestamp'> & { timestamp?: string }): AuditEntry => {
+  const obj: AuditEntry = {
+    id: ++auditId,
+    timestamp: entry.timestamp ?? new Date().toISOString(),
+    entity: entry.entity,
+    action: entry.action,
+    entityId: entry.entityId,
+    actorRole: entry.actorRole,
+    actorRank: entry.actorRank,
+    summary: entry.summary,
+  };
+  auditLog.unshift(obj); // newest first
+  // keep reasonable cap to avoid unbounded growth in dev
+  if (auditLog.length > 200) auditLog.pop();
+  return obj;
+};
 
 export const createSorcerer = (data: Omit<Sorcerer, 'id'>): Sorcerer => {
   const obj: Sorcerer = { id: ++sorcererId, ...data };

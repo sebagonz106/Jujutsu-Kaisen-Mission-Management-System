@@ -399,6 +399,28 @@ npm run lint         # Run ESLint
 npm run test         # Run tests with Vitest
 ```
 
+## 🧾 Audit Logging (Mock)
+
+The mock backend now records a lightweight audit trail for all create/update/delete operations on sorcerers, curses, and missions.
+
+- Storage: in-memory array in `src/api/mock/data.ts` (new types in `src/types/audit.ts`)
+- Entry shape: `{ id, timestamp, entity, action, entityId, actorRole, actorRank?, summary }`
+- Endpoint: `GET /audit?limit=NUMBER` (default 50, max 100)
+- Client: `src/api/auditApi.ts` and hook `src/hooks/useAudit.ts` (with polling)
+- UI: `RecentActionsPanel` at route `/recent-actions`
+
+This is intended for development visibility; a real backend would store these entries permanently with pagination and filtering.
+
+## ✅ Server-side Mission Validation (Mock)
+
+Mission rules are enforced both client-side (Zod schema) and server-side (MSW) to keep the UI responsive and the data consistent:
+
+1. `urgency` is required when `state === pending`.
+2. `events` and `collateralDamage` are required (non-empty) when `state` is `success | failure | canceled`.
+3. Pending missions normalize `events`/`collateralDamage` to empty strings.
+
+Invalid requests to `POST /missions` or `PUT /missions/:id` return `400` with `{ message }`.
+
 ## ✨ Key Features
 
 ### 1. Type-Safe Data Fetching
