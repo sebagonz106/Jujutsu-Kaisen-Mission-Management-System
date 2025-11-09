@@ -53,6 +53,7 @@ export const createAuditEntry = (entry: Omit<AuditEntry, 'id' | 'timestamp'> & {
     entityId: entry.entityId,
     actorRole: entry.actorRole,
     actorRank: entry.actorRank,
+  actorName: entry.actorName,
     summary: entry.summary,
   };
   auditLog.unshift(obj); // newest first

@@ -7,19 +7,20 @@ import type { AuditEntry } from '../../types/audit';
 import type { LoginRequest, LoginResponse, MeResponse, RegisterRequest, RegisterResponse } from '../../types/auth';
 
 // --- Helpers to simulate backend auth/authorization ---
-type MockUser = { role: 'sorcerer' | 'support' | 'observer'; rank?: string };
+type MockUser = { role: 'sorcerer' | 'support' | 'observer'; rank?: string; name?: string };
 
 const parseUserFromToken = (authHeader?: string | null): MockUser | null => {
   if (!authHeader) return null;
   const m = authHeader.match(/^Bearer\s+(.*)$/i);
   if (!m) return null;
   const token = m[1];
-  // Token format in mock: MOCK_TOKEN[:role[:rank]]
+  // Token format in mock: MOCK_TOKEN[:role[:rank[:name]]]
   const parts = token.split(':');
   const role = parts[1] as MockUser['role'] | undefined;
   const rank = parts[2];
+  const name = parts[3];
   if (!role) return null;
-  return { role, rank };
+  return { role, rank, name };
 };
 
 // Only allow mutations (POST/PUT/DELETE) for support or sorcerers with rank 'alto' or 'especial'.
@@ -69,7 +70,7 @@ const actorFromReq = (req: Request) => parseUserFromToken(req.headers.get('autho
 
 const pushAudit = (entity: AuditEntry['entity'], action: AuditEntry['action'], entityId: number, req: Request, summary?: string) => {
   const actor = actorFromReq(req);
-  createAuditEntry({ entity, action, entityId, actorRole: actor.role, actorRank: actor.rank, summary });
+  createAuditEntry({ entity, action, entityId, actorRole: actor.role, actorRank: actor.rank, actorName: actor.name, summary });
 };
 
 // Helper to select highest-grade curse name for a mission
@@ -80,9 +81,11 @@ const curseGradeRank: Record<string, number> = {
   grado_2: 2,
   grado_3: 3,
 };
-const getTopCurseName = (ids: number[] | undefined): string | undefined => {
+const getTopCurseName = (ids: (number | string)[] | undefined): string | undefined => {
   if (!ids || ids.length === 0) return undefined;
-  const list = curses.filter(c => ids.includes(c.id));
+  const numIds = ids.map((x) => Number(x)).filter((n) => !Number.isNaN(n));
+  if (numIds.length === 0) return undefined;
+  const list = curses.filter((c) => numIds.includes(c.id));
   if (list.length === 0) return undefined;
   list.sort((a, b) => (curseGradeRank[b.grado] ?? 0) - (curseGradeRank[a.grado] ?? 0));
   return list[0]?.nombre;
@@ -211,7 +214,12 @@ export const handlers = [
     const validated = validateMissionPayload(body);
     if (!validated.ok) return HttpResponse.json({ message: validated.error }, { status: 400 });
     const created = createMission(body);
-    const curseName = getTopCurseName(created.curseIds);
+    // Try created.curseIds first, then fall back to payload (which may contain string ids)
+    const payloadCurseIds = Array.isArray((body as unknown as { curseIds?: unknown }).curseIds)
+      ? (body as unknown as { curseIds?: (number | string)[] }).curseIds
+      : undefined;
+    const curseIdsSource = created.curseIds ?? payloadCurseIds;
+    const curseName = getTopCurseName(curseIdsSource);
     const detail = curseName ? `atiende ${curseName}` : `sin maldición asociada`;
     pushAudit('mission', 'create', created.id, request, `Creó misión — ${detail}`);
     return HttpResponse.json(created, { status: 201 });

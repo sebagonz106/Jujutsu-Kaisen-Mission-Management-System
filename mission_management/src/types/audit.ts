@@ -28,6 +28,8 @@ export interface AuditEntry {
   actorRole: 'sorcerer' | 'support' | 'observer';
   /** Optional actor rank if role is sorcerer. */
   actorRank?: string;
+  /** Optional actor name when available. */
+  actorName?: string;
   /** Short, human-readable summary of the change. */
   summary?: string;
 }
