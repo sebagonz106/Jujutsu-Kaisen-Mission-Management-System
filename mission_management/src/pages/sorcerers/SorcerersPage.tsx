@@ -14,6 +14,8 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
+import { useAuth } from '../../hooks/useAuth';
+import { canMutate as canMutateByRole } from '../../utils/permissions';
 
 const schema = z.object({
   name: z.string().min(2, 'Nombre muy corto'),
@@ -38,6 +40,8 @@ type FormValues = z.infer<typeof schema>;
 
 export const SorcerersPage = () => {
   const { list, create, update, remove } = useSorcerers();
+  const { user } = useAuth();
+  const canMutate = canMutateByRole(user);
   const [editId, setEditId] = useState<number | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
@@ -138,13 +142,13 @@ export const SorcerersPage = () => {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
   <h1 className="page-title">Hechiceros</h1>
-        <Button onClick={openCreate}>Nuevo</Button>
+        {canMutate && <Button onClick={openCreate}>Nuevo</Button>}
       </div>
       {sortedData.length === 0 ? (
         <EmptyState
           title="No hay hechiceros"
-          description="Crea el primero para comenzar"
-          action={<Button onClick={openCreate}>Crear hechicero</Button>}
+          description={canMutate ? 'Crea el primero para comenzar' : 'No hay registros disponibles'}
+          action={canMutate ? <Button onClick={openCreate}>Crear hechicero</Button> : undefined}
         />
       ) : (
         <div className="card-surface p-4 overflow-x-auto">
@@ -156,7 +160,7 @@ export const SorcerersPage = () => {
                 <TH><SortHeader label="Grado" active={sortKey==='grado'} direction={sortDir} onClick={() => toggleSort('grado')} /></TH>
                 <TH><SortHeader label="Experiencia" active={sortKey==='experiencia'} direction={sortDir} onClick={() => toggleSort('experiencia')} /></TH>
                 <TH><SortHeader label="Estado" active={sortKey==='estado'} direction={sortDir} onClick={() => toggleSort('estado')} /></TH>
-                <TH>Acciones</TH>
+                {canMutate && <TH>Acciones</TH>}
               </tr>
             </THead>
             <TBody>
@@ -167,10 +171,12 @@ export const SorcerersPage = () => {
                   <TD>{s.grado}</TD>
                   <TD>{s.experiencia}</TD>
                   <TD>{s.estado}</TD>
-                  <TD className="flex gap-2">
-                    <Button size="sm" variant="secondary" onClick={() => startEdit(s)}>Editar</Button>
-                    <Button size="sm" variant="danger" onClick={() => setDeleteId(s.id)} disabled={remove.isPending}>Borrar</Button>
-                  </TD>
+                  {canMutate && (
+                    <TD className="flex gap-2">
+                      <Button size="sm" variant="secondary" onClick={() => startEdit(s)}>Editar</Button>
+                      <Button size="sm" variant="danger" onClick={() => setDeleteId(s.id)} disabled={remove.isPending}>Borrar</Button>
+                    </TD>
+                  )}
                 </tr>
               ))}
             </TBody>
@@ -179,13 +185,13 @@ export const SorcerersPage = () => {
       )}
 
       <Modal
-        open={showForm}
+        open={showForm && canMutate}
         onClose={() => setShowForm(false)}
         title={editId ? 'Editar Hechicero' : 'Nuevo Hechicero'}
         footer={
           <div className="flex justify-end gap-2">
             <Button variant="ghost" onClick={() => setShowForm(false)}>Cancelar</Button>
-            <Button disabled={isSubmitting || create.isPending || update.isPending} type="submit" form="sorcerer-form">
+            <Button disabled={!canMutate || isSubmitting || create.isPending || update.isPending} type="submit" form="sorcerer-form">
               {editId ? 'Guardar cambios' : 'Crear'}
             </Button>
           </div>
@@ -207,7 +213,7 @@ export const SorcerersPage = () => {
       </Modal>
 
       <ConfirmDialog
-        open={deleteId !== null}
+        open={deleteId !== null && canMutate}
         onClose={() => setDeleteId(null)}
         onConfirm={confirmDelete}
         title="Eliminar hechicero"

@@ -14,6 +14,8 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
+import { useAuth } from '../../hooks/useAuth';
+import { canMutate as canMutateByRole } from '../../utils/permissions';
 
 const schema = z.object({
   locationId: z.coerce.number().min(0, 'ID >= 0'),
@@ -38,6 +40,8 @@ type FormValues = z.infer<typeof schema>;
 
 export const MissionsPage = () => {
   const { list, create, update, remove } = useMissions();
+  const { user } = useAuth();
+  const canMutate = canMutateByRole(user);
   const [editId, setEditId] = useState<number | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
@@ -150,10 +154,10 @@ export const MissionsPage = () => {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
   <h1 className="page-title">Misiones</h1>
-        <Button onClick={openCreate}>Nueva</Button>
+        {canMutate && <Button onClick={openCreate}>Nueva</Button>}
       </div>
       {(list.data?.length ?? 0) === 0 ? (
-        <EmptyState title="No hay misiones" description="Crea la primera" action={<Button onClick={openCreate}>Crear misión</Button>} />
+        <EmptyState title="No hay misiones" description={canMutate ? 'Crea la primera' : 'No hay registros disponibles'} action={canMutate ? <Button onClick={openCreate}>Crear misión</Button> : undefined} />
       ) : (
         <div className="card-surface p-4 overflow-x-auto">
           <Table>
@@ -163,7 +167,7 @@ export const MissionsPage = () => {
                 <TH><SortHeader label="Estado" active={sortKey==='state'} direction={sortDir} onClick={() => toggleSort('state')} /></TH>
                 <TH><SortHeader label="Urgencia" active={sortKey==='urgency'} direction={sortDir} onClick={() => toggleSort('urgency')} /></TH>
                 <TH><SortHeader label="Ubicación" active={sortKey==='locationId'} direction={sortDir} onClick={() => toggleSort('locationId')} /></TH>
-                <TH>Acciones</TH>
+                {canMutate && <TH>Acciones</TH>}
               </tr>
             </THead>
             <TBody>
@@ -173,10 +177,12 @@ export const MissionsPage = () => {
                   <TD>{m.state}</TD>
                   <TD>{m.urgency}</TD>
                   <TD>{m.locationId}</TD>
-                  <TD className="flex gap-2">
-                    <Button size="sm" variant="secondary" onClick={() => startEdit(m)}>Editar</Button>
-                    <Button size="sm" variant="danger" onClick={() => setDeleteId(m.id)} disabled={remove.isPending}>Borrar</Button>
-                  </TD>
+                  {canMutate && (
+                    <TD className="flex gap-2">
+                      <Button size="sm" variant="secondary" onClick={() => startEdit(m)}>Editar</Button>
+                      <Button size="sm" variant="danger" onClick={() => setDeleteId(m.id)} disabled={remove.isPending}>Borrar</Button>
+                    </TD>
+                  )}
                 </tr>
               ))}
             </TBody>
@@ -185,13 +191,13 @@ export const MissionsPage = () => {
       )}
 
       <Modal
-        open={showForm}
+        open={showForm && canMutate}
         onClose={() => setShowForm(false)}
         title={editId ? 'Editar Misión' : 'Nueva Misión'}
         footer={
           <div className="flex justify-end gap-2">
             <Button variant="ghost" onClick={() => setShowForm(false)}>Cancelar</Button>
-            <Button disabled={isSubmitting || create.isPending || update.isPending} type="submit" form="mission-form">
+            <Button disabled={!canMutate || isSubmitting || create.isPending || update.isPending} type="submit" form="mission-form">
               {editId ? 'Guardar cambios' : 'Crear'}
             </Button>
           </div>
@@ -214,7 +220,7 @@ export const MissionsPage = () => {
       </Modal>
 
       <ConfirmDialog
-        open={deleteId !== null}
+        open={deleteId !== null && canMutate}
         onClose={() => setDeleteId(null)}
         onConfirm={confirmDelete}
         title="Eliminar misión"

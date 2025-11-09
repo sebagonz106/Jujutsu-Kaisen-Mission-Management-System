@@ -14,6 +14,8 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
+import { useAuth } from '../../hooks/useAuth';
+import { canMutate as canMutateByRole } from '../../utils/permissions';
 
 const schema = z.object({
   nombre: z.string().min(2, 'Nombre muy corto'),
@@ -47,6 +49,8 @@ type FormValues = z.infer<typeof schema>;
 
 export const CursesPage = () => {
   const { list, create, update, remove } = useCurses();
+  const { user } = useAuth();
+  const canMutate = canMutateByRole(user);
   const [editId, setEditId] = useState<number | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
@@ -155,10 +159,10 @@ export const CursesPage = () => {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
   <h1 className="page-title">Maldiciones</h1>
-        <Button onClick={openCreate}>Nueva</Button>
+        {canMutate && <Button onClick={openCreate}>Nueva</Button>}
       </div>
       {sortedData.length === 0 ? (
-        <EmptyState title="No hay maldiciones" description="Crea la primera para comenzar" action={<Button onClick={openCreate}>Crear maldición</Button>} />
+        <EmptyState title="No hay maldiciones" description={canMutate ? 'Crea la primera para comenzar' : 'No hay registros disponibles'} action={canMutate ? <Button onClick={openCreate}>Crear maldición</Button> : undefined} />
       ) : (
         <div className="card-surface p-4 overflow-x-auto">
           <Table>
@@ -170,7 +174,7 @@ export const CursesPage = () => {
                 <TH><SortHeader label="Tipo" active={sortKey==='tipo'} direction={sortDir} onClick={() => toggleSort('tipo')} /></TH>
                 <TH><SortHeader label="Estado" active={sortKey==='estadoActual'} direction={sortDir} onClick={() => toggleSort('estadoActual')} /></TH>
                 <TH><SortHeader label="Peligro" active={sortKey==='nivelPeligro'} direction={sortDir} onClick={() => toggleSort('nivelPeligro')} /></TH>
-                <TH>Acciones</TH>
+                {canMutate && <TH>Acciones</TH>}
               </tr>
             </THead>
             <TBody>
@@ -182,10 +186,12 @@ export const CursesPage = () => {
                   <TD>{c.tipo}</TD>
                   <TD>{c.estadoActual}</TD>
                   <TD>{c.nivelPeligro}</TD>
-                  <TD className="flex gap-2">
-                    <Button size="sm" variant="secondary" onClick={() => startEdit(c)}>Editar</Button>
-                    <Button size="sm" variant="danger" onClick={() => setDeleteId(c.id)} disabled={remove.isPending}>Borrar</Button>
-                  </TD>
+                  {canMutate && (
+                    <TD className="flex gap-2">
+                      <Button size="sm" variant="secondary" onClick={() => startEdit(c)}>Editar</Button>
+                      <Button size="sm" variant="danger" onClick={() => setDeleteId(c.id)} disabled={remove.isPending}>Borrar</Button>
+                    </TD>
+                  )}
                 </tr>
               ))}
             </TBody>
@@ -194,13 +200,13 @@ export const CursesPage = () => {
       )}
 
       <Modal
-        open={showForm}
+        open={showForm && canMutate}
         onClose={() => setShowForm(false)}
         title={editId ? 'Editar Maldición' : 'Nueva Maldición'}
         footer={
           <div className="flex justify-end gap-2">
             <Button variant="ghost" onClick={() => setShowForm(false)}>Cancelar</Button>
-            <Button disabled={isSubmitting || create.isPending || update.isPending} type="submit" form="curse-form">
+            <Button disabled={!canMutate || isSubmitting || create.isPending || update.isPending} type="submit" form="curse-form">
               {editId ? 'Guardar cambios' : 'Crear'}
             </Button>
           </div>
@@ -227,7 +233,7 @@ export const CursesPage = () => {
       </Modal>
 
       <ConfirmDialog
-        open={deleteId !== null}
+        open={deleteId !== null && canMutate}
         onClose={() => setDeleteId(null)}
         onConfirm={confirmDelete}
         title="Eliminar maldición"
