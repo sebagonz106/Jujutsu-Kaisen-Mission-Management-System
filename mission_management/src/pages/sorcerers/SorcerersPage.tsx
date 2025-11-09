@@ -1,104 +1,219 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useSorcerers } from '../../hooks/useSorcerers';
 import type { Sorcerer } from '../../types/sorcerer';
 import { SORCERER_GRADE, SORCERER_STATUS } from '../../types/sorcerer';
+import { Button } from '../../components/ui/Button';
+import { Modal } from '../../components/ui/Modal';
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
+import { Input } from '../../components/ui/Input';
+import { Select } from '../../components/ui/Select';
+import { EmptyState } from '../../components/ui/EmptyState';
+import { Table, THead, TBody, TH, TD, SortHeader } from '../../components/ui/Table';
+import { Skeleton } from '../../components/ui/Skeleton';
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { toast } from 'sonner';
+
+const schema = z.object({
+  name: z.string().min(2, 'Nombre muy corto'),
+  grado: z.union([
+    z.literal(SORCERER_GRADE.estudiante),
+    z.literal(SORCERER_GRADE.aprendiz),
+    z.literal(SORCERER_GRADE.medio),
+    z.literal(SORCERER_GRADE.alto),
+    z.literal(SORCERER_GRADE.especial),
+  ]),
+  experiencia: z.coerce.number().min(0, 'No negativo'),
+  estado: z.union([
+    z.literal(SORCERER_STATUS.activo),
+    z.literal(SORCERER_STATUS.lesionado),
+    z.literal(SORCERER_STATUS.recuperandose),
+    z.literal(SORCERER_STATUS.baja),
+    z.literal(SORCERER_STATUS.inactivo),
+  ]),
+  tecnicaPrincipal: z.string().optional(),
+});
+type FormValues = z.infer<typeof schema>;
 
 export const SorcerersPage = () => {
   const { list, create, update, remove } = useSorcerers();
-  const [form, setForm] = useState<Omit<Sorcerer, 'id'>>({
-    name: '',
-    grado: SORCERER_GRADE.estudiante,
-    experiencia: 0,
-    estado: SORCERER_STATUS.activo,
-    tecnicaPrincipal: '',
-  });
   const [editId, setEditId] = useState<number | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [sortKey, setSortKey] = useState<keyof Sorcerer>('id');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
 
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (editId) {
-      await update.mutateAsync({ id: editId, patch: form });
-      setEditId(null);
-    } else {
-      await create.mutateAsync(form);
-    }
-    setForm({ name: '', grado: SORCERER_GRADE.estudiante, experiencia: 0, estado: SORCERER_STATUS.activo, tecnicaPrincipal: '' });
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<FormValues>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      name: '',
+      grado: SORCERER_GRADE.estudiante,
+      experiencia: 0,
+      estado: SORCERER_STATUS.activo,
+      tecnicaPrincipal: '',
+    },
+  });
+
+  const openCreate = () => {
+    setEditId(null);
+    reset({ name: '', grado: SORCERER_GRADE.estudiante, experiencia: 0, estado: SORCERER_STATUS.activo, tecnicaPrincipal: '' });
+    setShowForm(true);
   };
-
   const startEdit = (s: Sorcerer) => {
     setEditId(s.id);
-    const payload: Omit<Sorcerer, 'id'> = {
+    reset({
       name: s.name,
       grado: s.grado,
       experiencia: s.experiencia,
       estado: s.estado,
-      tecnicaPrincipal: s.tecnicaPrincipal,
-    };
-    setForm(payload);
+      tecnicaPrincipal: s.tecnicaPrincipal ?? '',
+    });
+    setShowForm(true);
+  };
+  const onSubmit = handleSubmit(async (values) => {
+    try {
+      if (editId) {
+        await update.mutateAsync({ id: editId, patch: values });
+        toast.success('Actualizado');
+      } else {
+        await create.mutateAsync(values);
+        toast.success('Creado');
+      }
+      setShowForm(false);
+    } catch {
+      toast.error('Error al guardar');
+    }
+  });
+  const confirmDelete = async () => {
+    if (deleteId) {
+      try {
+        await remove.mutateAsync(deleteId);
+        toast.success('Eliminado');
+      } catch {
+        toast.error('Error al eliminar');
+      }
+      setDeleteId(null);
+    }
   };
 
-  if (list.isLoading) return <div className="p-4">Loading...</div>;
+  const sortedData = useMemo(() => {
+    const data = list.data ?? [];
+    return [...data].sort((a, b) => {
+      const av = a[sortKey];
+      const bv = b[sortKey];
+      if (typeof av === 'number' && typeof bv === 'number') return sortDir === 'asc' ? av - bv : bv - av;
+      return sortDir === 'asc'
+        ? String(av).localeCompare(String(bv))
+        : String(bv).localeCompare(String(av));
+    });
+  }, [list.data, sortKey, sortDir]);
+
+  const toggleSort = (key: keyof Sorcerer) => {
+    if (sortKey === key) setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
+    else {
+      setSortKey(key);
+      setSortDir('asc');
+    }
+  };
+
+  if (list.isLoading) return (
+    <div className="p-4 space-y-4">
+      <Skeleton className="h-8 w-40" />
+      <div className="space-y-2">
+        <Skeleton className="h-6 w-full" />
+        <Skeleton className="h-6 w-full" />
+        <Skeleton className="h-6 w-full" />
+      </div>
+    </div>
+  );
   if (list.isError) return <div className="p-4 text-red-400">Error loading sorcerers</div>;
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-semibold mb-4">Sorcerers</h1>
-      <form onSubmit={onSubmit} className="space-y-3 mb-6">
-        <div className="grid grid-cols-2 gap-2">
-          <input className="border px-2 py-1 text-black" placeholder="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-          <input className="border px-2 py-1 text-black" placeholder="Experience" type="number" value={form.experiencia} onChange={(e) => setForm({ ...form, experiencia: Number(e.target.value) })} />
-          <select
-            className="border px-2 py-1 text-black"
-            value={form.grado}
-            onChange={(e) => setForm({ ...form, grado: e.target.value as typeof form.grado })}
-          >
-            {Object.values(SORCERER_GRADE).map((g) => (
-              <option key={g} value={g}>{g}</option>
-            ))}
-          </select>
-          <select
-            className="border px-2 py-1 text-black"
-            value={form.estado}
-            onChange={(e) => setForm({ ...form, estado: e.target.value as typeof form.estado })}
-          >
-            {Object.values(SORCERER_STATUS).map((s) => (
-              <option key={s} value={s}>{s}</option>
-            ))}
-          </select>
-          <input className="border px-2 py-1 text-black col-span-2" placeholder="Main Technique" value={form.tecnicaPrincipal ?? ''} onChange={(e) => setForm({ ...form, tecnicaPrincipal: e.target.value })} />
+    <div className="p-4 space-y-4">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold">Sorcerers</h1>
+        <Button onClick={openCreate}>Nuevo</Button>
+      </div>
+      {sortedData.length === 0 ? (
+        <EmptyState
+          title="No hay sorcerers"
+          description="Crea el primero para comenzar"
+          action={<Button onClick={openCreate}>Crear sorcerer</Button>}
+        />
+      ) : (
+        <div className="overflow-x-auto">
+          <Table>
+            <THead>
+              <tr>
+                <TH><SortHeader label="ID" active={sortKey==='id'} direction={sortDir} onClick={() => toggleSort('id')} /></TH>
+                <TH><SortHeader label="Nombre" active={sortKey==='name'} direction={sortDir} onClick={() => toggleSort('name')} /></TH>
+                <TH><SortHeader label="Grado" active={sortKey==='grado'} direction={sortDir} onClick={() => toggleSort('grado')} /></TH>
+                <TH><SortHeader label="Exp" active={sortKey==='experiencia'} direction={sortDir} onClick={() => toggleSort('experiencia')} /></TH>
+                <TH><SortHeader label="Estado" active={sortKey==='estado'} direction={sortDir} onClick={() => toggleSort('estado')} /></TH>
+                <TH>Acciones</TH>
+              </tr>
+            </THead>
+            <TBody>
+              {sortedData.map((s) => (
+                <tr key={s.id} className="border-b hover:bg-slate-800/40">
+                  <TD>{s.id}</TD>
+                  <TD>{s.name}</TD>
+                  <TD>{s.grado}</TD>
+                  <TD>{s.experiencia}</TD>
+                  <TD>{s.estado}</TD>
+                  <TD className="flex gap-2">
+                    <Button size="sm" variant="secondary" onClick={() => startEdit(s)}>Editar</Button>
+                    <Button size="sm" variant="danger" onClick={() => setDeleteId(s.id)} disabled={remove.isPending}>Borrar</Button>
+                  </TD>
+                </tr>
+              ))}
+            </TBody>
+          </Table>
         </div>
-        <button className="bg-indigo-600 text-white px-3 py-1 rounded" disabled={create.isPending || update.isPending}>
-          {editId ? 'Update' : 'Create'}
-        </button>
-      </form>
+      )}
 
-      <table className="w-full text-left border-collapse">
-        <thead>
-          <tr>
-            <th className="border-b p-2">ID</th>
-            <th className="border-b p-2">Name</th>
-            <th className="border-b p-2">Grade</th>
-            <th className="border-b p-2">Exp</th>
-            <th className="border-b p-2">Status</th>
-            <th className="border-b p-2">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {list.data?.map((s) => (
-            <tr key={s.id} className="border-b">
-              <td className="p-2">{s.id}</td>
-              <td className="p-2">{s.name}</td>
-              <td className="p-2">{s.grado}</td>
-              <td className="p-2">{s.experiencia}</td>
-              <td className="p-2">{s.estado}</td>
-              <td className="p-2 flex gap-2">
-                <button className="px-2 py-1 bg-slate-600 text-white rounded" onClick={() => startEdit(s)}>Edit</button>
-                <button className="px-2 py-1 bg-red-600 text-white rounded" onClick={() => remove.mutate(s.id)}>Delete</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <Modal
+        open={showForm}
+        onClose={() => setShowForm(false)}
+        title={editId ? 'Editar Sorcerer' : 'Nuevo Sorcerer'}
+        footer={
+          <div className="flex justify-end gap-2">
+            <Button variant="ghost" onClick={() => setShowForm(false)}>Cancelar</Button>
+            <Button disabled={isSubmitting || create.isPending || update.isPending} type="submit" form="sorcerer-form">
+              {editId ? 'Guardar cambios' : 'Crear'}
+            </Button>
+          </div>
+        }
+      >
+        <form id="sorcerer-form" onSubmit={onSubmit} className="space-y-3">
+          <Input label="Nombre" placeholder="Nombre" {...register('name')} />
+          {errors.name && <p className="text-xs text-red-400">{errors.name.message}</p>}
+          <Select label="Grado" {...register('grado')}>
+            {Object.values(SORCERER_GRADE).map((g) => <option key={g} value={g}>{g}</option>)}
+          </Select>
+          <Input label="Experiencia" type="number" {...register('experiencia', { valueAsNumber: true })} />
+          {errors.experiencia && <p className="text-xs text-red-400">{errors.experiencia.message}</p>}
+            <Select label="Estado" {...register('estado')}>
+            {Object.values(SORCERER_STATUS).map((s) => <option key={s} value={s}>{s}</option>)}
+          </Select>
+          <Input label="Técnica Principal" placeholder="Técnica" {...register('tecnicaPrincipal')} />
+        </form>
+      </Modal>
+
+      <ConfirmDialog
+        open={deleteId !== null}
+        onClose={() => setDeleteId(null)}
+        onConfirm={confirmDelete}
+        title="Eliminar sorcerer"
+        description="Esta acción no se puede deshacer"
+        confirmText="Eliminar"
+      />
     </div>
   );
 };

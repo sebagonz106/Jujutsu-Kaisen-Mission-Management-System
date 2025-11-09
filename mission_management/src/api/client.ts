@@ -16,8 +16,11 @@ export const setAccessToken = (token: string | null) => {
 
 apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   if (accessToken) {
-    // Ensure headers object exists
-    config.headers.set('Authorization', `Bearer ${accessToken}`);
+    // For Axios v1, config.headers may be an AxiosHeaders instance; mutate rather than replace to satisfy types.
+    const headers = config.headers || {};
+    // Use bracket to avoid TS index signature complaints.
+    (headers as Record<string, unknown>)['Authorization'] = `Bearer ${accessToken}`;
+    config.headers = headers;
   }
   return config;
 });
