@@ -406,31 +406,102 @@ npm run test         # Run tests with Vitest
 - React Query hooks provide loading/error states
 - Automatic cache invalidation after mutations
 
-### 2. Form Validation
+### 2. Form Validation with Conditional Rules
 - React Hook Form for performance
-- Zod schemas for runtime validation
+- Zod schemas for runtime validation with conditional logic
 - Type inference from schemas to forms
+- **Mission-specific validation**:
+  - `urgency` field required only for pending missions
+  - `events` and `collateralDamage` required only for completed missions (success, failure, canceled)
+  - Form UI conditionally shows/hides fields based on mission state
 
-### 3. Permission System
+### 3. Multi-Select Entity Assignment
+- **Sorcerers and Curses assignment**: Dropdown multi-select (`MultiSelect` component) showing selected items as chips with overflow counter.
+- Dynamic option lists from `useSorcerers` and `useCurses` hooks.
+- Search filter inside dropdown for large lists.
+- Form values automatically handled as arrays of IDs via React Hook Form `Controller`.
+
+### 4. Permission System
 - Centralized permission logic in `utils/permissions.ts`
 - UI components conditionally render based on permissions
 - Server-side enforcement (mock and real backend)
 
-### 4. Error Handling
+### 5. Spanish UI with English Internals
+- All user-facing labels in Spanish.
+- Internal enums remain English; mapping dictionaries translate values.
+- Validation error messages shown in Spanish.
+- Internal enum values and code remain in English
+- Mapping dictionaries (`estadoLabel`, `urgenciaLabel`) for display
+
+### 6. Error Handling
 - Axios interceptors catch 401/403 responses
-- Toast notifications for user feedback
+- Toast notifications for user feedback (Spanish messages)
 - Graceful degradation for network errors
 
-### 5. Theming
+### 7. Theming
 - Custom Tailwind configuration with JJK palette
 - Custom fonts: Cinzel (headings), Inter (body), Noto Serif JP (accents)
 - Mystical shadows and color scheme
 
-### 6. Developer Experience
+### 8. Developer Experience
 - Hot Module Replacement (HMR) with Vite
 - ESLint + TypeScript for code quality
-- Comprehensive TSDoc documentation
+- Comprehensive TSDoc documentation in English
 - MSW for API-independent development
+
+## 📝 Mission Management Details
+
+### Conditional Field Rules
+
+The mission form implements business logic to ensure data consistency:
+
+#### Pending Missions (`estado: 'Pendiente'`)
+- **Required**: `urgency` (Urgencia) - Must specify priority level
+- **Hidden**: `events`, `collateralDamage` - Cannot be filled until mission completes
+
+#### In Progress Missions (`estado: 'En progreso'`)
+- **Optional**: All detail fields
+- Users can update as mission progresses
+
+#### Completed Missions (`estado: 'Completada con éxito' | 'Completada con fracaso' | 'Cancelada'`)
+- **Required**: `events` (Eventos) - Must document what happened
+- **Required**: `collateralDamage` (Daños colaterales) - Must record any damage
+- **Hidden**: `urgency` - No longer relevant
+
+### Multi-Select Implementation
+
+**Sorcerers Assignment:**
+```tsx
+<fieldset>
+  <legend>Hechiceros asignados</legend>
+  {sorcerers.map(s => (
+    <label>
+      <input type="checkbox" value={s.id} />
+      {s.name} · {s.grado}
+    </label>
+  ))}
+</fieldset>
+```
+
+**Curses Association:**
+```tsx
+<fieldset>
+  <legend>Maldiciones asociadas</legend>
+  {curses.map(c => (
+    <label>
+      <input type="checkbox" value={c.id} />
+      {c.nombre} · {c.grado}
+    </label>
+  ))}
+</fieldset>
+```
+
+### Validation Messages
+
+All validation messages are in Spanish:
+- `"La urgencia es obligatoria en misiones pendientes."`
+- `"Debe detallar los eventos para misiones finalizadas."`
+- `"Debe indicar los daños colaterales para misiones finalizadas."`
 
 ## 📚 Additional Documentation
 
