@@ -144,25 +144,25 @@ export const MissionsPage = () => {
       </div>
     </div>
   );
-  if (list.isError) return <div className="p-4 text-red-400">Error loading missions</div>;
+  if (list.isError) return <div className="p-4 text-red-400">Error al cargar misiones</div>;
 
   return (
-    <div className="p-4 space-y-4">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Missions</h1>
+  <h1 className="page-title">Misiones</h1>
         <Button onClick={openCreate}>Nueva</Button>
       </div>
       {(list.data?.length ?? 0) === 0 ? (
-        <EmptyState title="No hay missions" description="Crea la primera" action={<Button onClick={openCreate}>Crear mission</Button>} />
+        <EmptyState title="No hay misiones" description="Crea la primera" action={<Button onClick={openCreate}>Crear misión</Button>} />
       ) : (
-        <div className="overflow-x-auto">
+        <div className="card-surface p-4 overflow-x-auto">
           <Table>
             <THead>
               <tr>
                 <TH><SortHeader label="ID" active={sortKey==='id'} direction={sortDir} onClick={() => toggleSort('id')} /></TH>
                 <TH><SortHeader label="Estado" active={sortKey==='state'} direction={sortDir} onClick={() => toggleSort('state')} /></TH>
                 <TH><SortHeader label="Urgencia" active={sortKey==='urgency'} direction={sortDir} onClick={() => toggleSort('urgency')} /></TH>
-                <TH><SortHeader label="Loc" active={sortKey==='locationId'} direction={sortDir} onClick={() => toggleSort('locationId')} /></TH>
+                <TH><SortHeader label="Ubicación" active={sortKey==='locationId'} direction={sortDir} onClick={() => toggleSort('locationId')} /></TH>
                 <TH>Acciones</TH>
               </tr>
             </THead>
@@ -187,7 +187,7 @@ export const MissionsPage = () => {
       <Modal
         open={showForm}
         onClose={() => setShowForm(false)}
-        title={editId ? 'Editar Mission' : 'Nueva Mission'}
+        title={editId ? 'Editar Misión' : 'Nueva Misión'}
         footer={
           <div className="flex justify-end gap-2">
             <Button variant="ghost" onClick={() => setShowForm(false)}>Cancelar</Button>
@@ -198,7 +198,7 @@ export const MissionsPage = () => {
         }
       >
         <form id="mission-form" onSubmit={onSubmit} className="space-y-3">
-          <Input label="Location ID" type="number" {...register('locationId', { valueAsNumber: true })} />
+          <Input label="ID de ubicación" type="number" {...register('locationId', { valueAsNumber: true })} />
           {errors.locationId && <p className="text-xs text-red-400">{errors.locationId.message}</p>}
           <Select label="Estado" {...register('state')}>
             {Object.values(MISSION_STATE).map(s => <option key={s} value={s}>{s}</option>)}
@@ -206,10 +206,10 @@ export const MissionsPage = () => {
           <Select label="Urgencia" {...register('urgency')}>
             {Object.values(MISSION_URGENCY).map(u => <option key={u} value={u}>{u}</option>)}
           </Select>
-          <Input label="Events" placeholder="Eventos" {...register('events')} />
-          <Input label="Collateral Damage" placeholder="Daños colaterales" {...register('collateralDamage')} />
-          <Input label="Sorcerer IDs" placeholder="Ej: 1,2,3" {...register('sorcererIds')} />
-          <Input label="Curse IDs" placeholder="Ej: 1,2" {...register('curseIds')} />
+          <Input label="Eventos" placeholder="Eventos" {...register('events')} />
+          <Input label="Daños colaterales" placeholder="Detalles" {...register('collateralDamage')} />
+          <Input label="IDs de hechiceros" placeholder="Ej: 1,2,3" {...register('sorcererIds')} />
+          <Input label="IDs de maldiciones" placeholder="Ej: 1,2" {...register('curseIds')} />
         </form>
       </Modal>
 
@@ -217,7 +217,7 @@ export const MissionsPage = () => {
         open={deleteId !== null}
         onClose={() => setDeleteId(null)}
         onConfirm={confirmDelete}
-        title="Eliminar mission"
+        title="Eliminar misión"
         description="Esta acción no se puede deshacer"
         confirmText="Eliminar"
       />

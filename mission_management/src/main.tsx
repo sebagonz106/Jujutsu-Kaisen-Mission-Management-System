@@ -18,7 +18,13 @@ createRoot(document.getElementById("root")!).render(
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <AppRoutes />
-        <Toaster richColors position="top-right" />
+        <Toaster
+          position="top-right"
+          theme="dark"
+          closeButton
+          richColors={false}
+          duration={2600}
+        />
       </AuthProvider>
     </QueryClientProvider>
   </StrictMode>,

@@ -132,29 +132,29 @@ export const SorcerersPage = () => {
       </div>
     </div>
   );
-  if (list.isError) return <div className="p-4 text-red-400">Error loading sorcerers</div>;
+  if (list.isError) return <div className="p-4 text-red-400">Error al cargar hechiceros</div>;
 
   return (
-    <div className="p-4 space-y-4">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Sorcerers</h1>
+  <h1 className="page-title">Hechiceros</h1>
         <Button onClick={openCreate}>Nuevo</Button>
       </div>
       {sortedData.length === 0 ? (
         <EmptyState
-          title="No hay sorcerers"
+          title="No hay hechiceros"
           description="Crea el primero para comenzar"
-          action={<Button onClick={openCreate}>Crear sorcerer</Button>}
+          action={<Button onClick={openCreate}>Crear hechicero</Button>}
         />
       ) : (
-        <div className="overflow-x-auto">
+        <div className="card-surface p-4 overflow-x-auto">
           <Table>
             <THead>
               <tr>
                 <TH><SortHeader label="ID" active={sortKey==='id'} direction={sortDir} onClick={() => toggleSort('id')} /></TH>
                 <TH><SortHeader label="Nombre" active={sortKey==='name'} direction={sortDir} onClick={() => toggleSort('name')} /></TH>
                 <TH><SortHeader label="Grado" active={sortKey==='grado'} direction={sortDir} onClick={() => toggleSort('grado')} /></TH>
-                <TH><SortHeader label="Exp" active={sortKey==='experiencia'} direction={sortDir} onClick={() => toggleSort('experiencia')} /></TH>
+                <TH><SortHeader label="Experiencia" active={sortKey==='experiencia'} direction={sortDir} onClick={() => toggleSort('experiencia')} /></TH>
                 <TH><SortHeader label="Estado" active={sortKey==='estado'} direction={sortDir} onClick={() => toggleSort('estado')} /></TH>
                 <TH>Acciones</TH>
               </tr>
@@ -181,7 +181,7 @@ export const SorcerersPage = () => {
       <Modal
         open={showForm}
         onClose={() => setShowForm(false)}
-        title={editId ? 'Editar Sorcerer' : 'Nuevo Sorcerer'}
+        title={editId ? 'Editar Hechicero' : 'Nuevo Hechicero'}
         footer={
           <div className="flex justify-end gap-2">
             <Button variant="ghost" onClick={() => setShowForm(false)}>Cancelar</Button>
@@ -210,7 +210,7 @@ export const SorcerersPage = () => {
         open={deleteId !== null}
         onClose={() => setDeleteId(null)}
         onConfirm={confirmDelete}
-        title="Eliminar sorcerer"
+        title="Eliminar hechicero"
         description="Esta acción no se puede deshacer"
         confirmText="Eliminar"
       />

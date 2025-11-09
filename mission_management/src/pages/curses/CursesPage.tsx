@@ -149,18 +149,18 @@ export const CursesPage = () => {
       </div>
     </div>
   );
-  if (list.isError) return <div className="p-4 text-red-400">Error loading curses</div>;
+  if (list.isError) return <div className="p-4 text-red-400">Error al cargar maldiciones</div>;
 
   return (
-    <div className="p-4 space-y-4">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Curses</h1>
-        <Button onClick={openCreate}>Nuevo</Button>
+  <h1 className="page-title">Maldiciones</h1>
+        <Button onClick={openCreate}>Nueva</Button>
       </div>
       {sortedData.length === 0 ? (
-        <EmptyState title="No hay curses" description="Crea la primera para comenzar" action={<Button onClick={openCreate}>Crear curse</Button>} />
+        <EmptyState title="No hay maldiciones" description="Crea la primera para comenzar" action={<Button onClick={openCreate}>Crear maldición</Button>} />
       ) : (
-        <div className="overflow-x-auto">
+        <div className="card-surface p-4 overflow-x-auto">
           <Table>
             <THead>
               <tr>
@@ -196,7 +196,7 @@ export const CursesPage = () => {
       <Modal
         open={showForm}
         onClose={() => setShowForm(false)}
-        title={editId ? 'Editar Curse' : 'Nueva Curse'}
+        title={editId ? 'Editar Maldición' : 'Nueva Maldición'}
         footer={
           <div className="flex justify-end gap-2">
             <Button variant="ghost" onClick={() => setShowForm(false)}>Cancelar</Button>
@@ -230,7 +230,7 @@ export const CursesPage = () => {
         open={deleteId !== null}
         onClose={() => setDeleteId(null)}
         onConfirm={confirmDelete}
-        title="Eliminar curse"
+        title="Eliminar maldición"
         description="Esta acción no se puede deshacer"
         confirmText="Eliminar"
       />

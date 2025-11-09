@@ -18,19 +18,13 @@ export const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const fromPath = (location.state as { from?: Location } | null)?.from?.pathname;
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<FormValues>({ resolver: zodResolver(schema) });
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormValues>({ resolver: zodResolver(schema) });
 
   const onSubmit = handleSubmit(async (values) => {
     try {
       const { accessToken, user } = await authApi.login(values);
-      login(accessToken, user);
-      toast.success('Bienvenido');
-      // Decide adónde redirigir: prioridad al "from", si existe y no es /login
-      // Simplified redirect: if user was heading somewhere, go there; else send to entities index
+  login(accessToken, user);
+  toast.success('Bienvenido');
       const target = fromPath && fromPath !== '/login' ? fromPath : '/entities';
       navigate(target, { replace: true });
     } catch (err) {
@@ -51,42 +45,48 @@ export const LoginPage = () => {
       } else {
         toast.error('Error inesperado');
       }
-  // Opcional: log para depuración
-  console.debug('[Login error]', err);
+      console.debug('[Login error]', err);
     }
   });
 
   return (
-    <div className="max-w-sm mx-auto p-6">
-      <h1 className="text-2xl font-semibold mb-4">Login</h1>
-      <form onSubmit={onSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm mb-1">Email</label>
-          <input
-            type="email"
-            className="w-full border rounded px-3 py-2 text-black"
-            {...register('email')}
-            required
-          />
-          {errors.email && <p className="text-red-400 text-sm">{errors.email.message}</p>}
+    <div className="min-h-screen flex items-center justify-center px-4 py-8">
+      <div className="w-full max-w-lg bg-jjk-dark border border-jjk-ash rounded-xl shadow-mystical p-8 space-y-6 fade-in">
+        <div className="text-center space-y-2">
+          <h1 className="font-[Cinzel] text-3xl text-jjk-gold tracking-wide">Iniciar sesión</h1>
+          <p className="jp-mark text-jjk-purple text-lg">呪術廻戦</p>
         </div>
-        <div>
-          <label className="block text-sm mb-1">Password</label>
-          <input
-            type="password"
-            className="w-full border rounded px-3 py-2 text-black"
-            {...register('password')}
-            required
-          />
-          {errors.password && <p className="text-red-400 text-sm">{errors.password.message}</p>}
-        </div>
-        <button
-          disabled={isSubmitting}
-          className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white px-4 py-2 rounded w-full"
-        >
-          {isSubmitting ? 'Entrando...' : 'Entrar'}
-        </button>
-      </form>
+        <form onSubmit={onSubmit} className="space-y-5">
+          <div className="space-y-1">
+            <label className="block text-sm text-jjk-fog">Email</label>
+            <input
+              type="email"
+              className="w-full rounded-md bg-jjk-ash/40 border border-jjk-ash focus:border-jjk-purple focus:outline-none px-3 py-2 text-white placeholder:text-slate-400"
+              placeholder="tu@email.com"
+              {...register('email')}
+              required
+            />
+            {errors.email && <p className="text-red-400 text-xs">{errors.email.message}</p>}
+          </div>
+          <div className="space-y-1">
+            <label className="block text-sm text-jjk-fog">Contraseña</label>
+            <input
+              type="password"
+              className="w-full rounded-md bg-jjk-ash/40 border border-jjk-ash focus:border-jjk-purple focus:outline-none px-3 py-2 text-white placeholder:text-slate-400"
+              placeholder="••••••"
+              {...register('password')}
+              required
+            />
+            {errors.password && <p className="text-red-400 text-xs">{errors.password.message}</p>}
+          </div>
+          <button
+            disabled={isSubmitting}
+            className="w-full rounded-md bg-jjk-indigo hover:bg-jjk-purple text-white font-semibold py-2 transition-colors disabled:opacity-50"
+          >
+            {isSubmitting ? 'Entrando...' : 'Entrar'}
+          </button>
+        </form>
+      </div>
     </div>
   );
 };

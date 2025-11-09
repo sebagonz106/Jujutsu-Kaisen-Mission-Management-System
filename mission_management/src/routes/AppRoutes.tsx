@@ -3,24 +3,27 @@ import { LoginPage } from '../pages/LoginPage.tsx';
 import { ProtectedRoute } from './ProtectedRoute.tsx';
 import { RoleGuard } from './RoleGuard.tsx';
 
-// Placeholder dashboard components
-const SorcererDashboard = () => <div className="p-4">Dashboard Sorcerer</div>;
-const SupportDashboard = () => <div className="p-4">Dashboard Support</div>;
-const ObserverDashboard = () => <div className="p-4">Dashboard Observer</div>;
+// Placeholder dashboard components (texto en español)
+const SorcererDashboard = () => <div className="p-4">Panel Hechicero</div>;
+const SupportDashboard = () => <div className="p-4">Panel Soporte</div>;
+const ObserverDashboard = () => <div className="p-4">Panel Observador</div>;
 const Forbidden = () => <div className="p-4">403 - Acceso denegado</div>;
 const EntityIndex = () => (
-  <div className="p-4 space-y-2">
-    <h2 className="text-xl font-semibold mb-2">Entities</h2>
-    <nav className="flex gap-3">
-      <Link className="text-indigo-400 underline" to="/sorcerers">Sorcerers</Link>
-      <Link className="text-indigo-400 underline" to="/curses">Curses</Link>
-      <Link className="text-indigo-400 underline" to="/missions">Missions</Link>
-    </nav>
+  <div className="space-y-4 fade-in">
+    <h2 className="page-title">Panel</h2>
+    <div className="card-surface p-4">
+      <nav className="flex gap-2">
+        <Link className="nav-link" to="/sorcerers">Hechiceros</Link>
+        <Link className="nav-link" to="/curses">Maldiciones</Link>
+        <Link className="nav-link" to="/missions">Misiones</Link>
+      </nav>
+    </div>
   </div>
 );
 import { SorcerersPage } from '../pages/sorcerers/SorcerersPage.tsx';
 import { CursesPage } from '../pages/curses/CursesPage.tsx';
 import { MissionsPage } from '../pages/missions/MissionsPage.tsx';
+import Layout from '../components/Layout.tsx';
 
 export const AppRoutes = () => (
   <BrowserRouter>
@@ -62,7 +65,9 @@ export const AppRoutes = () => (
         path="/entities"
         element={
           <ProtectedRoute>
-            <EntityIndex />
+            <Layout>
+              <EntityIndex />
+            </Layout>
           </ProtectedRoute>
         }
       />
@@ -70,7 +75,9 @@ export const AppRoutes = () => (
         path="/sorcerers"
         element={
           <ProtectedRoute>
-            <SorcerersPage />
+            <Layout>
+              <SorcerersPage />
+            </Layout>
           </ProtectedRoute>
         }
       />
@@ -78,7 +85,9 @@ export const AppRoutes = () => (
         path="/curses"
         element={
           <ProtectedRoute>
-            <CursesPage />
+            <Layout>
+              <CursesPage />
+            </Layout>
           </ProtectedRoute>
         }
       />
@@ -86,11 +95,13 @@ export const AppRoutes = () => (
         path="/missions"
         element={
           <ProtectedRoute>
-            <MissionsPage />
+            <Layout>
+              <MissionsPage />
+            </Layout>
           </ProtectedRoute>
         }
       />
-      <Route path="*" element={<div className="p-4">404</div>} />
+  <Route path="*" element={<div className="p-4">404 - No encontrado</div>} />
     </Routes>
   </BrowserRouter>
 );
