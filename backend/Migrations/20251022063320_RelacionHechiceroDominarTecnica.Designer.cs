@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GestionDeMisiones.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251110105048_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20251022063320_RelacionHechiceroDominarTecnica")]
+    partial class RelacionHechiceroDominarTecnica
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -54,29 +54,6 @@ namespace GestionDeMisiones.Migrations
                     b.HasIndex("TecnicaPrincipalId");
 
                     b.ToTable("Hechiceros");
-                });
-
-            modelBuilder.Entity("GestionDeMisiones.Models.HechiceroEnMision", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("HechiceroId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("MisionId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("HechiceroId");
-
-                    b.HasIndex("MisionId");
-
-                    b.ToTable("HechiceroEnMision");
                 });
 
             modelBuilder.Entity("GestionDeMisiones.Models.HechiceroEncargado", b =>
@@ -266,32 +243,6 @@ namespace GestionDeMisiones.Migrations
                     b.ToTable("TecnicasMalditas");
                 });
 
-            modelBuilder.Entity("GestionDeMisiones.Models.TecnicaMalditaAplicada", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<float>("Efectividad")
-                        .HasColumnType("real");
-
-                    b.Property<int>("MisionId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TecnicaMalditaId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MisionId");
-
-                    b.HasIndex("TecnicaMalditaId");
-
-                    b.ToTable("TecnicaMalditaAplicada");
-                });
-
             modelBuilder.Entity("GestionDeMisiones.Models.Traslado", b =>
                 {
                     b.Property<int>("Id")
@@ -431,25 +382,6 @@ namespace GestionDeMisiones.Migrations
                     b.Navigation("TecnicaPrincipal");
                 });
 
-            modelBuilder.Entity("GestionDeMisiones.Models.HechiceroEnMision", b =>
-                {
-                    b.HasOne("GestionDeMisiones.Models.Hechicero", "Hechicero")
-                        .WithMany("Misiones")
-                        .HasForeignKey("HechiceroId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("GestionDeMisiones.Models.Mision", "Mision")
-                        .WithMany("Hechiceros")
-                        .HasForeignKey("MisionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Hechicero");
-
-                    b.Navigation("Mision");
-                });
-
             modelBuilder.Entity("GestionDeMisiones.Models.HechiceroEncargado", b =>
                 {
                     b.HasOne("GestionDeMisiones.Models.Hechicero", "Hechicero")
@@ -508,25 +440,6 @@ namespace GestionDeMisiones.Migrations
                         .IsRequired();
 
                     b.Navigation("Maldicion");
-                });
-
-            modelBuilder.Entity("GestionDeMisiones.Models.TecnicaMalditaAplicada", b =>
-                {
-                    b.HasOne("GestionDeMisiones.Models.Mision", "Mision")
-                        .WithMany("Tecnicas")
-                        .HasForeignKey("MisionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("GestionDeMisiones.Models.TecnicaMaldita", "TecnicaMaldita")
-                        .WithMany("Misiones")
-                        .HasForeignKey("TecnicaMalditaId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Mision");
-
-                    b.Navigation("TecnicaMaldita");
                 });
 
             modelBuilder.Entity("GestionDeMisiones.Models.Traslado", b =>
@@ -601,7 +514,7 @@ namespace GestionDeMisiones.Migrations
                     b.HasOne("GestionDeMisiones.Models.TecnicaMaldita", "TecnicaMaldita")
                         .WithMany("TecnicasMalditasDominadas")
                         .HasForeignKey("TecnicaMalditaId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Hechicero");
@@ -611,17 +524,11 @@ namespace GestionDeMisiones.Migrations
 
             modelBuilder.Entity("GestionDeMisiones.Models.Hechicero", b =>
                 {
-                    b.Navigation("Misiones");
-
                     b.Navigation("TecnicasMalditasDominadas");
                 });
 
             modelBuilder.Entity("GestionDeMisiones.Models.Mision", b =>
                 {
-                    b.Navigation("Hechiceros");
-
-                    b.Navigation("Tecnicas");
-
                     b.Navigation("Traslados");
 
                     b.Navigation("UsosDeRecurso");
@@ -634,8 +541,6 @@ namespace GestionDeMisiones.Migrations
 
             modelBuilder.Entity("GestionDeMisiones.Models.TecnicaMaldita", b =>
                 {
-                    b.Navigation("Misiones");
-
                     b.Navigation("TecnicasMalditasDominadas");
                 });
 

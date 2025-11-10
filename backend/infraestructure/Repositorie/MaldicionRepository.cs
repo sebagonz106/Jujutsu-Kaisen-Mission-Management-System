@@ -22,6 +22,21 @@ namespace GestionDeMisiones.Repository
                 .ToListAsync();
         }
 
+        public async Task<List<Maldicion>> GetPagedAsync(int? cursor, int limit)
+        {
+            var query = _context.Maldiciones
+                .Include(m => m.UbicacionDeAparicion)
+                .AsQueryable();
+
+            if (cursor.HasValue)
+                query = query.Where(m => m.Id > cursor.Value);
+
+            return await query
+                .OrderBy(m => m.Id)
+                .Take(limit + 1)
+                .ToListAsync();
+        }
+
         public async Task<Maldicion?> GetByIdAsync(int id)
         {
             return await _context.Maldiciones

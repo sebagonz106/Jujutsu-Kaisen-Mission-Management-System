@@ -17,6 +17,23 @@ public class MisionRepository : IMisionRepository
             .Include(m => m.Ubicacion)
             .ToListAsync();
 
+    public async Task<List<Mision>> GetPagedAsync(int? cursor, int limit)
+    {
+        var query = _context.Misiones
+            .Include(m => m.Ubicacion)
+            .AsQueryable();
+
+        if (cursor.HasValue)
+        {
+            query = query.Where(m => m.Id > cursor.Value);
+        }
+
+        return await query
+            .OrderBy(m => m.Id)
+            .Take(limit + 1) // fetch one extra to compute hasMore
+            .ToListAsync();
+    }
+
     public async Task<Mision?> GetByIdAsync(int id)
         => await _context.Misiones
             .Include(m => m.Ubicacion)

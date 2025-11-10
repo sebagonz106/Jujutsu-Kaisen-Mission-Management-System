@@ -27,9 +27,17 @@ namespace GestionDeMisiones.Data
 
         public DbSet<TecnicaMalditaDominada> TecnicasMalditasDominadas { get; set; }
 
+    // Usuarios (para autenticación persistente)
+    public DbSet<Usuario> Usuarios { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // Usuario constraints simples
+            modelBuilder.Entity<Usuario>()
+                .HasIndex(u => u.Email)
+                .IsUnique();
+
             modelBuilder.Entity<Mision>()
                 .HasOne(m => m.Ubicacion)
                 .WithMany(u => u.Misiones)
@@ -79,8 +87,7 @@ namespace GestionDeMisiones.Data
             modelBuilder.Entity<TecnicaMalditaDominada>()
                 .HasOne(tmd => tmd.TecnicaMaldita)
                 .WithMany(tm => tm.TecnicasMalditasDominadas)
-                .HasForeignKey(tmd => tmd.TecnicaMalditaId)
-                .OnDelete(DeleteBehavior.NoAction);
+                .HasForeignKey(tmd => tmd.TecnicaMalditaId);
 
         }
     }

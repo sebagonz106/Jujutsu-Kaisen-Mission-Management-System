@@ -15,8 +15,14 @@ public class HechiceroController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Hechicero>>> GetAllHechicero()
+    public async Task<IActionResult> GetAllHechicero([FromQuery] int? limit, [FromQuery] int? cursor)
     {
+        if (limit.HasValue || cursor.HasValue)
+        {
+            var lim = limit ?? 20;
+            var (items, nextCursor, hasMore) = await _service.GetPagedAsync(cursor, lim);
+            return Ok(new { items, nextCursor, hasMore });
+        }
         var hechiceros = await _service.GetAllAsync();
         return Ok(hechiceros);
     }

@@ -18,6 +18,17 @@ public class MisionService : IMisionService
     public async Task<IEnumerable<Mision>> GetAllAsync()
         => await _misionRepo.GetAllAsync();
 
+    public async Task<(IEnumerable<Mision> items, int? nextCursor, bool hasMore)> GetPagedAsync(int? cursor, int limit)
+    {
+        if (limit <= 0) limit = 20;
+        if (limit > 100) limit = 100;
+        var list = await _misionRepo.GetPagedAsync(cursor, limit);
+        var hasMore = list.Count > limit;
+        if (hasMore) list.RemoveAt(list.Count - 1); // remove extra
+        int? nextCursor = list.Count > 0 ? list.Last().Id : null;
+        return (list, nextCursor, hasMore);
+    }
+
     public async Task<Mision?> GetByIdAsync(int id)
         => await _misionRepo.GetByIdAsync(id);
 

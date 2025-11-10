@@ -12,6 +12,21 @@ public class HechiceroRepository : IHechiceroRepository
     public async Task<IEnumerable<Hechicero>> GetAllAsync()
         => await _context.Hechiceros.Include(h => h.TecnicaPrincipal).ToListAsync();
 
+    public async Task<List<Hechicero>> GetPagedAsync(int? cursor, int limit)
+    {
+        var query = _context.Hechiceros
+            .Include(h => h.TecnicaPrincipal)
+            .AsQueryable();
+
+        if (cursor.HasValue)
+            query = query.Where(h => h.Id > cursor.Value);
+
+        return await query
+            .OrderBy(h => h.Id)
+            .Take(limit + 1) // fetch one extra to compute hasMore
+            .ToListAsync();
+    }
+
     public async Task<Hechicero?> GetByIdAsync(int id)
         => await _context.Hechiceros
             .Include(h => h.TecnicaPrincipal)
