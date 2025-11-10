@@ -2,7 +2,8 @@
  * @fileoverview Custom React hook for managing sorcerers with React Query.
  *
  * Provides CRUD operations (list, create, update, delete) for sorcerers,
- * with automatic cache invalidation on mutations.
+ * with automatic cache invalidation on mutations. Mutations invalidate both
+ * standard and infinite query caches to maintain consistency across the app.
  *
  * @module hooks/useSorcerers
  */
@@ -14,7 +15,10 @@ import type { Sorcerer } from '../types/sorcerer';
 const KEY = ['sorcerers'];
 
 /**
- * Hook for managing sorcerers.
+ * Hook for managing sorcerers with CRUD operations and cache management.
+ *
+ * All mutations automatically invalidate both base and infinite query caches
+ * for sorcerers to ensure UI consistency.
  *
  * @returns Object containing:
  * - `list` - Query result for fetching all sorcerers.
@@ -29,7 +33,10 @@ const KEY = ['sorcerers'];
  * if (list.isLoading) return <div>Loading...</div>;
  * if (list.isError) return <div>Error loading sorcerers</div>;
  *
- * const sorcerers = list.data;
+ * const sorcerers = Array.isArray(list.data) ? list.data : list.data?.items ?? [];
+ *
+ * // Create a new sorcerer
+ * await create.mutateAsync({ name: 'Yuji Itadori', grado: 'medio', ... });
  * ```
  */
 export const useSorcerers = () => {
@@ -37,15 +44,24 @@ export const useSorcerers = () => {
   const list = useQuery({ queryKey: KEY, queryFn: () => sorcererApi.list() });
   const create = useMutation({
     mutationFn: (payload: Omit<Sorcerer, 'id'>) => sorcererApi.create(payload),
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+    onSuccess: () =>
+      qc.invalidateQueries({
+        predicate: (q) => Array.isArray(q.queryKey) && q.queryKey[0] === KEY[0],
+      }),
   });
   const update = useMutation({
     mutationFn: (vars: { id: number; patch: Partial<Omit<Sorcerer, 'id'>> }) => sorcererApi.update(vars.id, vars.patch),
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+    onSuccess: () =>
+      qc.invalidateQueries({
+        predicate: (q) => Array.isArray(q.queryKey) && q.queryKey[0] === KEY[0],
+      }),
   });
   const remove = useMutation({
     mutationFn: (id: number) => sorcererApi.remove(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+    onSuccess: () =>
+      qc.invalidateQueries({
+        predicate: (q) => Array.isArray(q.queryKey) && q.queryKey[0] === KEY[0],
+      }),
   });
   return { list, create, update, remove };
 };

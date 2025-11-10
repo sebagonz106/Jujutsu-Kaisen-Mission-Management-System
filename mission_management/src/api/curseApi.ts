@@ -7,6 +7,7 @@
  */
 
 import { apiClient } from './client';
+import { normalizePaged } from './pagedApi';
 import type { Curse } from '../types/curse';
 
 /**
@@ -18,9 +19,13 @@ export const curseApi = {
    *
    * @returns Promise resolving to array of curses.
    */
-  async list(): Promise<Curse[]> {
-    const { data } = await apiClient.get<Curse[]>('/curses');
-    return data;
+  async list(params?: { limit?: number; cursor?: number | string }): Promise<{ items: Curse[]; nextCursor?: number | string | null; hasMore?: boolean }> {
+    const qp: string[] = [];
+    if (params?.limit) qp.push(`limit=${encodeURIComponent(String(params.limit))}`);
+    if (params?.cursor) qp.push(`cursor=${encodeURIComponent(String(params.cursor))}`);
+    const qs = qp.length ? `?${qp.join('&')}` : '';
+    const { data } = await apiClient.get(`/curses${qs}`);
+    return normalizePaged<Curse>(data, { limit: params?.limit });
   },
 
   /**

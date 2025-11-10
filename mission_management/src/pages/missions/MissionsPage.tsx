@@ -13,6 +13,8 @@
 
 import { useMemo, useState } from 'react';
 import { useMissions } from '../../hooks/useMissions';
+import { useInfiniteMissions } from '../../hooks/useInfiniteMissions';
+import type { PagedResponse } from '../../api/pagedApi';
 import { useSorcerers } from '../../hooks/useSorcerers';
 import { useCurses } from '../../hooks/useCurses';
 import type { Mission } from '../../types/mission';
@@ -31,26 +33,27 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import { useAuth } from '../../hooks/useAuth';
 import { canMutate as canMutateByRole } from '../../utils/permissions';
+import { t } from '../../i18n';
 import { MultiSelect } from '../../components/ui/MultiSelect';
 
 /**
  * Maps internal mission state enum values to Spanish display labels.
  */
 const estadoLabel: Record<Mission['state'], string> = {
-  [MISSION_STATE.pending]: 'Pendiente',
-  [MISSION_STATE.in_progress]: 'En progreso',
-  [MISSION_STATE.success]: 'Completada con éxito',
-  [MISSION_STATE.failure]: 'Completada con fracaso',
-  [MISSION_STATE.canceled]: 'Cancelada',
+  [MISSION_STATE.pending]: t('mission.state.pending'),
+  [MISSION_STATE.in_progress]: t('mission.state.in_progress'),
+  [MISSION_STATE.success]: t('mission.state.success'),
+  [MISSION_STATE.failure]: t('mission.state.failure'),
+  [MISSION_STATE.canceled]: t('mission.state.canceled'),
 };
 
 /**
  * Maps internal mission urgency enum values to Spanish display labels.
  */
 const urgenciaLabel: Record<Mission['urgency'], string> = {
-  [MISSION_URGENCY.planned]: 'Planificada',
-  [MISSION_URGENCY.urgent]: 'Urgente',
-  [MISSION_URGENCY.critical]: 'Emergencia crítica',
+  [MISSION_URGENCY.planned]: t('mission.urgency.planned'),
+  [MISSION_URGENCY.urgent]: t('mission.urgency.urgent'),
+  [MISSION_URGENCY.critical]: t('mission.urgency.critical'),
 };
 
 /**
@@ -62,7 +65,7 @@ const urgenciaLabel: Record<Mission['urgency'], string> = {
  */
 const schema = z
   .object({
-    locationId: z.coerce.number().min(0, 'El ID debe ser mayor o igual a 0'),
+  locationId: z.coerce.number().min(0, t('form.validation.locationIdNonNegative')),
     state: z.union([
       z.literal(MISSION_STATE.pending),
       z.literal(MISSION_STATE.in_progress),
@@ -91,7 +94,7 @@ const schema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['urgency'],
-        message: 'La urgencia es obligatoria en misiones pendientes.',
+  message: t('form.validation.urgencyRequiredPending'),
       });
     }
 
@@ -101,14 +104,14 @@ const schema = z
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ['events'],
-          message: 'Debe detallar los eventos para misiones finalizadas.',
+    message: t('form.validation.eventsRequiredFinished'),
         });
       }
       if (!val.collateralDamage || val.collateralDamage.trim() === '') {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ['collateralDamage'],
-          message: 'Debe indicar los daños colaterales para misiones finalizadas.',
+    message: t('form.validation.collateralRequiredFinished'),
         });
       }
     }
@@ -128,6 +131,7 @@ type FormValues = z.infer<typeof schema>;
  * Access control: Mutations restricted to support users and high-rank sorcerers.
  */
 export const MissionsPage = () => {
+  const { data, isLoading, isError, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteMissions({ pageSize: 20 });
   const { list, create, update, remove } = useMissions();
   const { list: sorcerersQ } = useSorcerers();
   const { list: cursesQ } = useCurses();
@@ -158,14 +162,18 @@ export const MissionsPage = () => {
   const isFinished = ([MISSION_STATE.success, MISSION_STATE.failure, MISSION_STATE.canceled] as string[]).includes(currentState);
 
   // Build option lists for dropdown multi-selects
-  const sorcererOptions = useMemo(
-    () => (sorcerersQ.data ?? []).map(s => ({ value: s.id, label: `${s.name} · ${s.grado}` })),
-    [sorcerersQ.data]
-  );
-  const curseOptions = useMemo(
-    () => (cursesQ.data ?? []).map(c => ({ value: c.id, label: `${c.nombre} · ${c.grado}` })),
-    [cursesQ.data]
-  );
+  const sorcererOptions = useMemo(() => {
+    const list = Array.isArray(sorcerersQ.data)
+      ? sorcerersQ.data
+      : (sorcerersQ.data as PagedResponse<import('../../types/sorcerer').Sorcerer> | undefined)?.items ?? [];
+    return list.map((s) => ({ value: s.id, label: `${s.name} · ${s.grado}` }));
+  }, [sorcerersQ.data]);
+  const curseOptions = useMemo(() => {
+    const list = Array.isArray(cursesQ.data)
+      ? cursesQ.data
+      : (cursesQ.data as PagedResponse<import('../../types/curse').Curse> | undefined)?.items ?? [];
+    return list.map((c) => ({ value: c.id, label: `${c.nombre} · ${c.grado}` }));
+  }, [cursesQ.data]);
 
   /**
    * Opens the create form with empty default values.
@@ -213,14 +221,14 @@ export const MissionsPage = () => {
       };
       if (editId) {
         await update.mutateAsync({ id: editId, patch: payload });
-        toast.success('Actualizada');
+        toast.success(t('toast.mission.updated'));
       } else {
         await create.mutateAsync(payload);
-        toast.success('Creada');
+        toast.success(t('toast.mission.created'));
       }
       setShowForm(false);
     } catch {
-      toast.error('Error al guardar');
+      toast.error(t('toast.saveError'));
     }
   });
 
@@ -232,17 +240,22 @@ export const MissionsPage = () => {
     if (deleteId) {
       try {
         await remove.mutateAsync(deleteId);
-        toast.success('Eliminada');
+        toast.success(t('toast.mission.deleted'));
       } catch {
-        toast.error('Error al eliminar');
+        toast.error(t('toast.deleteError'));
       }
       setDeleteId(null);
     }
   };
 
+  const flat = useMemo(() => (data?.pages ?? []).flatMap((p) => p.items), [data]);
   const sortedData = useMemo(() => {
-    const data = list.data ?? [];
-    return [...data].sort((a, b) => {
+    const base: Mission[] = flat.length
+      ? flat
+      : Array.isArray(list.data)
+        ? list.data
+        : (list.data as PagedResponse<Mission> | undefined)?.items ?? [];
+    return [...base].sort((a, b) => {
       const av = a[sortKey];
       const bv = b[sortKey];
       if (typeof av === 'number' && typeof bv === 'number') return sortDir === 'asc' ? av - bv : bv - av;
@@ -250,7 +263,7 @@ export const MissionsPage = () => {
         ? String(av).localeCompare(String(bv))
         : String(bv).localeCompare(String(av));
     });
-  }, [list.data, sortKey, sortDir]);
+  }, [flat, list.data, sortKey, sortDir]);
 
   const toggleSort = (key: keyof Mission) => {
     if (sortKey === key) setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
@@ -260,7 +273,7 @@ export const MissionsPage = () => {
     }
   };
 
-  if (list.isLoading) return (
+  if (isLoading) return (
     <div className="p-4 space-y-4">
       <Skeleton className="h-8 w-40" />
       <div className="space-y-2">
@@ -270,16 +283,16 @@ export const MissionsPage = () => {
       </div>
     </div>
   );
-  if (list.isError) return <div className="p-4 text-red-400">Error al cargar misiones</div>;
+  if (isError) return <div className="p-4 text-red-400">{t('errors.loadMissions')}</div>;
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-  <h1 className="page-title">Misiones</h1>
-        {canMutate && <Button onClick={openCreate}>Nueva</Button>}
+  <h1 className="page-title">{t('pages.missions.title')}</h1>
+    {canMutate && <Button onClick={openCreate}>{t('ui.new_fem')}</Button>}
       </div>
-      {(list.data?.length ?? 0) === 0 ? (
-        <EmptyState title="No hay misiones" description={canMutate ? 'Crea la primera' : 'No hay registros disponibles'} action={canMutate ? <Button onClick={openCreate}>Crear misión</Button> : undefined} />
+  {(sortedData.length ?? 0) === 0 ? (
+  <EmptyState title={t('pages.missions.emptyTitle')} description={canMutate ? t('pages.missions.emptyDescHasPerms') : t('pages.missions.emptyDescNoPerms')} action={canMutate ? <Button onClick={openCreate}>{t('pages.missions.createAction')}</Button> : undefined} />
       ) : (
         <div className="card-surface p-4 overflow-x-auto">
           <Table>
@@ -289,7 +302,7 @@ export const MissionsPage = () => {
                 <TH><SortHeader label="Estado" active={sortKey==='state'} direction={sortDir} onClick={() => toggleSort('state')} /></TH>
                 <TH><SortHeader label="Urgencia" active={sortKey==='urgency'} direction={sortDir} onClick={() => toggleSort('urgency')} /></TH>
                 <TH><SortHeader label="Ubicación" active={sortKey==='locationId'} direction={sortDir} onClick={() => toggleSort('locationId')} /></TH>
-                {canMutate && <TH>Acciones</TH>}
+                {canMutate && <TH>{t('ui.actions')}</TH>}
               </tr>
             </THead>
             <TBody>
@@ -301,8 +314,8 @@ export const MissionsPage = () => {
                   <TD>{m.locationId}</TD>
                   {canMutate && (
                     <TD className="flex gap-2">
-                      <Button size="sm" variant="secondary" onClick={() => startEdit(m)}>Editar</Button>
-                      <Button size="sm" variant="danger" onClick={() => setDeleteId(m.id)} disabled={remove.isPending}>Borrar</Button>
+                      <Button size="sm" variant="secondary" onClick={() => startEdit(m)}>{t('ui.edit')}</Button>
+                      <Button size="sm" variant="danger" onClick={() => setDeleteId(m.id)} disabled={remove.isPending}>{t('ui.delete')}</Button>
                     </TD>
                   )}
                 </tr>
@@ -311,24 +324,35 @@ export const MissionsPage = () => {
           </Table>
         </div>
       )}
+      {sortedData.length > 0 && hasNextPage && (
+        <div className="pt-3">
+          <Button
+            variant="secondary"
+            onClick={() => fetchNextPage()}
+            disabled={isFetchingNextPage}
+          >
+            {isFetchingNextPage ? t('ui.loadingMore') : t('ui.loadMore')}
+          </Button>
+        </div>
+      )}
 
       <Modal
         open={showForm && canMutate}
         onClose={() => setShowForm(false)}
-        title={editId ? 'Editar Misión' : 'Nueva Misión'}
+        title={editId ? `${t('ui.edit')} ${t('pages.missions.singular')}` : `${t('ui.new_fem')} ${t('pages.missions.singular')}`}
         footer={
           <div className="flex justify-end gap-2">
-            <Button variant="ghost" onClick={() => setShowForm(false)}>Cancelar</Button>
+            <Button variant="ghost" onClick={() => setShowForm(false)}>{t('ui.cancel')}</Button>
             <Button disabled={!canMutate || isSubmitting || create.isPending || update.isPending} type="submit" form="mission-form">
-              {editId ? 'Guardar cambios' : 'Crear'}
+              {editId ? t('ui.saveChanges') : t('ui.create')}
             </Button>
           </div>
         }
       >
         <form id="mission-form" onSubmit={onSubmit} className="space-y-3">
-          <Input label="ID de ubicación" type="number" {...register('locationId', { valueAsNumber: true })} />
+          <Input label={t('form.mission.locationId')} type="number" {...register('locationId', { valueAsNumber: true })} />
           {errors.locationId && <p className="text-xs text-red-400">{errors.locationId.message}</p>}
-          <Select label="Estado" {...register('state')}>
+          <Select label={t('form.mission.state')} {...register('state')}>
             {Object.values(MISSION_STATE).map(s => (
               <option key={s} value={s}>{estadoLabel[s]}</option>
             ))}
@@ -336,7 +360,7 @@ export const MissionsPage = () => {
           {/* Urgencia solo cuando está Pendiente */}
           {isPending && (
             <>
-              <Select label="Urgencia" {...register('urgency')}>
+              <Select label={t('form.mission.urgency')} {...register('urgency')}>
                 {Object.values(MISSION_URGENCY).map(u => (
                   <option key={u} value={u}>{urgenciaLabel[u]}</option>
                 ))}
@@ -348,9 +372,9 @@ export const MissionsPage = () => {
           {/* Campos solo para misiones finalizadas */}
           {isFinished && (
             <>
-              <Input label="Eventos" placeholder="Eventos" {...register('events')} />
+              <Input label={t('form.mission.events')} placeholder={t('form.mission.events')} {...register('events')} />
               {errors.events && <p className="text-xs text-red-400">{errors.events.message}</p>}
-              <Input label="Daños colaterales" placeholder="Detalles" {...register('collateralDamage')} />
+              <Input label={t('form.mission.collateralDamage')} placeholder={t('form.mission.collateralDamage')} {...register('collateralDamage')} />
               {errors.collateralDamage && <p className="text-xs text-red-400">{errors.collateralDamage.message}</p>}
             </>
           )}
@@ -360,12 +384,12 @@ export const MissionsPage = () => {
             control={control}
             render={({ field }) => (
               <MultiSelect
-                label="Hechiceros asignados"
+                label={t('form.mission.assignedSorcerers')}
                 options={sorcererOptions}
                 value={field.value ?? []}
                 onChange={field.onChange}
                 disabled={sorcerersQ.isLoading || !!sorcerersQ.isError}
-                placeholder={sorcerersQ.isLoading ? 'Cargando...' : (sorcerersQ.isError ? 'Error al cargar' : 'Seleccionar...')}
+                placeholder={sorcerersQ.isLoading ? t('ui.loading') : (sorcerersQ.isError ? t('errors.loadSorcerers') : t('ui.selectPlaceholder'))}
               />
             )}
           />
@@ -375,12 +399,12 @@ export const MissionsPage = () => {
             control={control}
             render={({ field }) => (
               <MultiSelect
-                label="Maldiciones asociadas"
+                label={t('form.mission.associatedCurses')}
                 options={curseOptions}
                 value={field.value ?? []}
                 onChange={field.onChange}
                 disabled={cursesQ.isLoading || !!cursesQ.isError}
-                placeholder={cursesQ.isLoading ? 'Cargando...' : (cursesQ.isError ? 'Error al cargar' : 'Seleccionar...')}
+                placeholder={cursesQ.isLoading ? t('ui.loading') : (cursesQ.isError ? t('errors.loadCurses') : t('ui.selectPlaceholder'))}
               />
             )}
           />
@@ -391,9 +415,9 @@ export const MissionsPage = () => {
         open={deleteId !== null && canMutate}
         onClose={() => setDeleteId(null)}
         onConfirm={confirmDelete}
-        title="Eliminar misión"
-        description="Esta acción no se puede deshacer"
-        confirmText="Eliminar"
+        title={t('pages.missions.deleteTitle')}
+        description={t('pages.missions.cannotUndo')}
+        confirmText={t('ui.delete')}
       />
     </div>
   );

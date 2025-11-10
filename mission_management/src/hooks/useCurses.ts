@@ -2,7 +2,8 @@
  * @fileoverview Custom React hook for managing curses with React Query.
  *
  * Provides CRUD operations (list, create, update, delete) for curses,
- * with automatic cache invalidation on mutations.
+ * with automatic cache invalidation on mutations. Mutations invalidate both
+ * standard and infinite query caches to maintain consistency across the app.
  *
  * @module hooks/useCurses
  */
@@ -14,7 +15,10 @@ import type { Curse } from '../types/curse';
 const KEY = ['curses'];
 
 /**
- * Hook for managing curses.
+ * Hook for managing curses with CRUD operations and cache management.
+ *
+ * All mutations automatically invalidate both base and infinite query caches
+ * for curses to ensure UI consistency.
  *
  * @returns Object containing:
  * - `list` - Query result for fetching all curses.
@@ -29,7 +33,7 @@ const KEY = ['curses'];
  * if (list.isLoading) return <div>Loading...</div>;
  * if (list.isError) return <div>Error loading curses</div>;
  *
- * const curses = list.data;
+ * const curses = Array.isArray(list.data) ? list.data : list.data?.items ?? [];
  * ```
  */
 export const useCurses = () => {
@@ -37,15 +41,24 @@ export const useCurses = () => {
   const list = useQuery({ queryKey: KEY, queryFn: () => curseApi.list() });
   const create = useMutation({
     mutationFn: (payload: Omit<Curse, 'id'>) => curseApi.create(payload),
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+    onSuccess: () =>
+      qc.invalidateQueries({
+        predicate: (q) => Array.isArray(q.queryKey) && q.queryKey[0] === KEY[0],
+      }),
   });
   const update = useMutation({
     mutationFn: (vars: { id: number; patch: Partial<Omit<Curse, 'id'>> }) => curseApi.update(vars.id, vars.patch),
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+    onSuccess: () =>
+      qc.invalidateQueries({
+        predicate: (q) => Array.isArray(q.queryKey) && q.queryKey[0] === KEY[0],
+      }),
   });
   const remove = useMutation({
     mutationFn: (id: number) => curseApi.remove(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+    onSuccess: () =>
+      qc.invalidateQueries({
+        predicate: (q) => Array.isArray(q.queryKey) && q.queryKey[0] === KEY[0],
+      }),
   });
   return { list, create, update, remove };
 };

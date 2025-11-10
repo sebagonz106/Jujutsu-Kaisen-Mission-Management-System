@@ -7,6 +7,7 @@
  */
 
 import { apiClient } from './client';
+import { normalizePaged } from './pagedApi';
 import type { Sorcerer } from '../types/sorcerer';
 
 /**
@@ -18,9 +19,14 @@ export const sorcererApi = {
    *
    * @returns Promise resolving to array of sorcerers.
    */
-  async list(): Promise<Sorcerer[]> {
-    const { data } = await apiClient.get<Sorcerer[]>('/sorcerers');
-    return data;
+  async list(params?: { limit?: number; cursor?: number | string }): Promise<{ items: Sorcerer[]; nextCursor?: number | string | null; hasMore?: boolean }> {
+    const qp: string[] = [];
+    if (params?.limit) qp.push(`limit=${encodeURIComponent(String(params.limit))}`);
+    if (params?.cursor) qp.push(`cursor=${encodeURIComponent(String(params.cursor))}`);
+    const qs = qp.length ? `?${qp.join('&')}` : '';
+    const { data } = await apiClient.get(`/sorcerers${qs}`);
+    const norm = normalizePaged<Sorcerer>(data, { limit: params?.limit });
+    return norm;
   },
 
   /**

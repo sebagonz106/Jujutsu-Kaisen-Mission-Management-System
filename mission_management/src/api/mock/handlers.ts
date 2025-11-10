@@ -133,7 +133,22 @@ export const handlers = [
     return HttpResponse.json(resp, { status: 201 });
   }),
   // Sorcerers
-  http.get('/sorcerers', () => HttpResponse.json(sorcerers)),
+  http.get('/sorcerers', ({ request }) => {
+    const url = new URL(request.url);
+    const limitParam = url.searchParams.get('limit');
+    const cursorParam = url.searchParams.get('cursor');
+    const limit = limitParam ? Math.max(1, Math.min(100, Number(limitParam))) : undefined;
+    let list = sorcerers;
+    if (cursorParam) {
+      const cursor = Number(cursorParam);
+      if (!Number.isNaN(cursor)) list = list.filter(s => s.id < cursor);
+    }
+    if (!limit) return HttpResponse.json({ items: list, nextCursor: null, hasMore: false });
+    const slice = list.slice(0, limit);
+    const hasMore = list.length > slice.length;
+    const nextCursor = hasMore ? slice[slice.length - 1]?.id ?? null : null;
+    return HttpResponse.json({ items: slice, nextCursor, hasMore });
+  }),
   http.get('/sorcerers/:id', ({ params }) => {
     const id = Number(params.id);
     const found = sorcerers.find((s) => s.id === id);
@@ -167,7 +182,22 @@ export const handlers = [
   }),
 
   // Curses
-  http.get('/curses', () => HttpResponse.json(curses)),
+  http.get('/curses', ({ request }) => {
+    const url = new URL(request.url);
+    const limitParam = url.searchParams.get('limit');
+    const cursorParam = url.searchParams.get('cursor');
+    const limit = limitParam ? Math.max(1, Math.min(100, Number(limitParam))) : undefined;
+    let list = curses;
+    if (cursorParam) {
+      const cursor = Number(cursorParam);
+      if (!Number.isNaN(cursor)) list = list.filter(c => c.id < cursor);
+    }
+    if (!limit) return HttpResponse.json({ items: list, nextCursor: null, hasMore: false });
+    const slice = list.slice(0, limit);
+    const hasMore = list.length > slice.length;
+    const nextCursor = hasMore ? slice[slice.length - 1]?.id ?? null : null;
+    return HttpResponse.json({ items: slice, nextCursor, hasMore });
+  }),
   http.get('/curses/:id', ({ params }) => {
     const id = Number(params.id);
     const found = curses.find((c) => c.id === id);
@@ -201,7 +231,22 @@ export const handlers = [
   }),
 
   // Missions
-  http.get('/missions', () => HttpResponse.json(missions)),
+  http.get('/missions', ({ request }) => {
+    const url = new URL(request.url);
+    const limitParam = url.searchParams.get('limit');
+    const cursorParam = url.searchParams.get('cursor');
+    const limit = limitParam ? Math.max(1, Math.min(100, Number(limitParam))) : undefined;
+    let list = missions;
+    if (cursorParam) {
+      const cursor = Number(cursorParam);
+      if (!Number.isNaN(cursor)) list = list.filter(m => m.id < cursor);
+    }
+    if (!limit) return HttpResponse.json({ items: list, nextCursor: null, hasMore: false });
+    const slice = list.slice(0, limit);
+    const hasMore = list.length > slice.length;
+    const nextCursor = hasMore ? slice[slice.length - 1]?.id ?? null : null;
+    return HttpResponse.json({ items: slice, nextCursor, hasMore });
+  }),
   http.get('/missions/:id', ({ params }) => {
     const id = Number(params.id);
     const found = missions.find((m) => m.id === id);
@@ -259,7 +304,19 @@ export const handlers = [
   http.get('/audit', ({ request }) => {
     const url = new URL(request.url);
     const limitParam = url.searchParams.get('limit');
-    const limit = limitParam ? Math.max(1, Math.min(100, Number(limitParam))) : 50;
-    return HttpResponse.json(auditLog.slice(0, limit));
+    const cursorParam = url.searchParams.get('cursor');
+    const limit = limitParam ? Math.max(1, Math.min(100, Number(limitParam))) : undefined;
+    let list = auditLog;
+    if (cursorParam) {
+      const cursor = Number(cursorParam);
+      if (!Number.isNaN(cursor)) {
+        list = list.filter(e => e.id < cursor);
+      }
+    }
+    if (!limit) return HttpResponse.json({ items: list, nextCursor: null, hasMore: false });
+    const slice = list.slice(0, limit);
+    const hasMore = list.length > slice.length;
+    const nextCursor = hasMore ? slice[slice.length - 1]?.id ?? null : null;
+    return HttpResponse.json({ items: slice, nextCursor, hasMore });
   }),
 ];

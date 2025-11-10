@@ -7,6 +7,7 @@
  */
 
 import { apiClient } from './client';
+import { normalizePaged } from './pagedApi';
 import type { Mission } from '../types/mission';
 
 /**
@@ -18,9 +19,13 @@ export const missionApi = {
    *
    * @returns Promise resolving to array of missions.
    */
-  async list(): Promise<Mission[]> {
-    const { data } = await apiClient.get<Mission[]>('/missions');
-    return data;
+  async list(params?: { limit?: number; cursor?: number | string }): Promise<{ items: Mission[]; nextCursor?: number | string | null; hasMore?: boolean }> {
+    const qp: string[] = [];
+    if (params?.limit) qp.push(`limit=${encodeURIComponent(String(params.limit))}`);
+    if (params?.cursor) qp.push(`cursor=${encodeURIComponent(String(params.cursor))}`);
+    const qs = qp.length ? `?${qp.join('&')}` : '';
+    const { data } = await apiClient.get(`/missions${qs}`);
+    return normalizePaged<Mission>(data, { limit: params?.limit });
   },
 
   /**

@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useCurses } from '../../hooks/useCurses';
+import { useInfiniteCurses } from '../../hooks/useInfiniteCurses';
+import type { PagedResponse } from '../../api/pagedApi';
 import type { Curse } from '../../types/curse';
 import { CURSE_GRADE, CURSE_TYPE, CURSE_STATE, CURSE_DANGER_LEVEL } from '../../types/curse';
 import { Button } from '../../components/ui/Button';
@@ -16,10 +18,11 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import { useAuth } from '../../hooks/useAuth';
 import { canMutate as canMutateByRole } from '../../utils/permissions';
+import { t } from '../../i18n';
 
 const schema = z.object({
-  nombre: z.string().min(2, 'Nombre muy corto'),
-  ubicacionDeAparicion: z.string().min(2, 'Ubicación requerida'),
+  nombre: z.string().min(2, t('form.validation.nameTooShort')),
+  ubicacionDeAparicion: z.string().min(2, t('form.validation.locationRequired')),
   fechaYHoraDeAparicion: z.string(),
   grado: z.union([
     z.literal(CURSE_GRADE.grado_1),
@@ -48,6 +51,7 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 export const CursesPage = () => {
+  const { data, isLoading, isError, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteCurses({ pageSize: 20 });
   const { list, create, update, remove } = useCurses();
   const { user } = useAuth();
   const canMutate = canMutateByRole(user);
@@ -101,31 +105,36 @@ export const CursesPage = () => {
       };
       if (editId) {
         await update.mutateAsync({ id: editId, patch: payload });
-        toast.success('Actualizado');
+        toast.success(t('toast.curse.updated'));
       } else {
         await create.mutateAsync(payload);
-        toast.success('Creado');
+        toast.success(t('toast.curse.created'));
       }
       setShowForm(false);
     } catch {
-      toast.error('Error al guardar');
+      toast.error(t('toast.saveError'));
     }
   });
   const confirmDelete = async () => {
     if (deleteId) {
       try {
         await remove.mutateAsync(deleteId);
-        toast.success('Eliminado');
+        toast.success(t('toast.curse.deleted'));
       } catch {
-        toast.error('Error al eliminar');
+        toast.error(t('toast.deleteError'));
       }
       setDeleteId(null);
     }
   };
 
+  const flat = useMemo(() => (data?.pages ?? []).flatMap(p => p.items), [data]);
   const sortedData = useMemo(() => {
-    const data = list.data ?? [];
-    return [...data].sort((a, b) => {
+    const base: Curse[] = flat.length
+      ? flat
+      : Array.isArray(list.data)
+        ? list.data
+        : (list.data as PagedResponse<Curse> | undefined)?.items ?? [];
+    return [...base].sort((a, b) => {
       const av = a[sortKey];
       const bv = b[sortKey];
       if (typeof av === 'number' && typeof bv === 'number') return sortDir === 'asc' ? av - bv : bv - av;
@@ -133,7 +142,7 @@ export const CursesPage = () => {
         ? String(av).localeCompare(String(bv))
         : String(bv).localeCompare(String(av));
     });
-  }, [list.data, sortKey, sortDir]);
+  }, [flat, list.data, sortKey, sortDir]);
 
   const toggleSort = (key: keyof Curse) => {
     if (sortKey === key) setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
@@ -143,7 +152,7 @@ export const CursesPage = () => {
     }
   };
 
-  if (list.isLoading) return (
+  if (isLoading) return (
     <div className="p-4 space-y-4">
       <Skeleton className="h-8 w-40" />
       <div className="space-y-2">
@@ -153,16 +162,16 @@ export const CursesPage = () => {
       </div>
     </div>
   );
-  if (list.isError) return <div className="p-4 text-red-400">Error al cargar maldiciones</div>;
+  if (isError) return <div className="p-4 text-red-400">{t('errors.loadCurses')}</div>;
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-  <h1 className="page-title">Maldiciones</h1>
-        {canMutate && <Button onClick={openCreate}>Nueva</Button>}
+  <h1 className="page-title">{t('pages.curses.title')}</h1>
+    {canMutate && <Button onClick={openCreate}>{t('ui.new_fem')}</Button>}
       </div>
       {sortedData.length === 0 ? (
-        <EmptyState title="No hay maldiciones" description={canMutate ? 'Crea la primera para comenzar' : 'No hay registros disponibles'} action={canMutate ? <Button onClick={openCreate}>Crear maldición</Button> : undefined} />
+  <EmptyState title={t('pages.curses.emptyTitle')} description={canMutate ? t('pages.curses.emptyDescHasPerms') : t('pages.curses.emptyDescNoPerms')} action={canMutate ? <Button onClick={openCreate}>{t('pages.curses.createAction')}</Button> : undefined} />
       ) : (
         <div className="card-surface p-4 overflow-x-auto">
           <Table>
@@ -174,7 +183,7 @@ export const CursesPage = () => {
                 <TH><SortHeader label="Tipo" active={sortKey==='tipo'} direction={sortDir} onClick={() => toggleSort('tipo')} /></TH>
                 <TH><SortHeader label="Estado" active={sortKey==='estadoActual'} direction={sortDir} onClick={() => toggleSort('estadoActual')} /></TH>
                 <TH><SortHeader label="Peligro" active={sortKey==='nivelPeligro'} direction={sortDir} onClick={() => toggleSort('nivelPeligro')} /></TH>
-                {canMutate && <TH>Acciones</TH>}
+                {canMutate && <TH>{t('ui.actions')}</TH>}
               </tr>
             </THead>
             <TBody>
@@ -188,8 +197,8 @@ export const CursesPage = () => {
                   <TD>{c.nivelPeligro}</TD>
                   {canMutate && (
                     <TD className="flex gap-2">
-                      <Button size="sm" variant="secondary" onClick={() => startEdit(c)}>Editar</Button>
-                      <Button size="sm" variant="danger" onClick={() => setDeleteId(c.id)} disabled={remove.isPending}>Borrar</Button>
+                      <Button size="sm" variant="secondary" onClick={() => startEdit(c)}>{t('ui.edit')}</Button>
+                      <Button size="sm" variant="danger" onClick={() => setDeleteId(c.id)} disabled={remove.isPending}>{t('ui.delete')}</Button>
                     </TD>
                   )}
                 </tr>
@@ -198,35 +207,46 @@ export const CursesPage = () => {
           </Table>
         </div>
       )}
+      {sortedData.length > 0 && hasNextPage && (
+        <div className="pt-3">
+          <Button
+            variant="secondary"
+            onClick={() => fetchNextPage()}
+            disabled={isFetchingNextPage}
+          >
+            {isFetchingNextPage ? t('ui.loadingMore') : t('ui.loadMore')}
+          </Button>
+        </div>
+      )}
 
       <Modal
         open={showForm && canMutate}
         onClose={() => setShowForm(false)}
-        title={editId ? 'Editar Maldición' : 'Nueva Maldición'}
+        title={editId ? `${t('ui.edit')} ${t('pages.curses.singular')}` : `${t('ui.new_fem')} ${t('pages.curses.singular')}`}
         footer={
           <div className="flex justify-end gap-2">
-            <Button variant="ghost" onClick={() => setShowForm(false)}>Cancelar</Button>
+            <Button variant="ghost" onClick={() => setShowForm(false)}>{t('ui.cancel')}</Button>
             <Button disabled={!canMutate || isSubmitting || create.isPending || update.isPending} type="submit" form="curse-form">
-              {editId ? 'Guardar cambios' : 'Crear'}
+              {editId ? t('ui.saveChanges') : t('ui.create')}
             </Button>
           </div>
         }
       >
         <form id="curse-form" onSubmit={onSubmit} className="space-y-3">
-          <Input label="Nombre" placeholder="Nombre" {...register('nombre')} />
+          <Input label={t('form.curse.name')} placeholder={t('form.curse.name')} {...register('nombre')} />
           {errors.nombre && <p className="text-xs text-red-400">{errors.nombre.message}</p>}
-          <Input label="Ubicación" placeholder="Ubicación" {...register('ubicacionDeAparicion')} />
+          <Input label={t('form.curse.location')} placeholder={t('form.curse.location')} {...register('ubicacionDeAparicion')} />
           {errors.ubicacionDeAparicion && <p className="text-xs text-red-400">{errors.ubicacionDeAparicion.message}</p>}
-          <Select label="Grado" {...register('grado')}>
+          <Select label={t('form.curse.grade')} {...register('grado')}>
             {Object.values(CURSE_GRADE).map((g) => <option key={g} value={g}>{g}</option>)}
           </Select>
-          <Select label="Tipo" {...register('tipo')}>
+          <Select label={t('form.curse.type')} {...register('tipo')}>
             {Object.values(CURSE_TYPE).map((t) => <option key={t} value={t}>{t}</option>)}
           </Select>
-          <Select label="Estado" {...register('estadoActual')}>
+          <Select label={t('form.curse.state')} {...register('estadoActual')}>
             {Object.values(CURSE_STATE).map((s) => <option key={s} value={s}>{s}</option>)}
           </Select>
-          <Select label="Peligro" {...register('nivelPeligro')}>
+          <Select label={t('form.curse.danger')} {...register('nivelPeligro')}>
             {Object.values(CURSE_DANGER_LEVEL).map((n) => <option key={n} value={n}>{n}</option>)}
           </Select>
         </form>
@@ -236,9 +256,9 @@ export const CursesPage = () => {
         open={deleteId !== null && canMutate}
         onClose={() => setDeleteId(null)}
         onConfirm={confirmDelete}
-        title="Eliminar maldición"
-        description="Esta acción no se puede deshacer"
-        confirmText="Eliminar"
+        title={t('pages.curses.deleteTitle')}
+        description={t('pages.missions.cannotUndo')}
+        confirmText={t('ui.delete')}
       />
     </div>
   );
