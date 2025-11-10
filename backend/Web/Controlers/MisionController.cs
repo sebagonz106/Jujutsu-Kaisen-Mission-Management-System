@@ -14,16 +14,8 @@ public class MisionController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAllMision([FromQuery] int? limit, [FromQuery] int? cursor)
+    public async Task<ActionResult<IEnumerable<Mision>>> GetAllMision()
     {
-        // If pagination params are provided, return paginated shape
-        if (limit.HasValue || cursor.HasValue)
-        {
-            var lim = limit ?? 20;
-            var (items, nextCursor, hasMore) = await _service.GetPagedAsync(cursor, lim);
-            return Ok(new { items, nextCursor, hasMore });
-        }
-
         var misiones = await _service.GetAllAsync();
         return Ok(misiones);
     }

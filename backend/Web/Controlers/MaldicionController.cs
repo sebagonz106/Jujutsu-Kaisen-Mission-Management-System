@@ -16,14 +16,8 @@ namespace GestionDeMisiones.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll([FromQuery] int? limit, [FromQuery] int? cursor)
+        public async Task<ActionResult<IEnumerable<Maldicion>>> GetAll()
         {
-            if (limit.HasValue || cursor.HasValue)
-            {
-                var lim = limit ?? 20;
-                var (items, nextCursor, hasMore) = await _service.GetPagedAsync(cursor, lim);
-                return Ok(new { items, nextCursor, hasMore });
-            }
             var maldiciones = await _service.GetAllAsync();
             return Ok(maldiciones);
         }
