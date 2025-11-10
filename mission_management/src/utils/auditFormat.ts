@@ -32,8 +32,8 @@ export function formatAuditLine(e: AuditEntry): string {
     return name ? `${head} al ${t('entity.sorcerer')} ${name}` : `${head} ${t('phrase.aMasc')} ${t('entity.sorcerer')}`;
   }
   if (e.entity === 'curse') {
-    // Acepta variantes con y sin acento
-    const name = extractAfter(summary, /maldaci[oó]n\s+(.+)$/i) || extractAfter(summary, /maldicion\s+(.+)$/i);
+    // Acepta variantes con y sin acento (maldición / maldicion)
+    const name = extractAfter(summary, /maldici[oó]n\s+(.+)$/i) || extractAfter(summary, /maldicion\s+(.+)$/i);
     return name ? `${head} la ${t('entity.curse')} ${name}` : `${head} ${t('phrase.aFem')} ${t('entity.curse')}`;
   }
   // mission

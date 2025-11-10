@@ -18,6 +18,7 @@ export const es = {
     aFem: 'una',
   },
   ui: {
+    id: 'ID',
     errorLoadingRecentActions: 'Error cargando acciones recientes',
     noRecentActivity: 'Sin actividad reciente',
     loadMore: 'Ver más',
@@ -71,6 +72,21 @@ export const es = {
       deleteTitle: 'Eliminar misión',
       cannotUndo: 'Esta acción no se puede deshacer',
     },
+    login: {
+      title: 'Iniciar sesión',
+      buttonEnter: 'Entrar',
+      buttonEntering: 'Entrando...',
+      linkNoAccount: '¿No tienes cuenta?',
+      linkRegister: 'Regístrate',
+    },
+    register: {
+      title: 'Registro',
+      subtitleObserver: 'Crear cuenta observador',
+      buttonCreate: 'Crear cuenta',
+      buttonRegistering: 'Registrando...',
+      linkHasAccount: '¿Ya tienes cuenta?',
+      linkLogin: 'Inicia sesión',
+    },
   },
   toast: {
     sorcerer: { created: 'Creado', updated: 'Actualizado', deleted: 'Eliminado' },
@@ -83,6 +99,10 @@ export const es = {
     loadSorcerers: 'Error al cargar hechiceros',
     loadCurses: 'Error al cargar maldiciones',
     loadMissions: 'Error al cargar misiones',
+    tryAgain: 'Intenta de nuevo',
+    networkMock: 'Error de red. ¿Mock activo?',
+    networkMockWithHint: 'Error de red. ¿Mock activo? Revisa VITE_USE_MOCK.',
+    unexpected: 'Error inesperado',
   },
   form: {
     labels: {
@@ -95,6 +115,14 @@ export const es = {
       cursesAssociated: 'Maldiciones asociadas',
       name: 'Nombre',
       ubicacion: 'Ubicación',
+      email: 'Email',
+      password: 'Contraseña',
+      confirm: 'Confirmar',
+      grade: 'Grado',
+      experience: 'Experiencia',
+      type: 'Tipo',
+      danger: 'Peligro',
+      mainTechnique: 'Técnica Principal',
     },
     placeholders: {
       seleccionar: 'Seleccionar...',
@@ -103,6 +131,10 @@ export const es = {
       tecnicaprincipal: 'Técnica',
       eventos: 'Eventos',
       danos: 'Detalles',
+      email: 'tu@email.com',
+      name: 'Tu nombre',
+      confirmPassword: 'Repite contraseña',
+      passwordDots: '••••••',
     },
     validation: {
       nameTooShort: 'Nombre muy corto',
@@ -113,6 +145,9 @@ export const es = {
       urgencyRequiredPending: 'La urgencia es obligatoria en misiones pendientes.',
       eventsRequiredFinished: 'Debe detallar los eventos para misiones finalizadas.',
       collateralRequiredFinished: 'Debe indicar los daños colaterales para misiones finalizadas.',
+      emailInvalid: 'Email inválido',
+      passwordMin6: 'Mínimo 6 caracteres',
+      passwordMismatch: 'Las contraseñas no coinciden',
       mission: {
         urgencyRequired: 'La urgencia es obligatoria en misiones pendientes.',
         eventsRequired: 'Debe detallar los eventos para misiones finalizadas.',
@@ -136,6 +171,13 @@ export const es = {
       state: 'Estado',
       danger: 'Peligro',
     },
+    sorcerer: {
+      name: 'Nombre',
+      grade: 'Grado',
+      experience: 'Experiencia',
+      state: 'Estado',
+      mainTechnique: 'Técnica Principal',
+    },
   },
   mission: {
     state: {
@@ -150,5 +192,10 @@ export const es = {
       urgent: 'Urgente',
       critical: 'Emergencia crítica',
     },
+  },
+  auth: {
+    welcome: 'Bienvenido',
+    registered: 'Registrado',
+    invalidCredentials: 'Credenciales inválidas',
   },
 } as const;

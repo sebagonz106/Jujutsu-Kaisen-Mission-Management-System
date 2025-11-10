@@ -177,12 +177,12 @@ export const CursesPage = () => {
           <Table>
             <THead>
               <tr>
-                <TH><SortHeader label="ID" active={sortKey==='id'} direction={sortDir} onClick={() => toggleSort('id')} /></TH>
-                <TH><SortHeader label="Nombre" active={sortKey==='nombre'} direction={sortDir} onClick={() => toggleSort('nombre')} /></TH>
-                <TH><SortHeader label="Grado" active={sortKey==='grado'} direction={sortDir} onClick={() => toggleSort('grado')} /></TH>
-                <TH><SortHeader label="Tipo" active={sortKey==='tipo'} direction={sortDir} onClick={() => toggleSort('tipo')} /></TH>
-                <TH><SortHeader label="Estado" active={sortKey==='estadoActual'} direction={sortDir} onClick={() => toggleSort('estadoActual')} /></TH>
-                <TH><SortHeader label="Peligro" active={sortKey==='nivelPeligro'} direction={sortDir} onClick={() => toggleSort('nivelPeligro')} /></TH>
+                <TH><SortHeader label={t('ui.id')} active={sortKey==='id'} direction={sortDir} onClick={() => toggleSort('id')} /></TH>
+                <TH><SortHeader label={t('form.curse.name')} active={sortKey==='nombre'} direction={sortDir} onClick={() => toggleSort('nombre')} /></TH>
+                <TH><SortHeader label={t('form.curse.grade')} active={sortKey==='grado'} direction={sortDir} onClick={() => toggleSort('grado')} /></TH>
+                <TH><SortHeader label={t('form.curse.type')} active={sortKey==='tipo'} direction={sortDir} onClick={() => toggleSort('tipo')} /></TH>
+                <TH><SortHeader label={t('form.curse.state')} active={sortKey==='estadoActual'} direction={sortDir} onClick={() => toggleSort('estadoActual')} /></TH>
+                <TH><SortHeader label={t('form.curse.danger')} active={sortKey==='nivelPeligro'} direction={sortDir} onClick={() => toggleSort('nivelPeligro')} /></TH>
                 {canMutate && <TH>{t('ui.actions')}</TH>}
               </tr>
             </THead>

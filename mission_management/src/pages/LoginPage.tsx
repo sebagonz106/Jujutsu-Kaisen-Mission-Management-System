@@ -6,10 +6,11 @@ import { authApi } from '../api/authApi';
 import { toast } from 'sonner';
 import axios from 'axios';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
+import { t } from '../i18n';
 
 const schema = z.object({
-  email: z.string().email('Email inválido'),
-  password: z.string().min(6, 'Mínimo 6 caracteres'),
+  email: z.string().email(t('form.validation.emailInvalid')),
+  password: z.string().min(6, t('form.validation.passwordMin6')),
 });
 type FormValues = z.infer<typeof schema>;
 
@@ -24,26 +25,26 @@ export const LoginPage = () => {
     try {
       const { accessToken, user } = await authApi.login(values);
   login(accessToken, user);
-  toast.success('Bienvenido');
+  toast.success(t('auth.welcome'));
       const target = fromPath && fromPath !== '/login' ? fromPath : '/entities';
       navigate(target, { replace: true });
     } catch (err) {
       if (axios.isAxiosError(err)) {
         if (err.response) {
           if (err.response.status === 401) {
-            toast.error('Credenciales inválidas');
+            toast.error(t('auth.invalidCredentials'));
           } else {
             const data: unknown = err.response.data;
             const message = typeof data === 'object' && data && 'message' in (data as Record<string, unknown>)
               ? String((data as Record<string, unknown>).message)
-              : 'Intenta de nuevo';
+              : t('errors.tryAgain');
             toast.error(`Error ${err.response.status}: ${message}`);
           }
         } else {
-          toast.error('Error de red. ¿Mock activo? Revisa VITE_USE_MOCK.');
+          toast.error(t('errors.networkMockWithHint'));
         }
       } else {
-        toast.error('Error inesperado');
+  toast.error(t('errors.unexpected'));
       }
       console.debug('[Login error]', err);
     }
@@ -53,27 +54,27 @@ export const LoginPage = () => {
     <div className="min-h-screen flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-lg bg-jjk-dark border border-jjk-ash rounded-xl shadow-mystical p-8 space-y-6 fade-in">
         <div className="text-center space-y-2">
-          <h1 className="font-[Cinzel] text-3xl text-jjk-gold tracking-wide">Iniciar sesión</h1>
+          <h1 className="font-[Cinzel] text-3xl text-jjk-gold tracking-wide">{t('pages.login.title')}</h1>
           <p className="jp-mark text-jjk-purple text-lg">呪術廻戦</p>
         </div>
         <form onSubmit={onSubmit} className="space-y-5">
           <div className="space-y-1">
-            <label className="block text-sm text-jjk-fog">Email</label>
+            <label className="block text-sm text-jjk-fog">{t('form.labels.email')}</label>
             <input
               type="email"
               className="w-full rounded-md bg-jjk-ash/40 border border-jjk-ash focus:border-jjk-purple focus:outline-none px-3 py-2 text-white placeholder:text-slate-400"
-              placeholder="tu@email.com"
+              placeholder={t('form.placeholders.email')}
               {...register('email')}
               required
             />
             {errors.email && <p className="text-red-400 text-xs">{errors.email.message}</p>}
           </div>
           <div className="space-y-1">
-            <label className="block text-sm text-jjk-fog">Contraseña</label>
+            <label className="block text-sm text-jjk-fog">{t('form.labels.password')}</label>
             <input
               type="password"
               className="w-full rounded-md bg-jjk-ash/40 border border-jjk-ash focus:border-jjk-purple focus:outline-none px-3 py-2 text-white placeholder:text-slate-400"
-              placeholder="••••••"
+              placeholder={t('form.placeholders.passwordDots')}
               {...register('password')}
               required
             />
@@ -83,11 +84,11 @@ export const LoginPage = () => {
             disabled={isSubmitting}
             className="w-full rounded-md bg-jjk-indigo hover:bg-jjk-purple text-white font-semibold py-2 transition-colors disabled:opacity-50"
           >
-            {isSubmitting ? 'Entrando...' : 'Entrar'}
+            {isSubmitting ? t('pages.login.buttonEntering') : t('pages.login.buttonEnter')}
           </button>
         </form>
         <div className="text-center text-sm text-jjk-fog">
-          ¿No tienes cuenta?{' '}<Link to="/register" className="text-jjk-gold hover:underline">Regístrate</Link>
+          {t('pages.login.linkNoAccount')}{' '}<Link to="/register" className="text-jjk-gold hover:underline">{t('pages.login.linkRegister')}</Link>
         </div>
       </div>
     </div>

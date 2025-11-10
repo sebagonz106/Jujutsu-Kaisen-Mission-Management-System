@@ -298,10 +298,10 @@ export const MissionsPage = () => {
           <Table>
             <THead>
               <tr>
-                <TH><SortHeader label="ID" active={sortKey==='id'} direction={sortDir} onClick={() => toggleSort('id')} /></TH>
-                <TH><SortHeader label="Estado" active={sortKey==='state'} direction={sortDir} onClick={() => toggleSort('state')} /></TH>
-                <TH><SortHeader label="Urgencia" active={sortKey==='urgency'} direction={sortDir} onClick={() => toggleSort('urgency')} /></TH>
-                <TH><SortHeader label="Ubicación" active={sortKey==='locationId'} direction={sortDir} onClick={() => toggleSort('locationId')} /></TH>
+                <TH><SortHeader label={t('ui.id')} active={sortKey==='id'} direction={sortDir} onClick={() => toggleSort('id')} /></TH>
+                <TH><SortHeader label={t('form.labels.state')} active={sortKey==='state'} direction={sortDir} onClick={() => toggleSort('state')} /></TH>
+                <TH><SortHeader label={t('form.labels.urgency')} active={sortKey==='urgency'} direction={sortDir} onClick={() => toggleSort('urgency')} /></TH>
+                <TH><SortHeader label={t('form.labels.ubicacion')} active={sortKey==='locationId'} direction={sortDir} onClick={() => toggleSort('locationId')} /></TH>
                 {canMutate && <TH>{t('ui.actions')}</TH>}
               </tr>
             </THead>

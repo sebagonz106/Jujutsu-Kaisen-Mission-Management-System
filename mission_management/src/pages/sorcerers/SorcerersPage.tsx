@@ -165,11 +165,11 @@ export const SorcerersPage = () => {
           <Table>
             <THead>
               <tr>
-                <TH><SortHeader label="ID" active={sortKey==='id'} direction={sortDir} onClick={() => toggleSort('id')} /></TH>
-                <TH><SortHeader label="Nombre" active={sortKey==='name'} direction={sortDir} onClick={() => toggleSort('name')} /></TH>
-                <TH><SortHeader label="Grado" active={sortKey==='grado'} direction={sortDir} onClick={() => toggleSort('grado')} /></TH>
-                <TH><SortHeader label="Experiencia" active={sortKey==='experiencia'} direction={sortDir} onClick={() => toggleSort('experiencia')} /></TH>
-                <TH><SortHeader label="Estado" active={sortKey==='estado'} direction={sortDir} onClick={() => toggleSort('estado')} /></TH>
+                <TH><SortHeader label={t('ui.id')} active={sortKey==='id'} direction={sortDir} onClick={() => toggleSort('id')} /></TH>
+                <TH><SortHeader label={t('form.labels.name')} active={sortKey==='name'} direction={sortDir} onClick={() => toggleSort('name')} /></TH>
+                <TH><SortHeader label={t('form.labels.grade')} active={sortKey==='grado'} direction={sortDir} onClick={() => toggleSort('grado')} /></TH>
+                <TH><SortHeader label={t('form.labels.experience')} active={sortKey==='experiencia'} direction={sortDir} onClick={() => toggleSort('experiencia')} /></TH>
+                <TH><SortHeader label={t('form.labels.state')} active={sortKey==='estado'} direction={sortDir} onClick={() => toggleSort('estado')} /></TH>
                 {canMutate && <TH>{t('ui.actions')}</TH>}
               </tr>
             </THead>
@@ -219,17 +219,17 @@ export const SorcerersPage = () => {
         }
       >
         <form id="sorcerer-form" onSubmit={onSubmit} className="space-y-3">
-          <Input label="Nombre" placeholder="Nombre" {...register('name')} />
+          <Input label={t('form.labels.name')} placeholder={t('form.labels.name')} {...register('name')} />
           {errors.name && <p className="text-xs text-red-400">{errors.name.message}</p>}
-          <Select label="Grado" {...register('grado')}>
+          <Select label={t('form.labels.grade')} {...register('grado')}>
             {Object.values(SORCERER_GRADE).map((g) => <option key={g} value={g}>{g}</option>)}
           </Select>
-          <Input label="Experiencia" type="number" {...register('experiencia', { valueAsNumber: true })} />
+          <Input label={t('form.labels.experience')} type="number" {...register('experiencia', { valueAsNumber: true })} />
           {errors.experiencia && <p className="text-xs text-red-400">{errors.experiencia.message}</p>}
-            <Select label="Estado" {...register('estado')}>
+            <Select label={t('form.labels.state')} {...register('estado')}>
             {Object.values(SORCERER_STATUS).map((s) => <option key={s} value={s}>{s}</option>)}
           </Select>
-          <Input label="Técnica Principal" placeholder="Técnica" {...register('tecnicaPrincipal')} />
+          <Input label={t('form.labels.mainTechnique')} placeholder={t('form.placeholders.tecnicaprincipal')} {...register('tecnicaPrincipal')} />
         </form>
       </Modal>
 
