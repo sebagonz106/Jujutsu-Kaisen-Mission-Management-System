@@ -1,0 +1,78 @@
+using Microsoft.AspNetCore.Mvc;
+using GestionDeMisiones.Models;
+using GestionDeMisiones.IService;
+
+[ApiController]
+[Route("api/[controller]")]
+public class TecnicaMalditaDominadaController : ControllerBase
+{
+    private readonly ITecnicaMalditaDominadaService _service;
+
+    public TecnicaMalditaDominadaController(ITecnicaMalditaDominadaService service)
+    {
+        _service = service;
+    }
+
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<TecnicaMalditaDominada>>> GetAllTecnicaMalditaDominada()
+    {
+        var tecnicasDominadas = await _service.GetAllAsync();
+        return Ok(tecnicasDominadas);
+    }
+
+    [HttpGet("{id}")]
+    public async Task<ActionResult<TecnicaMalditaDominada>> GetTecnicaMalditaDominada(int id)
+    {
+        var tecnicaDominada = await _service.GetByIdAsync(id);
+        if (tecnicaDominada == null)
+            return NotFound("La técnica maldita dominada que buscas no existe");
+        return Ok(tecnicaDominada);
+    }
+
+    [HttpPost]
+    public async Task<ActionResult<TecnicaMalditaDominada>> PostTecnicaMalditaDominada([FromBody] TecnicaMalditaDominada tecnicaDominada)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest("La técnica maldita dominada no cumple el formato");
+
+        try
+        {
+            var created = await _service.CreateAsync(tecnicaDominada);
+            return CreatedAtAction(nameof(GetTecnicaMalditaDominada), new { id = created.Id }, created);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> PutTecnicaMalditaDominada(int id, [FromBody] TecnicaMalditaDominada tecnicaDominada)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest("La técnica maldita dominada no cumple el formato");
+
+        try
+        {
+            var updated = await _service.UpdateAsync(id, tecnicaDominada);
+            if (!updated)
+                return NotFound("La técnica maldita dominada que quiere modificar no existe");
+
+            return NoContent();
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteTecnicaMalditaDominada(int id)
+    {
+        var deleted = await _service.DeleteAsync(id);
+        if (!deleted)
+            return NotFound("La técnica maldita dominada que quiere eliminar no existe");
+
+        return NoContent();
+    }
+}

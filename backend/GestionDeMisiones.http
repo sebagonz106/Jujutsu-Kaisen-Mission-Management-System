@@ -1,0 +1,6 @@
+@GestionDeMisiones_HostAddress = http://localhost:5189
+
+GET {{GestionDeMisiones_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
