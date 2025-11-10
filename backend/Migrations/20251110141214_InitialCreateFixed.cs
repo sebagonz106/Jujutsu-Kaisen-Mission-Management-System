@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace GestionDeMisiones.Migrations
 {
     /// <inheritdoc />
-    public partial class arreglando : Migration
+    public partial class InitialCreateFixed : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -65,6 +65,24 @@ namespace GestionDeMisiones.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Ubicaciones", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Usuarios",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Nombre = table.Column<string>(type: "nvarchar(120)", maxLength: 120, nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Rol = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Rango = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    CreadoEn = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Usuarios", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -141,6 +159,31 @@ namespace GestionDeMisiones.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "TecnicasMalditasDominadas",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    HechiceroId = table.Column<int>(type: "int", nullable: false),
+                    TecnicaMalditaId = table.Column<int>(type: "int", nullable: false),
+                    NivelDeDominio = table.Column<float>(type: "real", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TecnicasMalditasDominadas", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_TecnicasMalditasDominadas_Hechiceros_HechiceroId",
+                        column: x => x.HechiceroId,
+                        principalTable: "Hechiceros",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_TecnicasMalditasDominadas_TecnicasMalditas_TecnicaMalditaId",
+                        column: x => x.TecnicaMalditaId,
+                        principalTable: "TecnicasMalditas",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Solicitud",
                 columns: table => new
                 {
@@ -209,8 +252,7 @@ namespace GestionDeMisiones.Migrations
                         name: "FK_TecnicaMalditaAplicada_TecnicasMalditas_TecnicaMalditaId",
                         column: x => x.TecnicaMalditaId,
                         principalTable: "TecnicasMalditas",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -391,6 +433,16 @@ namespace GestionDeMisiones.Migrations
                 column: "TecnicaMalditaId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_TecnicasMalditasDominadas_HechiceroId",
+                table: "TecnicasMalditasDominadas",
+                column: "HechiceroId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TecnicasMalditasDominadas_TecnicaMalditaId",
+                table: "TecnicasMalditasDominadas",
+                column: "TecnicaMalditaId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_TrasladoDeHechicero_TrasladosId",
                 table: "TrasladoDeHechicero",
                 column: "TrasladosId");
@@ -419,6 +471,12 @@ namespace GestionDeMisiones.Migrations
                 name: "IX_UsosDeRecurso_RecursoId",
                 table: "UsosDeRecurso",
                 column: "RecursoId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Usuarios_Email",
+                table: "Usuarios",
+                column: "Email",
+                unique: true);
         }
 
         /// <inheritdoc />
@@ -437,10 +495,16 @@ namespace GestionDeMisiones.Migrations
                 name: "TecnicaMalditaAplicada");
 
             migrationBuilder.DropTable(
+                name: "TecnicasMalditasDominadas");
+
+            migrationBuilder.DropTable(
                 name: "TrasladoDeHechicero");
 
             migrationBuilder.DropTable(
                 name: "UsosDeRecurso");
+
+            migrationBuilder.DropTable(
+                name: "Usuarios");
 
             migrationBuilder.DropTable(
                 name: "Solicitud");

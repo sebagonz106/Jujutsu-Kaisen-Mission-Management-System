@@ -80,10 +80,14 @@ namespace GestionDeMisiones.Service
         public AuthUser? GetUserFromClaims(ClaimsPrincipal user)
         {
             if (user?.Identity?.IsAuthenticated != true) return null;
-            var id = user.FindFirstValue(JwtRegisteredClaimNames.Sub) ?? string.Empty;
+            var idString = user.FindFirstValue(JwtRegisteredClaimNames.Sub) ?? string.Empty;
             var name = user.FindFirstValue("name") ?? string.Empty;
             var email = user.FindFirstValue(JwtRegisteredClaimNames.Email) ?? string.Empty;
             var role = user.FindFirstValue(ClaimTypes.Role) ?? "user";
+            
+            if (!int.TryParse(idString, out var id))
+                return null;
+                
             return new AuthUser { Id = id, Name = name, Email = email, Role = role };
         }
 

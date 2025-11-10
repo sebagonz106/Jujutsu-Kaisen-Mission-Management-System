@@ -37,9 +37,13 @@ builder.Services.AddCors(options =>
                 "http://localhost:5173",
                 "http://localhost:5174",
                 "http://localhost:5175",
+                "http://localhost:5176",
+                "http://localhost:5177",
                 "https://localhost:5173",
                 "https://localhost:5174",
-                "https://localhost:5175"
+                "https://localhost:5175",
+                "https://localhost:5176",
+                "https://localhost:5177"
             )
             .AllowAnyHeader()
             .AllowAnyMethod()
@@ -117,7 +121,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// Comentado para desarrollo - evita problemas con redirecciones HTTPS
+// app.UseHttpsRedirection();
 
 // Apply CORS for frontend dev origins
 app.UseCors("FrontendPolicy");

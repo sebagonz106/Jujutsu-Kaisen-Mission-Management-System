@@ -73,7 +73,8 @@ namespace GestionDeMisiones.Data
             modelBuilder.Entity<TecnicaMalditaAplicada>()
                 .HasOne(tm => tm.TecnicaMaldita)
                 .WithMany(t => t.Misiones)
-                .HasForeignKey(tm => tm.TecnicaMalditaId);
+                .HasForeignKey(tm => tm.TecnicaMalditaId)
+                .OnDelete(DeleteBehavior.NoAction);
             modelBuilder.Entity<TecnicaMalditaAplicada>()
                 .HasOne(tm => tm.Mision)
                 .WithMany(m => m.Tecnicas)
@@ -82,12 +83,14 @@ namespace GestionDeMisiones.Data
             modelBuilder.Entity<TecnicaMalditaDominada>()
                 .HasOne(tmd => tmd.Hechicero)
                 .WithMany(h => h.TecnicasMalditasDominadas)
-                .HasForeignKey(tmd => tmd.HechiceroId);
+                .HasForeignKey(tmd => tmd.HechiceroId)
+                .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<TecnicaMalditaDominada>()
                 .HasOne(tmd => tmd.TecnicaMaldita)
                 .WithMany(tm => tm.TecnicasMalditasDominadas)
-                .HasForeignKey(tmd => tmd.TecnicaMalditaId);
+                .HasForeignKey(tmd => tmd.TecnicaMalditaId)
+                .OnDelete(DeleteBehavior.NoAction);
 
         }
     }
