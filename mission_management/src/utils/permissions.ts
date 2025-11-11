@@ -27,6 +27,8 @@ export type Role = AuthUser['role'];
  * canMutate(user); // true
  * ```
  */
+
+/** 
 export const canMutate = (user?: AuthUser | null) => {
   if (!user) return false;
   if (user.role == 'support') return true;
@@ -34,6 +36,11 @@ export const canMutate = (user?: AuthUser | null) => {
   const allowedRanks = ['alto', 'especial'];
   return !!user.rank && allowedRanks.includes(user.rank as string);
 };
+*/
+export const canMutate = (user?: AuthUser | null) => {
+  if (!user) return false;
+  else return true;
+}
 
 /**
  * Determines if a user can view entity lists.

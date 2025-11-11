@@ -19,6 +19,8 @@ const EntityIndex = () => {
           <Link className="nav-link" to="/sorcerers">Hechiceros</Link>
           <Link className="nav-link" to="/curses">Maldiciones</Link>
           <Link className="nav-link" to="/missions">Misiones</Link>
+          <Link className="nav-link" to="/techniques">Técnicas</Link>
+          <Link className="nav-link" to="/locations">Ubicaciones</Link>
         </nav>
       </div>
 
@@ -35,6 +37,8 @@ import { SorcerersPage } from '../pages/sorcerers/SorcerersPage.tsx';
 import { CursesPage } from '../pages/curses/CursesPage.tsx';
 import { MissionsPage } from '../pages/missions/MissionsPage.tsx';
 import Layout from '../components/Layout.tsx';
+import { TechniquesPage } from '../pages/techniques/TechniquesPage.tsx';
+import { LocationsPage } from '../pages/locations/LocationsPage.tsx';
 
 export const AppRoutes = () => (
   <BrowserRouter>
@@ -109,6 +113,26 @@ export const AppRoutes = () => (
           <ProtectedRoute>
             <Layout>
               <MissionsPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/techniques"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <TechniquesPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/locations"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <LocationsPage />
             </Layout>
           </ProtectedRoute>
         }

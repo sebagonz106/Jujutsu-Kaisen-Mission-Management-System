@@ -9,6 +9,7 @@ using GestionDeMisiones.Conventions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +26,8 @@ builder.Services.AddControllers(options =>
 .AddJsonOptions(opts =>
 {
     opts.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+    // Aceptar/emitir enums como strings en JSON (ej. "amplificacion")
+    opts.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
 
 // CORS: Allow Vite dev server (ports 5173-5175) with full headers/methods and credentials
