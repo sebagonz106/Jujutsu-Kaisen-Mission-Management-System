@@ -17,7 +17,7 @@ import type { AxiosError, InternalAxiosRequestConfig, AxiosResponse } from 'axio
 const useMock = import.meta.env.DEV && import.meta.env.VITE_USE_MOCK === 'true';
 // When using MSW in dev, use same-origin relative base URL so the Service Worker can intercept.
 // Otherwise, fall back to configured API URL (or sensible default).
-const baseURL = useMock ? '' : (import.meta.env.VITE_API_URL ?? 'http://localhost:5189/api');
+const baseURL = useMock ? '' : (import.meta.env.VITE_API_URL ?? 'http://localhost:5189/api/v1');
 
 // Route translation layer: maps frontend English/plural resource paths to backend Spanish/singular controller names.
 // Only applied when NOT using mock.

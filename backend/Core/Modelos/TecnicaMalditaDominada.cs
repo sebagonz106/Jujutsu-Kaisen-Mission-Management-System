@@ -1,6 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using GestionDeMisiones.Models;
 
+namespace GestionDeMisiones.Models;
+
 public class TecnicaMalditaDominada
 {
     [Key]

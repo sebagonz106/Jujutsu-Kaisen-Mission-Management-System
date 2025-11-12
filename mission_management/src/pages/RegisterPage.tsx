@@ -35,7 +35,7 @@ export const RegisterPage = () => {
         password: values.password,
       });
       login(accessToken, user);
-  toast.success(t('auth.registered'));
+      toast.success(t('auth.registered'));
       const target = fromPath && fromPath !== '/login' ? fromPath : '/entities';
       navigate(target, { replace: true });
     } catch (err) {
@@ -47,7 +47,7 @@ export const RegisterPage = () => {
             : t('errors.tryAgain');
           toast.error(`Error ${err.response.status}: ${message}`);
         } else {
-          toast.error(t('errors.networkMock'));
+          toast.error(t('errors.network'));
         }
       } else {
         toast.error(t('errors.unexpected'));

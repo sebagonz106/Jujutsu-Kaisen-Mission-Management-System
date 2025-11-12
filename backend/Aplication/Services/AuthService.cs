@@ -49,8 +49,8 @@ namespace GestionDeMisiones.Service
                 throw new ArgumentException("El email ya está registrado");
 
             var hash = BCrypt.Net.BCrypt.HashPassword(password);
-            // Persistimos en español segun requerimiento: observador|support|hechicero
-            var user = new Usuario { Nombre = name, Email = email, PasswordHash = hash, Rol = "observador" };
+            // Persistimos rol por defecto como support
+            var user = new Usuario { Nombre = name, Email = email, PasswordHash = hash, Rol = "support" };
             user = await _usersRepo.AddAsync(user);
             var normalizedRole = NormalizeRoleForToken(user.Rol);
             var authUser = new AuthUser { Id = user.Id, Name = user.Nombre, Email = user.Email, Role = normalizedRole, Rank = user.Rango };
