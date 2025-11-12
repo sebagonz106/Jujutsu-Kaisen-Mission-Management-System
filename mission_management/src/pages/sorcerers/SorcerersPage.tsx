@@ -19,6 +19,7 @@ import { toast } from 'sonner';
 import { useAuth } from '../../hooks/useAuth';
 import { canMutate as canMutateByRole } from '../../utils/permissions';
 import { t } from '../../i18n';
+import { useTechniques } from '../../hooks/useTechniques';
 
 const schema = z.object({
   name: z.string().min(2, t('form.validation.nameTooShort')),
@@ -45,6 +46,7 @@ export const SorcerersPage = () => {
   const { data, isLoading, isError, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteSorcerers({ pageSize: 20 });
   // Use legacy hook only for mutations & cache invalidation.
   const { list, create, update, remove } = useSorcerers();
+  const { list: techniqueList } = useTechniques();
   const { user } = useAuth();
   const canMutate = canMutateByRole(user);
   const [editId, setEditId] = useState<number | null>(null);
@@ -127,6 +129,10 @@ export const SorcerersPage = () => {
         : String(bv).localeCompare(String(av));
     });
   }, [flat, list.data, sortKey, sortDir]);
+  const techniqueItems = useMemo(() => {
+    const d = techniqueList.data as { items?: Array<{ id: number; nombre: string }> } | undefined;
+    return d?.items ?? [];
+  }, [techniqueList.data]);
 
   const toggleSort = (key: keyof Sorcerer) => {
     if (sortKey === key) setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
@@ -229,7 +235,12 @@ export const SorcerersPage = () => {
             <Select label={t('form.labels.state')} {...register('estado')}>
             {Object.values(SORCERER_STATUS).map((s) => <option key={s} value={s}>{s}</option>)}
           </Select>
-          <Input label={t('form.labels.mainTechnique')} placeholder={t('form.placeholders.tecnicaprincipal')} {...register('tecnicaPrincipal')} />
+            <Select label={t('form.labels.mainTechnique')} {...register('tecnicaPrincipal')}>
+              <option value="">{t('ui.selectPlaceholder')}</option>
+              {techniqueItems.map((t) => (
+                <option key={t.id} value={t.nombre}>{t.nombre}</option>
+              ))}
+            </Select>
         </form>
       </Modal>
 

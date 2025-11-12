@@ -5,7 +5,7 @@
  */
 
 /** Supported entity kinds that can be audited. */
-export type AuditEntity = 'sorcerer' | 'curse' | 'mission';
+export type AuditEntity = 'sorcerer' | 'curse' | 'mission' | 'location' | 'technique';
 
 /** Supported audit actions. */
 export type AuditAction = 'create' | 'update' | 'delete';

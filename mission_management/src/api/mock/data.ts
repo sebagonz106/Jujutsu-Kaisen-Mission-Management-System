@@ -1,6 +1,8 @@
 import type { Sorcerer } from '../../types/sorcerer';
 import type { Curse } from '../../types/curse';
 import type { Mission } from '../../types/mission';
+import type { Location } from '../../types/location';
+import type { Technique } from '../../types/technique';
 import type { AuditEntry } from '../../types/audit';
 import { MISSION_STATE, MISSION_URGENCY } from '../../types/mission';
 import { CURSE_GRADE, CURSE_TYPE, CURSE_STATE, CURSE_DANGER_LEVEL } from '../../types/curse';
@@ -9,6 +11,8 @@ import { SORCERER_GRADE, SORCERER_STATUS } from '../../types/sorcerer';
 let sorcererId = 3;
 let curseId = 3;
 let missionId = 2;
+let locationId = 2;
+let techniqueId = 2;
 let auditId = 0;
 
 export const sorcerers: Sorcerer[] = [
@@ -19,6 +23,16 @@ export const sorcerers: Sorcerer[] = [
 export const curses: Curse[] = [
   { id: 1, nombre: 'Finger of Sukuna', fechaYHoraDeAparicion: new Date().toISOString(), grado: CURSE_GRADE.especial, tipo: CURSE_TYPE.maligna, estadoActual: CURSE_STATE.activa, nivelPeligro: CURSE_DANGER_LEVEL.alto, ubicacionDeAparicion: 'Tokyo' },
   { id: 2, nombre: 'Rot Curse', fechaYHoraDeAparicion: new Date().toISOString(), grado: CURSE_GRADE.grado_2, tipo: CURSE_TYPE.residual, estadoActual: CURSE_STATE.activa, nivelPeligro: CURSE_DANGER_LEVEL.moderado, ubicacionDeAparicion: 'Kyoto' },
+];
+
+export const locations: Location[] = [
+  { id: 1, nombre: 'Tokyo' },
+  { id: 2, nombre: 'Kyoto' },
+];
+
+export const techniques: Technique[] = [
+  { id: 1, nombre: 'Domain Expansion', tipo: 'dominio', efectividadProm: 95.5, condicionesDeUso: 'Requires barrier mastery' },
+  { id: 2, nombre: 'Cursed Amplification', tipo: 'amplificacion', efectividadProm: 72.3, condicionesDeUso: 'High cursed energy' },
 ];
 
 export const missions: Mission[] = [
@@ -119,5 +133,43 @@ export const removeMission = (id: number): boolean => {
   const idx = missions.findIndex((m) => m.id === id);
   if (idx === -1) return false;
   missions.splice(idx, 1);
+  return true;
+};
+
+// Locations CRUD
+export const createLocation = (data: Omit<Location, 'id'>): Location => {
+  const obj: Location = { id: ++locationId, ...data };
+  locations.push(obj);
+  return obj;
+};
+export const updateLocation = (id: number, patch: Partial<Omit<Location, 'id'>>): Location | undefined => {
+  const idx = locations.findIndex(l => l.id === id);
+  if (idx === -1) return undefined;
+  locations[idx] = { ...locations[idx], ...patch };
+  return locations[idx];
+};
+export const removeLocation = (id: number): boolean => {
+  const idx = locations.findIndex(l => l.id === id);
+  if (idx === -1) return false;
+  locations.splice(idx, 1);
+  return true;
+};
+
+// Techniques CRUD (with efectividadProm float 0..100 constraint enforced in handler)
+export const createTechnique = (data: Omit<Technique, 'id'>): Technique => {
+  const obj: Technique = { id: ++techniqueId, ...data };
+  techniques.push(obj);
+  return obj;
+};
+export const updateTechnique = (id: number, patch: Partial<Omit<Technique, 'id'>>): Technique | undefined => {
+  const idx = techniques.findIndex(t => t.id === id);
+  if (idx === -1) return undefined;
+  techniques[idx] = { ...techniques[idx], ...patch };
+  return techniques[idx];
+};
+export const removeTechnique = (id: number): boolean => {
+  const idx = techniques.findIndex(t => t.id === id);
+  if (idx === -1) return false;
+  techniques.splice(idx, 1);
   return true;
 };

@@ -41,7 +41,7 @@ export const LoginPage = () => {
             toast.error(`Error ${err.response.status}: ${message}`);
           }
         } else {
-          toast.error(t('errors.networkMockWithHint'));
+          toast.error(t('errors.network'));
         }
       } else {
   toast.error(t('errors.unexpected'));

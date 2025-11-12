@@ -19,6 +19,7 @@ import { toast } from 'sonner';
 import { useAuth } from '../../hooks/useAuth';
 import { canMutate as canMutateByRole } from '../../utils/permissions';
 import { t } from '../../i18n';
+import { useLocations } from '../../hooks/useLocations';
 
 const schema = z.object({
   nombre: z.string().min(2, t('form.validation.nameTooShort')),
@@ -53,6 +54,7 @@ type FormValues = z.infer<typeof schema>;
 export const CursesPage = () => {
   const { data, isLoading, isError, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteCurses({ pageSize: 20 });
   const { list, create, update, remove } = useCurses();
+  const { list: locationList } = useLocations();
   const { user } = useAuth();
   const canMutate = canMutateByRole(user);
   const [editId, setEditId] = useState<number | null>(null);
@@ -128,6 +130,10 @@ export const CursesPage = () => {
   };
 
   const flat = useMemo(() => (data?.pages ?? []).flatMap(p => p.items), [data]);
+  const locationItems = useMemo(() => {
+    const d = locationList.data as { items?: Array<{ id: number; nombre: string }> } | undefined;
+    return d?.items ?? [];
+  }, [locationList.data]);
   const sortedData = useMemo(() => {
     const base: Curse[] = flat.length
       ? flat
@@ -235,7 +241,12 @@ export const CursesPage = () => {
         <form id="curse-form" onSubmit={onSubmit} className="space-y-3">
           <Input label={t('form.curse.name')} placeholder={t('form.curse.name')} {...register('nombre')} />
           {errors.nombre && <p className="text-xs text-red-400">{errors.nombre.message}</p>}
-          <Input label={t('form.curse.location')} placeholder={t('form.curse.location')} {...register('ubicacionDeAparicion')} />
+          <Select label={t('form.curse.location')} {...register('ubicacionDeAparicion')}>
+            <option value="">{t('ui.selectPlaceholder')}</option>
+            {locationItems.map((l) => (
+              <option key={l.id} value={l.nombre}>{l.nombre}</option>
+            ))}
+          </Select>
           {errors.ubicacionDeAparicion && <p className="text-xs text-red-400">{errors.ubicacionDeAparicion.message}</p>}
           <Select label={t('form.curse.grade')} {...register('grado')}>
             {Object.values(CURSE_GRADE).map((g) => <option key={g} value={g}>{g}</option>)}

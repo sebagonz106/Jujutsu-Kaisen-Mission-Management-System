@@ -1,8 +1,15 @@
 export const es = {
+  grammar: {
+    femArt: 'la',
+    masArt: 'el',
+    femTo: 'a la',
+    mascTo: 'al',
+
+  },
   audit: {
     base: {
-      create: 'Se creó',
-      update: 'Se actualizó',
+      create: 'Se añadió',
+      update: 'Se modificó',
       delete: 'Se eliminó',
     },
   },
@@ -10,6 +17,8 @@ export const es = {
     sorcerer: 'hechicero',
     curse: 'maldición',
     mission: 'misión',
+    location: 'ubicación',
+    technique: 'técnica maldita',
   },
   phrase: {
     thatAttends: 'que atiende',
@@ -40,6 +49,8 @@ export const es = {
     sorcerers: 'Hechiceros',
     curses: 'Maldiciones',
     missions: 'Misiones',
+    locations: 'Ubicaciones',
+    techniques: 'Técnicas',
     logout: 'Cerrar sesión',
     userFallback: 'Usuario',
   },
@@ -72,6 +83,24 @@ export const es = {
       deleteTitle: 'Eliminar misión',
       cannotUndo: 'Esta acción no se puede deshacer',
     },
+    locations: {
+      title: 'Ubicaciones',
+      singular: 'Ubicación',
+      emptyTitle: 'No hay ubicaciones',
+      emptyDescHasPerms: 'Crea la primera para comenzar',
+      emptyDescNoPerms: 'No hay registros disponibles',
+      createAction: 'Crear ubicación',
+      deleteTitle: 'Eliminar ubicación',
+    },
+    techniques: {
+      title: 'Técnicas',
+      singular: 'Técnica',
+      emptyTitle: 'No hay técnicas',
+      emptyDescHasPerms: 'Crea la primera para comenzar',
+      emptyDescNoPerms: 'No hay registros disponibles',
+      createAction: 'Crear técnica',
+      deleteTitle: 'Eliminar técnica',
+    },
     login: {
       title: 'Iniciar sesión',
       buttonEnter: 'Entrar',
@@ -92,6 +121,8 @@ export const es = {
     sorcerer: { created: 'Creado', updated: 'Actualizado', deleted: 'Eliminado' },
     curse: { created: 'Creada', updated: 'Actualizada', deleted: 'Eliminada' },
     mission: { created: 'Creada', updated: 'Actualizada', deleted: 'Eliminada' },
+    location: { created: 'Creada', updated: 'Actualizada', deleted: 'Eliminada' },
+    technique: { created: 'Creada', updated: 'Actualizada', deleted: 'Eliminada' },
     saveError: 'Error al guardar',
     deleteError: 'Error al eliminar',
   },
@@ -99,9 +130,10 @@ export const es = {
     loadSorcerers: 'Error al cargar hechiceros',
     loadCurses: 'Error al cargar maldiciones',
     loadMissions: 'Error al cargar misiones',
+    loadLocations: 'Error al cargar ubicaciones',
+    loadTechniques: 'Error al cargar técnicas malditas',
     tryAgain: 'Intenta de nuevo',
-    networkMock: 'Error de red. ¿Mock activo?',
-    networkMockWithHint: 'Error de red. ¿Mock activo? Revisa VITE_USE_MOCK.',
+    network: 'Error de red.',
     unexpected: 'Error inesperado',
   },
   form: {

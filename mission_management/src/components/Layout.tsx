@@ -26,6 +26,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           <NavLink to="/sorcerers" className={({ isActive }) => `nav-link ${isActive ? 'nav-link--active' : ''}`}>{t('nav.sorcerers')}</NavLink>
           <NavLink to="/curses" className={({ isActive }) => `nav-link ${isActive ? 'nav-link--active' : ''}`}>{t('nav.curses')}</NavLink>
           <NavLink to="/missions" className={({ isActive }) => `nav-link ${isActive ? 'nav-link--active' : ''}`}>{t('nav.missions')}</NavLink>
+          <NavLink to="/locations" className={({ isActive }) => `nav-link ${isActive ? 'nav-link--active' : ''}`}>{t('nav.locations')}</NavLink>
+          <NavLink to="/techniques" className={({ isActive }) => `nav-link ${isActive ? 'nav-link--active' : ''}`}>{t('nav.techniques')}</NavLink>
         </nav>
         <div className="mt-auto flex flex-col gap-2">
           {user && (

@@ -84,7 +84,7 @@ namespace GestionDeMisiones.Service
             var name = user.FindFirstValue("name") ?? string.Empty;
             var email = user.FindFirstValue(JwtRegisteredClaimNames.Email) ?? string.Empty;
             var role = user.FindFirstValue(ClaimTypes.Role) ?? "user";
-            return new AuthUser { Id = id, Name = name, Email = email, Role = role };
+            return new AuthUser { Id = Convert.ToInt32(id), Name = name, Email = email, Role = role };
         }
 
         private string GenerateJwt(AuthUser user)

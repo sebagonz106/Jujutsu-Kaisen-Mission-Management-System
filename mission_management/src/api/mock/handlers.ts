@@ -1,9 +1,11 @@
 import { http, HttpResponse } from 'msw';
-import { sorcerers, curses, missions, createSorcerer, updateSorcerer, removeSorcerer, createCurse, updateCurse, removeCurse, createMission, updateMission, removeMission, createAuditEntry, auditLog } from './data';
+import { sorcerers, curses, missions, locations, techniques, createSorcerer, updateSorcerer, removeSorcerer, createCurse, updateCurse, removeCurse, createMission, updateMission, removeMission, createAuditEntry, auditLog, createLocation, updateLocation, removeLocation, createTechnique, updateTechnique, removeTechnique } from './data';
 import type { Sorcerer } from '../../types/sorcerer';
 import type { Curse } from '../../types/curse';
 import type { Mission } from '../../types/mission';
 import type { AuditEntry } from '../../types/audit';
+import type { Location } from '../../types/location';
+import type { Technique } from '../../types/technique';
 import type { LoginRequest, LoginResponse, MeResponse, RegisterRequest, RegisterResponse } from '../../types/auth';
 
 // --- Helpers to simulate backend auth/authorization ---
@@ -98,6 +100,7 @@ export const handlers = [
   // Auth
   http.post('/auth/login', async ({ request }) => {
     const body = (await request.json()) as LoginRequest;
+    console.info('[MSW] /auth/login called with', { email: body.email });
     const userRole: LoginResponse['user']['role'] = body.email.includes('observer')
       ? 'observer'
       : body.email.includes('support')
@@ -125,6 +128,7 @@ export const handlers = [
   }),
   http.post('/auth/register', async ({ request }) => {
     const body = (await request.json()) as RegisterRequest;
+    console.info('[MSW] /auth/register called with', { email: body.email });
     // Always assign observer role in mock
     const resp: RegisterResponse = {
       accessToken: 'MOCK_TOKEN:observer:novato',
@@ -318,5 +322,128 @@ export const handlers = [
     const hasMore = list.length > slice.length;
     const nextCursor = hasMore ? slice[slice.length - 1]?.id ?? null : null;
     return HttpResponse.json({ items: slice, nextCursor, hasMore });
+  }),
+
+  // Locations
+  http.get('/locations', ({ request }) => {
+    const url = new URL(request.url);
+    const limitParam = url.searchParams.get('limit');
+    const cursorParam = url.searchParams.get('cursor');
+    const limit = limitParam ? Math.max(1, Math.min(100, Number(limitParam))) : undefined;
+    let list = locations;
+    if (cursorParam) {
+      const cursor = Number(cursorParam);
+      if (!Number.isNaN(cursor)) list = list.filter(l => l.id < cursor);
+    }
+    if (!limit) return HttpResponse.json({ items: list, nextCursor: null, hasMore: false });
+    const slice = list.slice(0, limit);
+    const hasMore = list.length > slice.length;
+    const nextCursor = hasMore ? slice[slice.length - 1]?.id ?? null : null;
+    return HttpResponse.json({ items: slice, nextCursor, hasMore });
+  }),
+  http.get('/locations/:id', ({ params }) => {
+    const id = Number(params.id);
+    const found = locations.find(l => l.id === id);
+    return found ? HttpResponse.json(found) : HttpResponse.json({ message: 'Not found' }, { status: 404 });
+  }),
+  http.post('/locations', async ({ request }) => {
+    const forbid = forbidIfNotHighRankSorcerer(request);
+    if (forbid) return forbid;
+    const body = (await request.json()) as Omit<Location, 'id'>;
+    if (!body.nombre || String(body.nombre).trim().length < 2) {
+      return HttpResponse.json({ message: 'Nombre requerido (>=2)' }, { status: 400 });
+    }
+    const created = createLocation({ nombre: String(body.nombre).trim() });
+    pushAudit('location', 'create', created.id, request, `Creó ubicación ${created.nombre}`);
+    return HttpResponse.json(created, { status: 201 });
+  }),
+  http.put('/locations/:id', async ({ params, request }) => {
+    const forbid = forbidIfNotHighRankSorcerer(request);
+    if (forbid) return forbid;
+    const id = Number(params.id);
+    const body = (await request.json()) as Partial<Omit<Location, 'id'>>;
+    if (body.nombre !== undefined && String(body.nombre).trim().length < 2) {
+      return HttpResponse.json({ message: 'Nombre demasiado corto' }, { status: 400 });
+    }
+    const updated = updateLocation(id, body);
+    if (updated) pushAudit('location', 'update', id, request, `Actualizó ubicación ${updated.nombre}`);
+    return updated ? HttpResponse.json(updated) : HttpResponse.json({ message: 'Not found' }, { status: 404 });
+  }),
+  http.delete('/locations/:id', ({ params, request }) => {
+    const forbid = forbidIfNotHighRankSorcerer(request);
+    if (forbid) return forbid;
+    const id = Number(params.id);
+    const found = locations.find(l => l.id === id);
+    const ok = removeLocation(id);
+    if (ok) pushAudit('location', 'delete', id, request, `Eliminó ubicación ${found?.nombre ?? id}`);
+    return ok ? new HttpResponse(null, { status: 204 }) : HttpResponse.json({ message: 'Not found' }, { status: 404 });
+  }),
+
+  // Techniques
+  http.get('/techniques', ({ request }) => {
+    const url = new URL(request.url);
+    const limitParam = url.searchParams.get('limit');
+    const cursorParam = url.searchParams.get('cursor');
+    const limit = limitParam ? Math.max(1, Math.min(100, Number(limitParam))) : undefined;
+    let list = techniques;
+    if (cursorParam) {
+      const cursor = Number(cursorParam);
+      if (!Number.isNaN(cursor)) list = list.filter(t => t.id < cursor);
+    }
+    if (!limit) return HttpResponse.json({ items: list, nextCursor: null, hasMore: false });
+    const slice = list.slice(0, limit);
+    const hasMore = list.length > slice.length;
+    const nextCursor = hasMore ? slice[slice.length - 1]?.id ?? null : null;
+    return HttpResponse.json({ items: slice, nextCursor, hasMore });
+  }),
+  http.get('/techniques/:id', ({ params }) => {
+    const id = Number(params.id);
+    const found = techniques.find(t => t.id === id);
+    return found ? HttpResponse.json(found) : HttpResponse.json({ message: 'Not found' }, { status: 404 });
+  }),
+  http.post('/techniques', async ({ request }) => {
+    const forbid = forbidIfNotHighRankSorcerer(request);
+    if (forbid) return forbid;
+    const body = (await request.json()) as Omit<Technique, 'id'>;
+    const eff = Number(body.efectividadProm);
+    if (Number.isNaN(eff) || eff < 0 || eff > 100) {
+      return HttpResponse.json({ message: 'efectividadProm debe estar entre 0 y 100' }, { status: 400 });
+    }
+    const allowedTypes = ['amplificacion', 'dominio', 'restriccion', 'soporte'];
+    if (!allowedTypes.includes(String(body.tipo))) {
+      return HttpResponse.json({ message: 'tipo inválido' }, { status: 400 });
+    }
+    const created = createTechnique({
+      nombre: String(body.nombre),
+      tipo: body.tipo,
+      efectividadProm: eff,
+      condicionesDeUso: body.condicionesDeUso ?? 'ninguna',
+    });
+    pushAudit('technique', 'create', created.id, request, `Creó técnica ${created.nombre}`);
+    return HttpResponse.json(created, { status: 201 });
+  }),
+  http.put('/techniques/:id', async ({ params, request }) => {
+    const forbid = forbidIfNotHighRankSorcerer(request);
+    if (forbid) return forbid;
+    const id = Number(params.id);
+    const body = (await request.json()) as Partial<Omit<Technique, 'id'>>;
+    if (body.efectividadProm !== undefined) {
+      const eff = Number(body.efectividadProm);
+      if (Number.isNaN(eff) || eff < 0 || eff > 100) {
+        return HttpResponse.json({ message: 'efectividadProm debe estar entre 0 y 100' }, { status: 400 });
+      }
+    }
+    const updated = updateTechnique(id, body);
+    if (updated) pushAudit('technique', 'update', id, request, `Actualizó técnica ${updated.nombre}`);
+    return updated ? HttpResponse.json(updated) : HttpResponse.json({ message: 'Not found' }, { status: 404 });
+  }),
+  http.delete('/techniques/:id', ({ params, request }) => {
+    const forbid = forbidIfNotHighRankSorcerer(request);
+    if (forbid) return forbid;
+    const id = Number(params.id);
+    const found = techniques.find(t => t.id === id);
+    const ok = removeTechnique(id);
+    if (ok) pushAudit('technique', 'delete', id, request, `Eliminó técnica ${found?.nombre ?? id}`);
+    return ok ? new HttpResponse(null, { status: 204 }) : HttpResponse.json({ message: 'Not found' }, { status: 404 });
   }),
 ];

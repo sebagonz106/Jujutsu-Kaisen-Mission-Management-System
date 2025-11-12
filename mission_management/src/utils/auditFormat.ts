@@ -27,20 +27,33 @@ export function formatAuditLine(e: AuditEntry): string {
     return m && m[1] ? m[1] : undefined;
   };
 
-  if (e.entity === 'sorcerer') {
-    const name = extractAfter(summary, /hechicero\s+(.+)$/i);
-    return name ? `${head} al ${t('entity.sorcerer')} ${name}` : `${head} ${t('phrase.aMasc')} ${t('entity.sorcerer')}`;
+  switch (e.entity) {
+    case 'sorcerer': {
+      const name = extractAfter(summary, /hechicero\s+(.+)$/i);
+      return name ? `${head} ${t('grammar.mascTo')} ${t('entity.sorcerer')} ${name}` : `${head} ${t('phrase.aMasc')} ${t('entity.sorcerer')}`;
+    }
+    case 'curse': {
+      const name = extractAfter(summary, /maldici[oó]n\s+(.+)$/i) || extractAfter(summary, /maldicion\s+(.+)$/i);
+      return name ? `${head} ${t('grammar.femArt')} ${t('entity.curse')} ${name}` : `${head} ${t('phrase.aFem')} ${t('entity.curse')}`;
+    }
+    case 'mission': {
+      const m = summary.match(/(atiende|que atendía)\s+(.+)$/i);
+      if (m && m[2]) {
+        const curseName = m[2];
+        return `${head} ${t('phrase.aFem')} ${t('entity.mission')} ${t('phrase.thatAttends')} ${curseName}`;
+      }
+      return `${head} ${t('phrase.aFem')} ${t('entity.mission')}`;
+    }
+    case 'location': {
+      const name = extractAfter(summary, /ubicación\s+(.+)$/i) || extractAfter(summary, /ubicacion\s+(.+)$/i);
+      return name ? `${head} ${t('grammar.femArt')} ${t('entity.location')} ${name}` : `${head} ${t('phrase.aFem')} ${t('entity.location')}`;
+    }
+    case 'technique': {
+      // Accept "técnica" or "tecnica" and optionally "maldita"
+      const name = extractAfter(summary, /t[eé]cnica(?:\s+maldita)?\s+(.+)$/i);
+      return name ? `${head} ${t('grammar.femArt')} ${t('entity.technique')} ${name}` : `${head} ${t('grammar.femArt')} ${t('entity.technique')}`;
+    }
+    default:
+      return summary ? `${head} ${summary}` : head;
   }
-  if (e.entity === 'curse') {
-    // Acepta variantes con y sin acento (maldición / maldicion)
-    const name = extractAfter(summary, /maldici[oó]n\s+(.+)$/i) || extractAfter(summary, /maldicion\s+(.+)$/i);
-    return name ? `${head} la ${t('entity.curse')} ${name}` : `${head} ${t('phrase.aFem')} ${t('entity.curse')}`;
-  }
-  // mission
-  const m = summary.match(/(atiende|que atendía)\s+(.+)$/i);
-  if (m && m[2]) {
-    const curseName = m[2];
-    return `${head} ${t('phrase.aFem')} ${t('entity.mission')} ${t('phrase.thatAttends')} ${curseName}`;
-  }
-  return `${head} ${t('phrase.aFem')} ${t('entity.mission')}`;
 }
