@@ -1,3 +1,10 @@
+/**
+ * @fileoverview Location management page component.
+ * Provides full CRUD interface for mission locations (Ubicaciones) with sortable table,
+ * modal forms, and permission-based access control.
+ * @module pages/locations/LocationsPage
+ */
+
 import { useMemo, useState } from 'react';
 import { useLocations } from '../../hooks/useLocations';
 import type { PagedResponse } from '../../api/pagedApi';
@@ -17,12 +24,47 @@ import { useAuth } from '../../hooks/useAuth';
 import { canMutate as canMutateByRole } from '../../utils/permissions';
 import { t } from '../../i18n';
 
+/**
+ * Zod validation schema for location form.
+ * Validates that location name is at least 2 characters.
+ */
 const schema = z.object({
   nombre: z.string().min(2, t('form.validation.nameTooShort')),
 });
 
 type FormValues = z.infer<typeof schema>;
 
+/**
+ * LocationsPage component - Main UI for managing mission locations.
+ *
+ * **Features**:
+ * - Displays locations in a sortable table (ID, Nombre)
+ * - Create/Edit modal form with validation
+ * - Delete confirmation dialog
+ * - Permission-based UI (mutation buttons hidden for unauthorized users)
+ * - Loading states with skeletons
+ * - Empty state when no locations exist
+ * - Toast notifications for success/error feedback
+ *
+ * **Permission Model**:
+ * - Support users: Full CRUD access
+ * - High-rank sorcerers (alto, especial): Full CRUD access
+ * - Low-rank sorcerers & observers: Read-only (buttons hidden, server returns 403)
+ *
+ * **State Management**:
+ * - `editId`: ID of location being edited (null for create mode)
+ * - `showForm`: Controls modal visibility
+ * - `deleteId`: ID of location pending deletion
+ * - `sortKey` & `sortDir`: Current table sort configuration
+ *
+ * @returns JSX.Element The rendered locations management page
+ *
+ * @example
+ * ```tsx
+ * // Used in routing configuration
+ * <Route path="/locations" element={<LocationsPage />} />
+ * ```
+ */
 export const LocationsPage = () => {
   const { list, create, update, remove } = useLocations();
   const { user } = useAuth();
@@ -38,16 +80,33 @@ export const LocationsPage = () => {
     defaultValues: { nombre: '' },
   });
 
+  /**
+   * Opens the create modal with empty form.
+   * Resets form state and sets editId to null to indicate create mode.
+   */
   const openCreate = () => {
     setEditId(null);
     reset({ nombre: '' });
     setShowForm(true);
   };
+
+  /**
+   * Opens the edit modal for an existing location.
+   * Populates form with current location data.
+   *
+   * @param l - The location to edit
+   */
   const startEdit = (l: Location) => {
     setEditId(l.id);
     reset({ nombre: l.nombre });
     setShowForm(true);
   };
+
+  /**
+   * Handles form submission for both create and update operations.
+   * Shows success toast on completion or error toast on failure.
+   * Automatically closes modal after successful submission.
+   */
   const onSubmit = handleSubmit(async (values) => {
     try {
       const payload = { nombre: values.nombre };
@@ -63,6 +122,12 @@ export const LocationsPage = () => {
       toast.error(t('toast.saveError'));
     }
   });
+
+  /**
+   * Confirms and executes location deletion.
+   * Shows success toast on completion or error toast on failure.
+   * Clears deleteId state after operation.
+   */
   const confirmDelete = async () => {
     if (deleteId) {
       try {
@@ -75,6 +140,11 @@ export const LocationsPage = () => {
     }
   };
 
+  /**
+   * Memoized sorted locations array.
+   * Extracts items from paged response and applies current sort configuration.
+   * Supports sorting by any Location field (id, nombre) in ascending or descending order.
+   */
   const sortedData = useMemo(() => {
     const base: Location[] = Array.isArray(list.data)
       ? list.data as Location[]
@@ -89,6 +159,13 @@ export const LocationsPage = () => {
     });
   }, [list.data, sortKey, sortDir]);
 
+  /**
+   * Toggles sort direction or changes sort column.
+   * If clicking the same column, toggles asc/desc.
+   * If clicking a new column, sorts by that column in ascending order.
+   *
+   * @param key - The location field to sort by
+   */
   const toggleSort = (key: keyof Location) => {
     if (sortKey === key) setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
     else { setSortKey(key); setSortDir('asc'); }

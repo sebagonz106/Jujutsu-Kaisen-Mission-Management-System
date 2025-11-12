@@ -45,11 +45,14 @@ export function formatAuditLine(e: AuditEntry): string {
       return `${head} ${t('phrase.aFem')} ${t('entity.mission')}`;
     }
     case 'location': {
+      // Extract location name from summary like "ubicación Tokyo" or "ubicacion Kyoto"
+      // Supports both accented (ubicación) and unaccented (ubicacion) forms
       const name = extractAfter(summary, /ubicación\s+(.+)$/i) || extractAfter(summary, /ubicacion\s+(.+)$/i);
       return name ? `${head} ${t('grammar.femArt')} ${t('entity.location')} ${name}` : `${head} ${t('phrase.aFem')} ${t('entity.location')}`;
     }
     case 'technique': {
-      // Accept "técnica" or "tecnica" and optionally "maldita"
+      // Extract technique name from summary like "técnica Limitless" or "tecnica maldita Domain Expansion"
+      // Regex accepts "técnica" or "tecnica" with optional "maldita" modifier
       const name = extractAfter(summary, /t[eé]cnica(?:\s+maldita)?\s+(.+)$/i);
       return name ? `${head} ${t('grammar.femArt')} ${t('entity.technique')} ${name}` : `${head} ${t('grammar.femArt')} ${t('entity.technique')}`;
     }

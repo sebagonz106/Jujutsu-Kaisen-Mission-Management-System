@@ -1,3 +1,10 @@
+/**
+ * @fileoverview Cursed Techniques management page component.
+ * Provides full CRUD interface for cursed techniques (Técnicas Malditas) with sortable table,
+ * modal forms with effectiveness validation, and permission-based access control.
+ * @module pages/techniques/TechniquesPage
+ */
+
 import { useMemo, useState } from 'react';
 import { useTechniques } from '../../hooks/useTechniques';
 import type { PagedResponse } from '../../api/pagedApi';
@@ -19,6 +26,14 @@ import { useAuth } from '../../hooks/useAuth';
 import { canMutate as canMutateByRole } from '../../utils/permissions';
 import { t } from '../../i18n';
 
+/**
+ * Zod validation schema for cursed technique form.
+ * Validates:
+ * - nombre: At least 2 characters
+ * - tipo: Must be one of the valid technique types (amplificacion, dominio, restriccion, soporte)
+ * - efectividadProm: Float between 0-100 (optional, defaults to 0)
+ * - condicionesDeUso: String description of usage conditions (optional)
+ */
 const schema = z.object({
   nombre: z.string().min(2, t('form.validation.nameTooShort')),
   tipo: z.union([
@@ -33,6 +48,45 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
+/**
+ * TechniquesPage component - Main UI for managing cursed techniques.
+ *
+ * **Features**:
+ * - Displays techniques in a sortable table (ID, Nombre, Tipo, Efectividad, Condiciones)
+ * - Create/Edit modal form with validation
+ * - Effectiveness field with 0-100 range validation and step=0.1 precision
+ * - Technique type dropdown (amplificacion, dominio, restriccion, soporte)
+ * - Delete confirmation dialog
+ * - Permission-based UI (mutation buttons hidden for unauthorized users)
+ * - Loading states with skeletons
+ * - Empty state when no techniques exist
+ * - Toast notifications for success/error feedback
+ *
+ * **Validation Rules**:
+ * - Nombre: minimum 2 characters
+ * - Tipo: must be valid enum value
+ * - EfectividadProm: 0-100 float (validated both client and server-side)
+ * - Server returns 400 if efectividadProm out of range
+ *
+ * **Permission Model**:
+ * - Support users: Full CRUD access
+ * - High-rank sorcerers (alto, especial): Full CRUD access
+ * - Low-rank sorcerers & observers: Read-only (buttons hidden, server returns 403)
+ *
+ * **State Management**:
+ * - `editId`: ID of technique being edited (null for create mode)
+ * - `showForm`: Controls modal visibility
+ * - `deleteId`: ID of technique pending deletion
+ * - `sortKey` & `sortDir`: Current table sort configuration
+ *
+ * @returns JSX.Element The rendered techniques management page
+ *
+ * @example
+ * ```tsx
+ * // Used in routing configuration
+ * <Route path="/techniques" element={<TechniquesPage />} />
+ * ```
+ */
 export const TechniquesPage = () => {
   const { list, create, update, remove } = useTechniques();
   const { user } = useAuth();
@@ -48,16 +102,34 @@ export const TechniquesPage = () => {
     defaultValues: { nombre: '', tipo: TECHNIQUE_TYPE.amplificacion, efectividadProm: 0, condicionesDeUso: 'ninguna' },
   });
 
+  /**
+   * Opens the create modal with empty form.
+   * Resets form state with default values and sets editId to null for create mode.
+   */
   const openCreate = () => {
     setEditId(null);
     reset({ nombre: '', tipo: TECHNIQUE_TYPE.amplificacion, efectividadProm: 0, condicionesDeUso: 'ninguna' });
     setShowForm(true);
   };
+
+  /**
+   * Opens the edit modal for an existing technique.
+   * Populates form with current technique data.
+   *
+   * @param tq - The technique to edit
+   */
   const startEdit = (tq: Technique) => {
     setEditId(tq.id);
     reset({ nombre: tq.nombre, tipo: tq.tipo, efectividadProm: tq.efectividadProm, condicionesDeUso: tq.condicionesDeUso });
     setShowForm(true);
   };
+
+  /**
+   * Handles form submission for both create and update operations.
+   * Ensures efectividadProm defaults to 0 and condicionesDeUso defaults to 'ninguna' if not provided.
+   * Shows success toast on completion or error toast on failure (e.g., validation errors from server).
+   * Automatically closes modal after successful submission.
+   */
   const onSubmit = handleSubmit(async (values) => {
     try {
       const payload = { nombre: values.nombre, tipo: values.tipo, efectividadProm: values.efectividadProm ?? 0, condicionesDeUso: values.condicionesDeUso ?? 'ninguna' };
@@ -73,6 +145,12 @@ export const TechniquesPage = () => {
       toast.error(t('toast.saveError'));
     }
   });
+
+  /**
+   * Confirms and executes technique deletion.
+   * Shows success toast on completion or error toast on failure.
+   * Clears deleteId state after operation.
+   */
   const confirmDelete = async () => {
     if (deleteId) {
       try {
@@ -85,6 +163,11 @@ export const TechniquesPage = () => {
     }
   };
 
+  /**
+   * Memoized sorted techniques array.
+   * Extracts items from paged response and applies current sort configuration.
+   * Supports sorting by any Technique field in ascending or descending order.
+   */
   const sortedData = useMemo(() => {
     const base: Technique[] = Array.isArray(list.data)
       ? list.data as Technique[]
