@@ -92,4 +92,6 @@ export interface Curse {
 
   /** Location of curse appearance (simplified string until Ubicacion model is implemented). */
   ubicacionDeAparicion: string;
+  /** Related location ID (strict select). */
+  ubicacionId?: number;
 }

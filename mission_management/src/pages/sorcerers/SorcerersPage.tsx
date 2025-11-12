@@ -38,7 +38,7 @@ const schema = z.object({
     z.literal(SORCERER_STATUS.baja),
     z.literal(SORCERER_STATUS.inactivo),
   ]),
-  tecnicaPrincipal: z.string().optional(),
+  tecnicaPrincipalId: z.coerce.number().int().positive().optional(),
 });
 type FormValues = z.infer<typeof schema>;
 
@@ -67,13 +67,13 @@ export const SorcerersPage = () => {
       grado: SORCERER_GRADE.estudiante,
       experiencia: 0,
       estado: SORCERER_STATUS.activo,
-      tecnicaPrincipal: '',
+      tecnicaPrincipalId: undefined,
     },
   });
 
   const openCreate = () => {
     setEditId(null);
-    reset({ name: '', grado: SORCERER_GRADE.estudiante, experiencia: 0, estado: SORCERER_STATUS.activo, tecnicaPrincipal: '' });
+    reset({ name: '', grado: SORCERER_GRADE.estudiante, experiencia: 0, estado: SORCERER_STATUS.activo, tecnicaPrincipalId: undefined });
     setShowForm(true);
   };
   const startEdit = (s: Sorcerer) => {
@@ -83,7 +83,7 @@ export const SorcerersPage = () => {
       grado: s.grado,
       experiencia: s.experiencia,
       estado: s.estado,
-      tecnicaPrincipal: s.tecnicaPrincipal ?? '',
+      tecnicaPrincipalId: s.tecnicaPrincipalId,
     });
     setShowForm(true);
   };
@@ -235,10 +235,10 @@ export const SorcerersPage = () => {
             <Select label={t('form.labels.state')} {...register('estado')}>
             {Object.values(SORCERER_STATUS).map((s) => <option key={s} value={s}>{s}</option>)}
           </Select>
-            <Select label={t('form.labels.mainTechnique')} {...register('tecnicaPrincipal')}>
+            <Select label={t('form.labels.mainTechnique')} {...register('tecnicaPrincipalId', { valueAsNumber: true })}>
               <option value="">{t('ui.selectPlaceholder')}</option>
               {techniqueItems.map((t) => (
-                <option key={t.id} value={t.nombre}>{t.nombre}</option>
+                <option key={t.id} value={t.id}>{t.nombre}</option>
               ))}
             </Select>
         </form>

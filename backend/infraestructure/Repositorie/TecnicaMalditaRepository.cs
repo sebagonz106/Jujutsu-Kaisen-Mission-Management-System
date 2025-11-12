@@ -15,6 +15,19 @@ public class TecnicaMalditaRepository : ITecnicaMalditaRepository
     public async Task<IEnumerable<TecnicaMaldita>> GetAllAsync()
         => await _context.TecnicasMalditas.ToListAsync();
 
+    public async Task<List<TecnicaMaldita>> GetPagedAsync(int? cursor, int limit)
+    {
+        var query = _context.TecnicasMalditas.AsQueryable();
+        if (cursor.HasValue)
+        {
+            query = query.Where(t => t.Id > cursor.Value);
+        }
+        return await query
+            .OrderBy(t => t.Id)
+            .Take(limit + 1) // fetch one extra to determine hasMore
+            .ToListAsync();
+    }
+
     public async Task<TecnicaMaldita?> GetByIdAsync(int id)
         => await _context.TecnicasMalditas
             .FirstOrDefaultAsync(t => t.Id == id);

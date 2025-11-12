@@ -23,7 +23,7 @@ import { useLocations } from '../../hooks/useLocations';
 
 const schema = z.object({
   nombre: z.string().min(2, t('form.validation.nameTooShort')),
-  ubicacionDeAparicion: z.string().min(2, t('form.validation.locationRequired')),
+  ubicacionId: z.coerce.number().int().positive(t('form.validation.locationRequired')).optional(),
   fechaYHoraDeAparicion: z.string(),
   grado: z.union([
     z.literal(CURSE_GRADE.grado_1),
@@ -67,7 +67,7 @@ export const CursesPage = () => {
     resolver: zodResolver(schema),
     defaultValues: {
       nombre: '',
-      ubicacionDeAparicion: '',
+      ubicacionId: undefined,
       grado: CURSE_GRADE.grado_1,
       tipo: CURSE_TYPE.maligna,
       estadoActual: CURSE_STATE.activa,
@@ -78,14 +78,14 @@ export const CursesPage = () => {
 
   const openCreate = () => {
     setEditId(null);
-    reset({ nombre: '', ubicacionDeAparicion: '', grado: CURSE_GRADE.grado_1, tipo: CURSE_TYPE.maligna, estadoActual: CURSE_STATE.activa, nivelPeligro: CURSE_DANGER_LEVEL.bajo, fechaYHoraDeAparicion: new Date().toISOString() });
+    reset({ nombre: '', ubicacionId: undefined, grado: CURSE_GRADE.grado_1, tipo: CURSE_TYPE.maligna, estadoActual: CURSE_STATE.activa, nivelPeligro: CURSE_DANGER_LEVEL.bajo, fechaYHoraDeAparicion: new Date().toISOString() });
     setShowForm(true);
   };
   const startEdit = (c: Curse) => {
     setEditId(c.id);
     reset({
       nombre: c.nombre,
-      ubicacionDeAparicion: c.ubicacionDeAparicion,
+      ubicacionId: c.ubicacionId,
       grado: c.grado,
       tipo: c.tipo,
       estadoActual: c.estadoActual,
@@ -98,7 +98,8 @@ export const CursesPage = () => {
     try {
       const payload: Omit<Curse, 'id'> = {
         nombre: values.nombre,
-        ubicacionDeAparicion: values.ubicacionDeAparicion,
+        ubicacionDeAparicion: '', // backend mapper will ignore this when ubicacionId provided
+        ubicacionId: values.ubicacionId,
         grado: values.grado,
         tipo: values.tipo,
         estadoActual: values.estadoActual,
@@ -241,13 +242,13 @@ export const CursesPage = () => {
         <form id="curse-form" onSubmit={onSubmit} className="space-y-3">
           <Input label={t('form.curse.name')} placeholder={t('form.curse.name')} {...register('nombre')} />
           {errors.nombre && <p className="text-xs text-red-400">{errors.nombre.message}</p>}
-          <Select label={t('form.curse.location')} {...register('ubicacionDeAparicion')}>
+          <Select label={t('form.curse.location')} {...register('ubicacionId', { valueAsNumber: true })}>
             <option value="">{t('ui.selectPlaceholder')}</option>
             {locationItems.map((l) => (
-              <option key={l.id} value={l.nombre}>{l.nombre}</option>
+              <option key={l.id} value={l.id}>{l.nombre}</option>
             ))}
           </Select>
-          {errors.ubicacionDeAparicion && <p className="text-xs text-red-400">{errors.ubicacionDeAparicion.message}</p>}
+          {errors.ubicacionId && <p className="text-xs text-red-400">{errors.ubicacionId.message}</p>}
           <Select label={t('form.curse.grade')} {...register('grado')}>
             {Object.values(CURSE_GRADE).map((g) => <option key={g} value={g}>{g}</option>)}
           </Select>

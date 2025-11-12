@@ -10,6 +10,36 @@ import { apiClient } from './client';
 import { normalizePaged } from './pagedApi';
 import type { Curse } from '../types/curse';
 
+interface BackendUbicacion { id: number; nombre: string }
+interface BackendCurse {
+  id: number; nombre: string; fechaYHoraDeAparicion: string;
+  grado: Curse['grado']; tipo: Curse['tipo']; estadoActual: Curse['estadoActual']; nivelPeligro: Curse['nivelPeligro'];
+  ubicacionDeAparicion?: BackendUbicacion | string; // backend real = object; mock = string
+}
+
+function normalizeCurse(raw: BackendCurse): Curse {
+  const loc = raw.ubicacionDeAparicion;
+  let ubicacionId: number | undefined;
+  let ubicacionNombre: string = '';
+  if (typeof loc === 'object' && loc !== null) {
+    ubicacionId = (loc as BackendUbicacion).id;
+    ubicacionNombre = (loc as BackendUbicacion).nombre;
+  } else if (typeof loc === 'string') {
+    ubicacionNombre = loc;
+  }
+  return {
+    id: raw.id,
+    nombre: raw.nombre,
+    fechaYHoraDeAparicion: raw.fechaYHoraDeAparicion,
+    grado: raw.grado,
+    tipo: raw.tipo,
+    estadoActual: raw.estadoActual,
+    nivelPeligro: raw.nivelPeligro,
+    ubicacionDeAparicion: ubicacionNombre,
+    ubicacionId,
+  };
+}
+
 /**
  * Curse API methods.
  */
@@ -25,7 +55,8 @@ export const curseApi = {
     if (params?.cursor) qp.push(`cursor=${encodeURIComponent(String(params.cursor))}`);
     const qs = qp.length ? `?${qp.join('&')}` : '';
     const { data } = await apiClient.get(`/curses${qs}`);
-    return normalizePaged<Curse>(data, { limit: params?.limit });
+    const norm = normalizePaged<BackendCurse>(data, { limit: params?.limit });
+    return { ...norm, items: norm.items.map(normalizeCurse) };
   },
 
   /**
@@ -35,8 +66,8 @@ export const curseApi = {
    * @returns Promise resolving to the curse object.
    */
   async get(id: number): Promise<Curse> {
-    const { data } = await apiClient.get<Curse>(`/curses/${id}`);
-    return data;
+    const { data } = await apiClient.get<BackendCurse>(`/curses/${id}`);
+    return normalizeCurse(data);
   },
 
   /**
@@ -46,8 +77,17 @@ export const curseApi = {
    * @returns Promise resolving to the created curse with assigned ID.
    */
   async create(payload: Omit<Curse, 'id'>): Promise<Curse> {
-    const { data } = await apiClient.post<Curse>('/curses', payload);
-    return data;
+    const send: Record<string, unknown> = {
+      nombre: payload.nombre,
+      fechaYHoraDeAparicion: payload.fechaYHoraDeAparicion,
+      grado: payload.grado,
+      tipo: payload.tipo,
+      estadoActual: payload.estadoActual,
+      nivelPeligro: payload.nivelPeligro,
+      ubicacionDeAparicion: payload.ubicacionId ? { id: payload.ubicacionId } : null,
+    };
+    const { data } = await apiClient.post<BackendCurse>('/curses', send);
+    return normalizeCurse(data);
   },
 
   /**
@@ -57,9 +97,13 @@ export const curseApi = {
    * @param payload - Partial curse data to update.
    * @returns Promise resolving to the updated curse.
    */
-  async update(id: number, payload: Partial<Omit<Curse, 'id'>>): Promise<Curse> {
-    const { data } = await apiClient.put<Curse>(`/curses/${id}`, payload);
-    return data;
+  async update(id: number, payload: Partial<Omit<Curse, 'id'>>): Promise<void> {
+    const send: Record<string, unknown> = { ...payload };
+    if (Object.prototype.hasOwnProperty.call(payload, 'ubicacionId')) {
+      send.ubicacionDeAparicion = payload.ubicacionId ? { id: payload.ubicacionId } : null;
+      delete (send as Record<string, unknown>).ubicacionId;
+    }
+    await apiClient.put(`/curses/${id}`, send);
   },
 
   /**

@@ -19,6 +19,19 @@ namespace GestionDeMisiones.Repository
             return await _context.Ubicaciones.ToListAsync();
         }
 
+        public async Task<List<Ubicacion>> GetPagedAsync(int? cursor, int limit)
+        {
+            var query = _context.Ubicaciones.AsQueryable();
+            if (cursor.HasValue)
+            {
+                query = query.Where(u => u.Id > cursor.Value);
+            }
+            return await query
+                .OrderBy(u => u.Id)
+                .Take(limit + 1) // fetch one extra to calculate hasMore
+                .ToListAsync();
+        }
+
         public async Task<Ubicacion?> GetByIdAsync(int id)
         {
             return await _context.Ubicaciones.FindAsync(id);

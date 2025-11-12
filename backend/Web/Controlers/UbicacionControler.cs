@@ -16,8 +16,14 @@ namespace GestionDeMisiones.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Ubicacion>>> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] int? limit, [FromQuery] int? cursor)
         {
+            if (limit.HasValue || cursor.HasValue)
+            {
+                var lim = limit ?? 20;
+                var (items, nextCursor, hasMore) = await _service.GetPagedAsync(cursor, lim);
+                return Ok(new { items, nextCursor, hasMore });
+            }
             var ubicaciones = await _service.GetAllAsync();
             return Ok(ubicaciones);
         }

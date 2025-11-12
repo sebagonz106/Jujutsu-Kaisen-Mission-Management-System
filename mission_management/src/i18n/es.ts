@@ -187,7 +187,7 @@ export const es = {
       },
     },
     mission: {
-      locationId: 'ID de ubicación',
+      location: 'Ubicación',
       state: 'Estado',
       urgency: 'Urgencia',
       events: 'Eventos',

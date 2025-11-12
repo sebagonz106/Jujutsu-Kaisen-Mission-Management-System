@@ -59,4 +59,6 @@ export interface Sorcerer {
 
   /** Main cursed technique name (simplified). */
   tecnicaPrincipal?: string;
+  /** Related technique ID (strict select). */
+  tecnicaPrincipalId?: number;
 }

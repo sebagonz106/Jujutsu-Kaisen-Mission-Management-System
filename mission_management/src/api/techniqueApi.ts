@@ -8,6 +8,33 @@ import { apiClient } from './client';
 import { normalizePaged } from './pagedApi';
 import type { Technique, NewTechnique, TechniquePatch } from '../types/technique';
 
+// Backend TecnicaMaldita shape (PascalCase)
+interface BackendTechnique {
+  Id: number;
+  Nombre: string;
+  Tipo: Technique['tipo'];
+  EfectividadProm: number; // int in backend
+  CondicionesDeUso: string;
+}
+
+function normalizeTechnique(raw: BackendTechnique | Technique): Technique {
+  // Accept both PascalCase (backend) and camelCase (mock) shapes
+  if (isBackendTechnique(raw)) {
+    return {
+      id: raw.Id,
+      nombre: raw.Nombre,
+      tipo: raw.Tipo,
+      efectividadProm: raw.EfectividadProm,
+      condicionesDeUso: raw.CondicionesDeUso,
+    };
+  }
+  return raw as Technique;
+}
+
+function isBackendTechnique(v: unknown): v is BackendTechnique {
+  return typeof v === 'object' && v !== null && 'Id' in v && 'Nombre' in v && 'EfectividadProm' in v;
+}
+
 /**
  * Cursed Technique API client with CRUD operations.
  * All methods use the normalized pagination adapter for consistent response shapes.
@@ -39,7 +66,8 @@ export const techniqueApi = {
     if (params?.cursor) qp.push(`cursor=${encodeURIComponent(String(params.cursor))}`);
     const qs = qp.length ? `?${qp.join('&')}` : '';
     const { data } = await apiClient.get(`/techniques${qs}`);
-    return normalizePaged<Technique>(data, { limit: params?.limit });
+    const norm = normalizePaged<BackendTechnique>(data, { limit: params?.limit });
+    return { ...norm, items: norm.items.map(normalizeTechnique) };
   },
 
   /**
@@ -57,8 +85,8 @@ export const techniqueApi = {
    * ```
    */
   async get(id: number): Promise<Technique> {
-    const { data } = await apiClient.get<Technique>(`/techniques/${id}`);
-    return data;
+    const { data } = await apiClient.get<BackendTechnique>(`/techniques/${id}`);
+    return normalizeTechnique(data);
   },
 
   /**
@@ -84,8 +112,16 @@ export const techniqueApi = {
    * ```
    */
   async create(payload: NewTechnique): Promise<Technique> {
-    const { data } = await apiClient.post<Technique>('/techniques', payload);
-    return data;
+    // Backend expects integer for EfectividadProm
+    const send: BackendTechnique = {
+      Id: 0,
+      Nombre: payload.nombre,
+      Tipo: payload.tipo,
+      EfectividadProm: Math.round(payload.efectividadProm ?? 0),
+      CondicionesDeUso: payload.condicionesDeUso ?? 'ninguna',
+    };
+    const { data } = await apiClient.post<BackendTechnique>('/techniques', send);
+    return normalizeTechnique(data);
   },
 
   /**
@@ -104,9 +140,13 @@ export const techniqueApi = {
    * });
    * ```
    */
-  async update(id: number, payload: TechniquePatch): Promise<Technique> {
-    const { data } = await apiClient.put<Technique>(`/techniques/${id}`, payload);
-    return data;
+  async update(id: number, payload: TechniquePatch): Promise<void> {
+    const send: Partial<BackendTechnique> = {};
+    if (payload.nombre !== undefined) send.Nombre = payload.nombre;
+    if (payload.tipo !== undefined) send.Tipo = payload.tipo;
+    if (payload.efectividadProm !== undefined) send.EfectividadProm = Math.round(payload.efectividadProm);
+    if (payload.condicionesDeUso !== undefined) send.CondicionesDeUso = payload.condicionesDeUso ?? 'ninguna';
+    await apiClient.put(`/techniques/${id}`, send);
   },
 
   /**

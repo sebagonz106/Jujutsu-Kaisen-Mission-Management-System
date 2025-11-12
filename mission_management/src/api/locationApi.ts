@@ -8,6 +8,21 @@ import { apiClient } from './client';
 import { normalizePaged } from './pagedApi';
 import type { Location, NewLocation } from '../types/location';
 
+// Backend Ubicacion shape (PascalCase)
+interface BackendLocation { Id: number; Nombre: string }
+
+function normalizeLocation(raw: BackendLocation | Location): Location {
+  // Accept both PascalCase (backend) and camelCase (mock) shapes
+  if (isBackendLocation(raw)) {
+    return { id: raw.Id, nombre: raw.Nombre };
+  }
+  return raw as Location;
+}
+
+function isBackendLocation(v: unknown): v is BackendLocation {
+  return typeof v === 'object' && v !== null && 'Id' in v && 'Nombre' in v;
+}
+
 /**
  * Location API client with CRUD operations.
  * All methods use the normalized pagination adapter for consistent response shapes.
@@ -39,7 +54,8 @@ export const locationApi = {
     if (params?.cursor) qp.push(`cursor=${encodeURIComponent(String(params.cursor))}`);
     const qs = qp.length ? `?${qp.join('&')}` : '';
     const { data } = await apiClient.get(`/locations${qs}`);
-    return normalizePaged<Location>(data, { limit: params?.limit });
+    const norm = normalizePaged<BackendLocation>(data, { limit: params?.limit });
+    return { ...norm, items: norm.items.map(normalizeLocation) };
   },
 
   /**
@@ -56,8 +72,8 @@ export const locationApi = {
    * ```
    */
   async get(id: number): Promise<Location> {
-    const { data } = await apiClient.get<Location>(`/locations/${id}`);
-    return data;
+    const { data } = await apiClient.get<BackendLocation>(`/locations/${id}`);
+    return normalizeLocation(data);
   },
 
   /**
@@ -77,8 +93,9 @@ export const locationApi = {
    * ```
    */
   async create(payload: NewLocation): Promise<Location> {
+    // Send camelCase to keep compatibility with mock handlers and backend default camelCase serialization
     const { data } = await apiClient.post<Location>('/locations', payload);
-    return data;
+    return normalizeLocation(data as unknown as Location);
   },
 
   /**
@@ -98,7 +115,7 @@ export const locationApi = {
    */
   async update(id: number, payload: Partial<NewLocation>): Promise<Location> {
     const { data } = await apiClient.put<Location>(`/locations/${id}`, payload);
-    return data;
+    return normalizeLocation(data as unknown as Location);
   },
 
   /**
