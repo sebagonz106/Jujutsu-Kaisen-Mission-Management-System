@@ -32,14 +32,6 @@
 \titleformat{\section}{\large\bfseries}{\thesection}{1em}{}
 \titleformat{\subsection}{\normalsize\bfseries}{\thesubsection}{1em}{}
 
-\title{\textbf{Informe Integrador: Sistema de Gestión de Misiones} \\ \large Proyecto de Ingeniería de Software y Bases de Datos}
-\author{
-  Ronald Alfonso Pérez (\href{https://t.me/https://t.me/RAlfonsoP}{\textcolor{blue}{@RAlfonsoP}}),\\
-  Juan Carlos Carmenate Díaz (\href{https://t.me/Juank404}{\textcolor{blue}{@Juank404}}),\\
-  Sebastian González Alfonso (\href{https://t.me/sebagonz106}{\textcolor{blue}{@sebagonz106}}),\\
-  Abraham Rey Sánchez Amador (\href{https://t.me/AbrahamR_Sanchez}{\textcolor{blue}{@AbrahamR\_Sanchez}}).
-}
-\date{Curso 2025-2026}
 
 \begin{document}
 
@@ -87,7 +79,7 @@ Asignatura: Ingeniería de Software}\\[2cm]
 \textbf{Integrantes:}\\
 \begin{tabular}{lll}
 \textbf{Nombre y Apellidos} & \textbf{Grupo} & \textbf{Usuario Telegram} \\
-Ronald Alfonso Pérez & C-311 & (\href{https://t.me/https://t.me/RAlfonsoP}{\textcolor{blue}{@RAlfonsoP}}),\\
+Ronald Alfonso Pérez & C-311 & (\href{https://t.me/RAlfonsoP}{\textcolor{blue}{@RAlfonsoP}}),\\
 Juan Carlos Carmenate Díaz & C-311 & (\href{https://t.me/Juank404}{\textcolor{blue}{@Juank404}}),\\
 Sebastian González Alfonso & C-312 & (\href{https://t.me/sebagonz106}{\textcolor{blue}{@sebagonz106}}),\\
 Abraham Rey Sánchez Amador & C-312 & (\href{https://t.me/AbrahamR_Sanchez}{\textcolor{blue}{@AbrahamR\_Sanchez}}).
@@ -116,7 +108,7 @@ El presente informe documenta el proceso de análisis, diseño e implementación
 
 El sistema responde a la necesidad de centralizar y optimizar la gestión de entidades críticas del dominio: maldiciones, hechiceros, misiones, recursos, técnicas malditas, traslados y ubicaciones. Proporciona una plataforma integral que permite desde el registro inicial de amenazas hasta la generación de reportes analíticos avanzados sobre efectividad operativa. La complejidad del dominio se caracteriza por relaciones jerárquicas entre hechiceros, múltiples estados de entidades, restricciones de asignación basadas en compatibilidad de grados y seguimiento detallado de técnicas malditas aplicadas durante las misiones. Esta complejidad inherente requiere un diseño meticuloso que garantice consistencia referencial, escalabilidad horizontal y rendimiento óptimo bajo cargas concurrentes.
 
-Desde la perspectiva tecnológica, el sistema implementa una arquitectura en capas de cinco niveles claramente diferenciados: \textbf{Core} (modelos de dominio con lógica de negocio), \textbf{Infraestructura} (repositorios con acceso a datos), \textbf{Aplicación} (servicios con orquestación de lógica), \textbf{Web} (controladores REST con validación) y \textbf{Frontend} (interfaz de intercambio con el usuario). El backend se construye con \textbf{ASP.NET Core 9.0} utilizando \textbf{Entity Framework Core 9.0.9} como ORM sobre \textbf{SQL Server}, garantizando transacciones ACID y migraciones versionadas. El frontend utiliza \textbf{React 19.1} con \textbf{TypeScript 5.6+} para seguridad de tipos, \textbf{React Hook Form 7.53 + Zod 3.23} para validación de formularios, y \textbf{Tailwind CSS 4.1} con PostCSS para estilización modular. La autenticación se implementa mediante \textbf{JWT (JSON Web Tokens)} con BCrypt para hashing de contraseñas, y CORS configurado para permitir comunicación segura entre frontend (puerto 5173) y backend (puerto 5189).
+Desde la perspectiva tecnológica, el sistema implementa una arquitectura en capas de cinco niveles claramente diferenciados: Core (modelos de dominio), Infraestructura (repositorios), Aplicación (servicios), Web (controladores REST) y Frontend (interfaz de usuario). El backend utiliza ASP.NET Core con Entity Framework sobre SQL Server, mientras que el frontend emplea React con TypeScript, integrándose mediante API REST con autenticación JWT y comunicación CORS configurada.
 
 El alcance de este informe abarca la especificación detallada de requerimientos específicos de la aplicación, una descripción completa de la arquitectura del sistema en 5 capas con justificación de patrones aplicados, un análisis del modelo de datos y la exposición del enfoque metodológico basado en desarrollo incremental con integración continua y organización en subequipos especializados.
 
@@ -172,7 +164,7 @@ El sistema permite ejecutar las siguientes operaciones críticas del negocio:
 
 El sistema es una aplicación web centralizada de tipo cliente-servidor que opera bajo el paradigma REST para comunicación frontend-backend. Actúa como el núcleo operativo para todas las actividades relacionadas con gestión de misiones, reemplazando métodos manuales o dispersos de coordinación y proporcionando una fuente única de verdad (single source of truth) para datos operativos críticos.
 
-Está diseñado para atender cuatro perfiles diferenciados:
+Está diseñado para atender tres perfiles diferenciados:
   \begin{itemize}
   	\item \textbf{Supervisores/Administradores}: Personal responsable de mantener la consistencia global del sistema y de gestionar la asignación y la evolución profesional de los hechiceros. Disponen de vistas ejecutivas consolidadas, capacidades de análisis multidimensional y privilegios administrativos para garantizar la gobernanza y la integridad del sistema.
   	\item \textbf{Hechiceros Operativos}: Usuarios de campo cuya función principal es ejecutar misiones, registrar resultados en terreno y consultar información operativa. Además, incorporan un conjunto de capacidades de gestión relacionadas con asignación y evolución de personal: pueden solicitar o proponer reasignaciones, actualizar su perfil de competencia y, según su nivel, ejecutar acciones de asignación o evaluación sobre personal de menor grado.
@@ -203,7 +195,7 @@ Pueden identificarse como restricciones generales:
 
 \subsection{Requerimientos Funcionales}
 
-Los requerimientos funcionales se prsentan clasificados en dos categorías según su estado de implementación: \textbf{Implementados} (funcionalidades CRUD core completadas) y \textbf{En Desarrollo} (consultas analíticas y reportes avanzados).
+Los requerimientos funcionales se presentan clasificados en dos categorías según su estado de implementación: \textbf{Implementados} (funcionalidades CRUD core completadas) y \textbf{En Desarrollo} (consultas analíticas y reportes avanzados).
 
 \subsubsection{Requerimientos Funcionales Implementados}
 
@@ -222,7 +214,7 @@ RF-01 & Gestión de Maldiciones & Registrar, actualizar, consultar y eliminar ma
 \hline
 RF-02 & Gestión de Hechiceros & Mantener registro completo de hechiceros con información completa\\
 \hline
-RF-03 & Gestión de Técnicas Malditas & Catálogo de técnicas malditas con su respectiva informaccion. Registro de dominio de técnicas por hechicero.\\
+RF-03 & Gestión de Técnicas Malditas & Catálogo de técnicas malditas con su respectiva información. Registro de dominio de técnicas por hechicero.\\
 \hline
 RF-04 & Creación y Asignación de Misiones & Generar misiones asociadas a maldiciones activas especificando ubicación y nivel de urgencia, asignando hechiceros participantes y supervisores.\\
 \hline
@@ -230,7 +222,7 @@ RF-05 & Seguimiento de Estado de Misiones & Actualizar en tiempo real el estado 
 \hline
 RF-06 & Gestión de Ubicaciones & Administrar ubicaciones geoespaciales donde ocurren misiones y aparecen maldiciones.\\
 \hline
-RF-07 & Registro de Traslados & Documentar traslados de hechiceros entre ubicacione.\\
+RF-07 & Registro de Traslados & Documentar traslados de hechiceros entre ubicaciones.\\
 \hline
 RF-08 & Gestión de Recursos & Administrar inventario de recursos materiales y registrar uso de recursos en misiones específicas con cantidades y fechas.\\
 \hline
@@ -355,10 +347,9 @@ RF-19 & Exportación de Reportes a PDF & Funcionalidad transversal que permita e
 
 \item \textbf{RNF-D03 - Arquitectura de Software}:
 \begin{itemize}
-	\item Patrón en capas con 5 niveles (Core, Infraestructura, Aplicación, Web, Frontend) con separación estricta de responsabilidades
+	\item Arquitectura en capas de 5 niveles con separación de responsabilidades (ver Sección 6 para descripción detallada)
 	\item Inyección de dependencias nativa de ASP.NET Core con registro de servicios como Scoped
-	\item Patrón Repository para abstracción de acceso a datos con interfaces \texttt{I*Repository}
-	\item Patrón Service Layer para orquestación de lógica de negocio con interfaces \texttt{I*Service}
+	\item Patrones Repository y Service Layer para abstracción de persistencia y lógica de negocio
 \end{itemize}
 
 \item \textbf{RNF-D04 - Control de Versiones}:
@@ -371,7 +362,7 @@ RF-19 & Exportación de Reportes a PDF & Funcionalidad transversal que permita e
 
 \item \textbf{RNF-D05 - Testing}:
   \begin{itemize}
-  \item Infraestructura de testing frontend configurada con Vitest + React Testing Library + jsdom 27.1.0
+  \item Infraestructura de testing frontend configurada con Vitest + React Testing Library + jsdom 27.1.0, con implementación pendiente.
   \item Mock Service Worker (MSW 2.6.7) configurado para burlar llamadas API durante desarrollo
   \end{itemize}
 \end{itemize}
@@ -429,25 +420,92 @@ RF-19 & Exportación de Reportes a PDF & Funcionalidad transversal que permita e
 \item \textbf{SQL Server Management Studio}: 19+ para administración de BD en desarrollo
 \end{itemize}
 
+
 % ===== IV. FUNCIONALIDADES DEL PRODUCTO =====
 \section{Funcionalidades del Producto}
 
 \subsection{Diagrama de Casos de Uso}
-% \includegraphics[width=\textwidth]{diagrama-casos-uso.png} % Reemplaza con tu diagrama
+
+\begin{figure}[H]
+	\centering
+	
+	\includegraphics[height = 9cm, width=\textwidth]{use}
+	% --- Leyenda general de la figura ---
+	\caption{Diagrama de casos de uso}
+	\label{fig:use}
+	
+\end{figure}
 
 \subsection{Descripción de Actores}
 \begin{itemize}[left=0pt]
-\item \textbf{Supervisor}: Asigna misiones, genera reportes, gestiona hechiceros
-\item \textbf{Hechicero}: Consulta misiones asignadas, registra resultados, actualiza estado
-\item \textbf{Personal de Apoyo}: Gestiona traslados, recursos y logística
-\item \textbf{Sistema}: Procesos automáticos (notificaciones, generación de solicitudes)
+\item \textbf{Administrador/Soporte}: Rol administrativo del sistema responsable de mantener la integridad operativa de la plataforma. Gestiona usuarios, asigna y supervisa misiones críticas, genera reportes analíticos ejecutivos, administra el catálogo de hechiceros (altas, bajas, reasignaciones de grado), y configura parámetros globales del sistema. Tiene acceso completo a todas las funcionalidades CRUD y capacidad de auditoría sobre operaciones realizadas por otros roles. Actúa como supervisor estratégico de operaciones.
+
+\item \textbf{Hechicero}: Actor operativo que ejecuta misiones de exorcismo. Consulta misiones asignadas con detalles de ubicación y maldición objetivo, actualiza el estado de su participación en misiones activas, registra técnicas malditas aplicadas durante combates con nivel de efectividad, reporta eventos ocurridos y daños colaterales, y visualiza su historial de misiones con estadísticas de desempeño. Puede actualizar información de su perfil profesional (técnicas dominadas, estado operativo).
+
+\item \textbf{Personal de Apoyo}: Especialista en logística y coordinación operativa. Registra y gestiona traslados de hechiceros entre ubicaciones con seguimiento en tiempo real, administra inventario de recursos materiales y documenta su uso en misiones específicas, actualiza estado de disponibilidad de recursos y personal, coordina llegadas y salidas durante operaciones, y marca formalmente el fin de misiones para habilitar reportes post-operativos.
+
+\item \textbf{Sistema}: Actor automático que ejecuta procesos sin intervención humana. Genera solicitudes de misión automáticamente cuando se detecta una nueva maldición activa, envía notificaciones a hechiceros sobre asignaciones y cambios de estado, calcula métricas de efectividad y estadísticas de desempeño, valida restricciones de negocio (compatibilidad de grados, disponibilidad de hechiceros), y mantiene logs de auditoría con timestamp para trazabilidad completa de operaciones críticas.
 \end{itemize}
 
 \subsection{Prototipos de Interfaz}
-% Incluir aquí imágenes de los prototipos
-\begin{center}
-% \includegraphics[width=0.8\textwidth]{prototipo-dashboard.png}
-\end{center}
+
+
+\begin{figure}[H]
+	\centering
+	
+	% --- Subfigura (a) ---
+	\begin{subfigure}[b]{0.425\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{login.png}
+		\caption{Login}
+		\label{fig:login}
+	\end{subfigure}
+	\hfill
+	% --- Subfigura (b) ---
+	\begin{subfigure}[b]{0.4\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{create.png}
+		\caption{Creación de nuevas entidades}
+		\label{fig:create}
+	\end{subfigure}
+	
+	% --- Leyenda general de la figura ---
+	\caption{Prototipos de interfaz interactiva}
+	\label{fig:interactiveInterface}
+	
+\end{figure}
+
+
+\begin{figure}[H]
+	\centering
+	
+	% --- Subfigura (a) ---
+	\begin{subfigure}[b]{\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{view.png}
+		\caption{Vista de entidades existentes con opciones}
+		\label{fig:view}
+	\end{subfigure}
+	% --- Subfigura (b) ---
+	\begin{subfigure}[b]{\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{recent.png}
+		\caption{Panel de acciones recientes}
+		\label{fig:recent}
+	\end{subfigure}
+	
+	% --- Leyenda general de la figura ---
+	\caption{Prototipos de interfaz visual}
+	\label{fig:visualInterface}
+	
+\end{figure}
+
+
+
+
+
+
+
 
 % ===== V. ENFOQUE METODOLÓGICO =====
 \section{Enfoque Metodológico}
@@ -581,9 +639,7 @@ El equipo de 4 integrantes se organizó en dos subequipos especializados trabaja
 
 \subsection{Justificación del Enfoque}
 
-La metodología híbrida adoptada combina prácticas ágiles con planificación iterativa para adaptarse al contexto académico y al tamaño reducido del equipo. Los sprints de dos semanas se alinearon con la disponibilidad del equipo y el calendario de evaluaciones y el intercambio realizado en cada conclusión fue suficiente para garantizar la coordinación. La división en subequipos (backend/frontend), sustentada por contratos REST bien definidos, permitió la paralelización efectiva del trabajo y maximizó los resultados del equipo.
-
-La gestión de riesgos se realizó mediante desarrollo incremental y validación temprana de decisiones arquitectónicas —por ejemplo, la implementación de autenticación JWT en Sprints 5–6 y la paginación en Sprints 9–10— lo que redujo trabajos repetidos costosos. La metodología facilitó además la incorporación de aprendizajes durante el desarrollo y promovió la calidad incremental a través de revisiones de código y actualizaciones continuas para mantener la deuda técnica bajo control. En conjunto, esta combinación resultó adecuada para un proyecto académico como el presente que busca equilibrar aprendizaje, trabajo en equipo distribuido y entrega de un producto funcional con arquitectura sólida.
+La metodología híbrida adoptada combina prácticas ágiles con planificación iterativa para adaptarse al contexto académico y al tamaño reducido del equipo. Los sprints de dos semanas se alinearon con la disponibilidad del equipo y el calendario de evaluaciones, mientras que la división en subequipos (backend/frontend), sustentada por contratos REST bien definidos, permitió la paralelización efectiva del trabajo. La gestión de riesgos mediante desarrollo incremental y validación temprana de decisiones arquitectónicas redujo trabajos repetidos costosos, promoviendo la calidad incremental y manteniendo la deuda técnica bajo control.
 
 
 
@@ -641,10 +697,10 @@ El sistema de Gestión de Misiones implementa una arquitectura en capas (N-Layer
     \end{itemize}
 
 \item \textbf{Capa Frontend (Interfaz de Usuario)}:
-  Proporciona una interfaz de usuario reactiva y responsiva, gestiona el estado del cliente, realiza validaciones de entradas, y se comunica con el backend mediante API REST. Depende de la capa Web y de las teconologías enumeradas en secciones anteriores. Tiene una Component-Based Architecture con separación de responsabilidades mediante contenedores/presentadores. El flujo de datos comienza con la interacción del usuario con un componente, tras lo que React Hook Form valida los datos con esquema Zod y de ser validados, invoca la función de la API correspondiente; el cliente Axios envía el request al backend, que lo procesa, revalida, persiste en la BD, y devuelve una respuesta que es mostrada por la UI mediante un toast de éxito o error. Se caracteiza por:
+  Proporciona una interfaz de usuario reactiva y responsiva, gestiona el estado del cliente, realiza validaciones de entradas, y se comunica con el backend mediante API REST. Depende de la capa Web y de las tecsnologías enumeradas en secciones anteriores. Tiene una Component-Based Architecture con separación de responsabilidades mediante contenedores/presentadores. El flujo de datos comienza con la interacción del usuario con un componente, tras lo que React Hook Form valida los datos con esquema Zod y de ser validados, invoca la función de la API correspondiente; el cliente Axios envía el request al backend, que lo procesa, revalida, persiste en la BD, y devuelve una respuesta que es mostrada por la UI mediante un toast de éxito o error. Se caracteriza por:
     \begin{itemize}
     \item SPA (Single Page Application) con client-side routing sin recargas completas de página
-    \item Actualizaciones optiistas de la UI ante acciones del usuario mientras el request está siendo procesado.
+    \item Actualizaciones optimistas de la UI ante acciones del usuario mientras el request está siendo procesado.
     \item Limita errores para prevenir fallos de la aplicación completa ante errores de componentes individuales
     \item Cargado perezoso de rutas con React.lazy + Suspense para reducir el tamaño de carga inicial
     \end{itemize}
@@ -655,6 +711,16 @@ El sistema de Gestión de Misiones implementa una arquitectura en capas (N-Layer
 
 \subsection{Diagrama de la Arquitectura}
 
+
+\begin{figure}[H]
+	\centering
+	
+	\includegraphics[width=\textwidth]{diagram}
+	% --- Leyenda general de la figura ---
+	\caption{Diagrama de la arquitectura}
+	\label{fig:diagram}
+	
+\end{figure}
 
 
 \subsection{Justificación de la selección}
@@ -689,7 +755,7 @@ La arquitectura en capas de cinco niveles fue seleccionada por las siguientes ra
 
 
 % ===== VII. PATRONES DE DISEÑO =====
-\section{Patrones de Diseño, Visualización y Datos}
+\section{Patrones de Diseño, Visualización y Datos \cite{fowler2002}}
 
 \subsection{Patrones Arquitectónicos}
 \begin{itemize}[left=0pt]
@@ -715,7 +781,7 @@ La arquitectura en capas de cinco niveles fue seleccionada por las siguientes ra
 \subsection{Patrones de Visualización}
 \begin{itemize}[left=0pt]
 	
-	\item \textbf{Container/Presenter (Smart/Dumb Components)}: Separación entre componentesn y contenedores que gestionan el estado y la lógica (ej: \texttt{MissionsPage} con \texttt{useQuery}) y componentes de presentación puros que solo renderizan (ej: \texttt{MissionList} que recibe array de misiones y callbacks).
+	\item \textbf{Container/Presenter (Smart/Dumb Components)}: Separación entre componentes y contenedores que gestionan el estado y la lógica (ej: \texttt{MissionsPage} con \texttt{useQuery}) y componentes de presentación puros que solo renderizan (ej: \texttt{MissionList} que recibe array de misiones y callbacks).
 	
 	\item \textbf{Higher-Order Components (HOC)}: \texttt{ProtectedRoute} y \texttt{RoleGuard} envuelven componentes añadiendo lógica de autorización sin modificar componentes internos.
 	
@@ -831,7 +897,7 @@ Para obtener la descomposición $\rho$ en 3FN del esquema relacional $R(U, F)$, 
 
 \subsubsection{Descomposición}
 
-$\rho = (R_i)_{1\leq i \leq15}$
+$\rho = (R_i)_{1\leq i \leq19}$
 
 \begin{itemize}[]
 	\item $R_1 = (U_1, F_1)$
@@ -1040,7 +1106,7 @@ El estado actual del sistema demuestra ser correcto, completo en su núcleo CRUD
 
 % ===== REFERENCIAS =====
 \begin{thebibliography}{9}
-\bibitem{garcia2005}
+\bibitem{lucina}
 García H, L. \& Montes de Oca R, M. (2005). \textit{Sistemas de Bases de Datos: Modelación y Diseño - Capítulos para estudiantes}. Versión digital.
 
 \bibitem{pressman2010}

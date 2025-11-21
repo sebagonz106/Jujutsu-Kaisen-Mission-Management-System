@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.9.12)  20 NOV 2025 08:39
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.9.12)  21 NOV 2025 16:58
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -808,26 +808,26 @@ LaTeX Info: Redefining \% on input line 11.
 )
 \openout1 = `Informe.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 44.
-LaTeX Font Info:    ... okay on input line 44.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 44.
-LaTeX Font Info:    ... okay on input line 44.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 44.
-LaTeX Font Info:    ... okay on input line 44.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 44.
-LaTeX Font Info:    ... okay on input line 44.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 44.
-LaTeX Font Info:    ... okay on input line 44.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 44.
-LaTeX Font Info:    ... okay on input line 44.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 44.
-LaTeX Font Info:    ... okay on input line 44.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 44.
-LaTeX Font Info:    ... okay on input line 44.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 44.
-LaTeX Font Info:    ... okay on input line 44.
-LaTeX Info: Redefining \. on input line 44.
-LaTeX Info: Redefining \% on input line 44.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 36.
+LaTeX Font Info:    ... okay on input line 36.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 36.
+LaTeX Font Info:    ... okay on input line 36.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 36.
+LaTeX Font Info:    ... okay on input line 36.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 36.
+LaTeX Font Info:    ... okay on input line 36.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 36.
+LaTeX Font Info:    ... okay on input line 36.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 36.
+LaTeX Font Info:    ... okay on input line 36.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 36.
+LaTeX Font Info:    ... okay on input line 36.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 36.
+LaTeX Font Info:    ... okay on input line 36.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 36.
+LaTeX Font Info:    ... okay on input line 36.
+LaTeX Info: Redefining \. on input line 36.
+LaTeX Info: Redefining \% on input line 36.
  (c:/texlive/2025/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
 \scratchcounter=\count355
@@ -850,7 +850,7 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 ))
-Package hyperref Info: Link coloring OFF on input line 44.
+Package hyperref Info: Link coloring OFF on input line 36.
 
 (./Informe.out) (./Informe.out)
 \@outlinefile=\write4
@@ -906,20 +906,20 @@ Package pdflscape Info: Auto-detected driver: pdftex on input line 81.
 ))
 Package caption Info: Begin \AtBeginDocument code.
 Package caption Info: End \AtBeginDocument code.
-LaTeX Info: Redefining \microtypecontext on input line 44.
-Package microtype Info: Applying patch `item' on input line 44.
-Package microtype Info: Applying patch `toc' on input line 44.
-Package microtype Info: Applying patch `eqnum' on input line 44.
-Package microtype Info: Applying patch `footnote' on input line 44.
-Package microtype Info: Applying patch `verbatim' on input line 44.
-LaTeX Info: Redefining \microtypesetup on input line 44.
+LaTeX Info: Redefining \microtypecontext on input line 36.
+Package microtype Info: Applying patch `item' on input line 36.
+Package microtype Info: Applying patch `toc' on input line 36.
+Package microtype Info: Applying patch `eqnum' on input line 36.
+Package microtype Info: Applying patch `footnote' on input line 36.
+Package microtype Info: Applying patch `verbatim' on input line 36.
+LaTeX Info: Redefining \microtypesetup on input line 36.
 Package microtype Info: Generating PDF output.
 Package microtype Info: Character protrusion enabled (level 2).
 Package microtype Info: Using default protrusion set `alltext'.
 Package microtype Info: Automatic font expansion enabled (level 2),
 (microtype)             stretch: 20, shrink: 20, step: 1, non-selected.
 Package microtype Info: Using default expansion set `alltext-nott'.
-LaTeX Info: Redefining \showhyphens on input line 44.
+LaTeX Info: Redefining \showhyphens on input line 36.
 Package microtype Info: No adjustment of tracking.
 Package microtype Info: No adjustment of interword spacing.
 Package microtype Info: No adjustment of character kerning.
@@ -931,12 +931,12 @@ File: mt-cmr.cfg 2013/05/19 v2.2 microtype config. file: Computer Modern Roman
 <media/logo.png, id=232, 770.88pt x 770.88pt>
 File: media/logo.png Graphic file (type png)
 <use media/logo.png>
-Package pdftex.def Info: media/logo.png  used on input line 62.
+Package pdftex.def Info: media/logo.png  used on input line 54.
 (pdftex.def)             Requested size: 184.37135pt x 184.36803pt.
 <media/logoMin.jpeg, id=234, 770.88pt x 770.88pt>
 File: media/logoMin.jpeg Graphic file (type jpg)
 <use media/logoMin.jpeg>
-Package pdftex.def Info: media/logoMin.jpeg  used on input line 70.
+Package pdftex.def Info: media/logoMin.jpeg  used on input line 62.
 (pdftex.def)             Requested size: 184.37135pt x 184.36803pt.
 
 
@@ -969,40 +969,63 @@ l.21 ...ncionalidades del Producto}{13}{section.4}
 [5{c:/texlive/2025/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc}]
 
 [6] [7]
-Underfull \hbox (badness 1253) in paragraph at lines 266--266
+Underfull \hbox (badness 1253) in paragraph at lines 258--258
 []|\OT1/cmr/m/n/12 (+20) Ranking de He-chi-ce-ros
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 268--268
+Underfull \hbox (badness 10000) in paragraph at lines 260--260
 []|\OT1/cmr/m/n/12 (+20) Jerarqu^^S^^Pa Hechicero-
  []
 
 [8]
-
-[9]
 Package microtype Info: Loading generic protrusion settings for font family
 (microtype)             `cmtt' (encoding: OT1).
 (microtype)             For optimal results, create family-specific settings.
 (microtype)             See the microtype manual for details.
 
 
+[9]
+
 [10]
-Overfull \hbox (3.85945pt too wide) in paragraph at lines 361--362
-[]\OT1/cmr/m/n/12 (-20) Patr^^Son Ser-vi-ce La-yer pa-ra or-ques-ta-ci^^Son de 
-l^^Sogi-ca de ne-go-cio con in-ter-fa-ces \OT1/cmtt/m/n/12 I*Service 
- []
-
-
 
 [11]
 
 [12]
+<media/use.png, id=364, 2032.59375pt x 1015.795pt>
+File: media/use.png Graphic file (type png)
+<use media/use.png>
+Package pdftex.def Info: media/use.png  used on input line 432.
+(pdftex.def)             Requested size: 455.23587pt x 256.0716pt.
 
-[13]
 
-[14]
-Overfull \hbox (18.82579pt too wide) in paragraph at lines 499--500
+[13 <./media/use.png (PNG copy)>]
+<media/login.png, id=370, 658.46pt x 637.38126pt>
+File: media/login.png Graphic file (type png)
+<use media/login.png>
+Package pdftex.def Info: media/login.png  used on input line 459.
+(pdftex.def)             Requested size: 193.48013pt x 187.28668pt.
+<media/create.png, id=371, 695.59875pt x 719.68875pt>
+File: media/create.png Graphic file (type png)
+<use media/create.png>
+Package pdftex.def Info: media/create.png  used on input line 467.
+(pdftex.def)             Requested size: 182.09486pt x 188.3995pt.
+<media/view.png, id=372, 1879.02pt x 417.56pt>
+File: media/view.png Graphic file (type png)
+<use media/view.png>
+Package pdftex.def Info: media/view.png  used on input line 485.
+(pdftex.def)             Requested size: 455.24411pt x 101.16579pt.
+<media/recent.png, id=373, 1604.99625pt x 330.23375pt>
+File: media/recent.png Graphic file (type png)
+<use media/recent.png>
+Package pdftex.def Info: media/recent.png  used on input line 492.
+(pdftex.def)             Requested size: 455.24411pt x 93.66911pt.
+
+
+[14 <./media/login.png> <./media/create.png>]
+
+[15 <./media/view.png> <./media/recent.png>]
+Overfull \hbox (18.82579pt too wide) in paragraph at lines 557--558
 []\OT1/cmtt/m/n/12 dev/*\OT1/cmr/m/n/12 (-20) : Ra-mas ef^^S^^Pme-ras pa-ra de-
 sa-rro-llo de fun-cio-na-li-da-des es-pec^^S^^Pfi-cas (ej: \OT1/cmtt/m/n/12 dev
 /auth-jwt\OT1/cmr/m/n/12 (-20) ,
@@ -1010,29 +1033,29 @@ sa-rro-llo de fun-cio-na-li-da-des es-pec^^S^^Pfi-cas (ej: \OT1/cmtt/m/n/12 dev
 
 
 
-[15]
+[16]
 LaTeX Font Info:    Trying to load font information for OMS+cmtt on input line 
-541.
-LaTeX Font Info:    No file OMScmtt.fd. on input line 541.
+599.
+LaTeX Font Info:    No file OMScmtt.fd. on input line 599.
 
 
 LaTeX Font Warning: Font shape `OMS/cmtt/m/n' undefined
 (Font)              using `OMS/cmsy/m/n' instead
-(Font)              for symbol `textbraceleft' on input line 541.
+(Font)              for symbol `textbraceleft' on input line 599.
 
 
-
-[16]
 
 [17]
-Overfull \hbox (27.74686pt too wide) in paragraph at lines 605--606
+
+[18]
+Overfull \hbox (27.74686pt too wide) in paragraph at lines 661--662
 []\OT1/cmr/m/n/12 (-20) Anotaciones de va-li-da-ci^^Son con Da-ta An-no-ta-tion
 s (\OT1/cmtt/m/n/12 [Required]\OT1/cmr/m/n/12 (-20) , \OT1/cmtt/m/n/12 [Range]\
 OT1/cmr/m/n/12 (-20) , \OT1/cmtt/m/n/12 [DataType]\OT1/cmr/m/n/12 (-20) ) 
  []
 
 
-Overfull \hbox (21.77933pt too wide) in paragraph at lines 607--608
+Overfull \hbox (21.77933pt too wide) in paragraph at lines 663--664
 []\OT1/cmr/m/n/12 (-20) Enumeraciones pa-ra es-ta-dos y ti-pos (ej: \OT1/cmtt/m
 /n/12 EEstadoMision\OT1/cmr/m/n/12 (-20) , \OT1/cmtt/m/n/12 EGrados\OT1/cmr/m/n
 /12 (-20) , \OT1/cmtt/m/n/12 ETipoMaldicion\OT1/cmr/m/n/12 (-20) ) 
@@ -1040,10 +1063,25 @@ Overfull \hbox (21.77933pt too wide) in paragraph at lines 607--608
 
 
 
-[18]
-
 [19]
-Overfull \hbox (33.42801pt too wide) in paragraph at lines 697--698
+
+[20]
+<media/diagram.jpg, id=421, 808.52063pt x 963.6pt>
+File: media/diagram.jpg Graphic file (type jpg)
+<use media/diagram.jpg>
+Package pdftex.def Info: media/diagram.jpg  used on input line 718.
+(pdftex.def)             Requested size: 455.24411pt x 542.5677pt.
+
+
+[21]
+
+[22 <./media/diagram.jpg>]
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `\@ifnextchar' on input line 758.
+
+
+Overfull \hbox (33.42801pt too wide) in paragraph at lines 763--764
 []\OT1/cmr/bx/n/12 (-20) Repository Pat-tern\OT1/cmr/m/n/12 (-20) : Abs-trac-ci
 ^^Son de ac-ce-so a da-tos con in-ter-fa-ces gen^^Seri-cas (\OT1/cmtt/m/n/12 IR
 epository<T>\OT1/cmr/m/n/12 (-20) )
@@ -1051,128 +1089,119 @@ epository<T>\OT1/cmr/m/n/12 (-20) )
 
 
 
-[20]
-
-[21]
-
-LaTeX Warning: Citation `lucina' on page 22 undefined on input line 741.
-
-<media/MERX.pdf, id=411, 845.07718pt x 597.19106pt>
+[23]
+<media/MERX.pdf, id=438, 845.07718pt x 597.19106pt>
 File: media/MERX.pdf Graphic file (type pdf)
 <use media/MERX.pdf>
-Package pdftex.def Info: media/MERX.pdf  used on input line 745.
+Package pdftex.def Info: media/MERX.pdf  used on input line 811.
 (pdftex.def)             Requested size: 845.07512pt x 597.1896pt.
-<media/MERX.pdf, id=413, page=1, 845.07718pt x 597.19106pt>
+<media/MERX.pdf, id=440, page=1, 845.07718pt x 597.19106pt>
 File: media/MERX.pdf Graphic file (type pdf)
 <use media/MERX.pdf, page 1>
-Package pdftex.def Info: media/MERX.pdf , page1 used on input line 745.
+Package pdftex.def Info: media/MERX.pdf , page1 used on input line 811.
 (pdftex.def)             Requested size: 845.07512pt x 597.1896pt.
 File: media/MERX.pdf Graphic file (type pdf)
 <use media/MERX.pdf, page 1>
-Package pdftex.def Info: media/MERX.pdf , page1 used on input line 745.
+Package pdftex.def Info: media/MERX.pdf , page1 used on input line 811.
 (pdftex.def)             Requested size: 597.55899pt x 422.27727pt.
 
 
-[22]
+[24]
 File: media/MERX.pdf Graphic file (type pdf)
 <use media/MERX.pdf, page 1>
-Package pdftex.def Info: media/MERX.pdf , page1 used on input line 745.
+Package pdftex.def Info: media/MERX.pdf , page1 used on input line 811.
 (pdftex.def)             Requested size: 597.55899pt x 422.27727pt.
 File: media/MERX.pdf Graphic file (type pdf)
 <use media/MERX.pdf, page 1>
-Package pdftex.def Info: media/MERX.pdf , page1 used on input line 745.
+Package pdftex.def Info: media/MERX.pdf , page1 used on input line 811.
 (pdftex.def)             Requested size: 597.55899pt x 422.27727pt.
 
 
 File: media/MERX.pdf Graphic file (type pdf)
 <use media/MERX.pdf, page 1>
-Package pdftex.def Info: media/MERX.pdf , page1 used on input line 745.
-(pdftex.def)             Requested size: 597.55899pt x 422.27727pt.
-[23
-
- <./media/MERX.pdf>]
-<media/MERX.pdf, id=432, page=2, 845.07718pt x 597.19106pt>
-File: media/MERX.pdf Graphic file (type pdf)
-<use media/MERX.pdf, page 2>
-Package pdftex.def Info: media/MERX.pdf , page2 used on input line 745.
-(pdftex.def)             Requested size: 597.55899pt x 422.27727pt.
-File: media/MERX.pdf Graphic file (type pdf)
-<use media/MERX.pdf, page 2>
-Package pdftex.def Info: media/MERX.pdf , page2 used on input line 745.
-(pdftex.def)             Requested size: 597.55899pt x 422.27727pt.
-
-
-File: media/MERX.pdf Graphic file (type pdf)
-<use media/MERX.pdf, page 2>
-Package pdftex.def Info: media/MERX.pdf , page2 used on input line 745.
-(pdftex.def)             Requested size: 597.55899pt x 422.27727pt.
-[24
-
- <./media/MERX.pdf>]
-<media/MERX.pdf, id=444, page=3, 845.07718pt x 597.19106pt>
-File: media/MERX.pdf Graphic file (type pdf)
-<use media/MERX.pdf, page 3>
-Package pdftex.def Info: media/MERX.pdf , page3 used on input line 745.
-(pdftex.def)             Requested size: 597.55899pt x 422.27727pt.
-File: media/MERX.pdf Graphic file (type pdf)
-<use media/MERX.pdf, page 3>
-Package pdftex.def Info: media/MERX.pdf , page3 used on input line 745.
-(pdftex.def)             Requested size: 597.55899pt x 422.27727pt.
-
-
-File: media/MERX.pdf Graphic file (type pdf)
-<use media/MERX.pdf, page 3>
-Package pdftex.def Info: media/MERX.pdf , page3 used on input line 745.
+Package pdftex.def Info: media/MERX.pdf , page1 used on input line 811.
 (pdftex.def)             Requested size: 597.55899pt x 422.27727pt.
 [25
 
  <./media/MERX.pdf>]
-<media/MERX.pdf, id=449, page=4, 845.07718pt x 597.19106pt>
+<media/MERX.pdf, id=460, page=2, 845.07718pt x 597.19106pt>
 File: media/MERX.pdf Graphic file (type pdf)
-<use media/MERX.pdf, page 4>
-Package pdftex.def Info: media/MERX.pdf , page4 used on input line 745.
+<use media/MERX.pdf, page 2>
+Package pdftex.def Info: media/MERX.pdf , page2 used on input line 811.
 (pdftex.def)             Requested size: 597.55899pt x 422.27727pt.
 File: media/MERX.pdf Graphic file (type pdf)
-<use media/MERX.pdf, page 4>
-Package pdftex.def Info: media/MERX.pdf , page4 used on input line 745.
+<use media/MERX.pdf, page 2>
+Package pdftex.def Info: media/MERX.pdf , page2 used on input line 811.
 (pdftex.def)             Requested size: 597.55899pt x 422.27727pt.
 
 
 File: media/MERX.pdf Graphic file (type pdf)
-<use media/MERX.pdf, page 4>
-Package pdftex.def Info: media/MERX.pdf , page4 used on input line 745.
+<use media/MERX.pdf, page 2>
+Package pdftex.def Info: media/MERX.pdf , page2 used on input line 811.
 (pdftex.def)             Requested size: 597.55899pt x 422.27727pt.
 [26
 
  <./media/MERX.pdf>]
+<media/MERX.pdf, id=471, page=3, 845.07718pt x 597.19106pt>
+File: media/MERX.pdf Graphic file (type pdf)
+<use media/MERX.pdf, page 3>
+Package pdftex.def Info: media/MERX.pdf , page3 used on input line 811.
+(pdftex.def)             Requested size: 597.55899pt x 422.27727pt.
+File: media/MERX.pdf Graphic file (type pdf)
+<use media/MERX.pdf, page 3>
+Package pdftex.def Info: media/MERX.pdf , page3 used on input line 811.
+(pdftex.def)             Requested size: 597.55899pt x 422.27727pt.
 
-LaTeX Warning: Citation `lucina' on page 27 undefined on input line 752.
+
+File: media/MERX.pdf Graphic file (type pdf)
+<use media/MERX.pdf, page 3>
+Package pdftex.def Info: media/MERX.pdf , page3 used on input line 811.
+(pdftex.def)             Requested size: 597.55899pt x 422.27727pt.
+[27
+
+ <./media/MERX.pdf>]
+<media/MERX.pdf, id=476, page=4, 845.07718pt x 597.19106pt>
+File: media/MERX.pdf Graphic file (type pdf)
+<use media/MERX.pdf, page 4>
+Package pdftex.def Info: media/MERX.pdf , page4 used on input line 811.
+(pdftex.def)             Requested size: 597.55899pt x 422.27727pt.
+File: media/MERX.pdf Graphic file (type pdf)
+<use media/MERX.pdf, page 4>
+Package pdftex.def Info: media/MERX.pdf , page4 used on input line 811.
+(pdftex.def)             Requested size: 597.55899pt x 422.27727pt.
 
 
+File: media/MERX.pdf Graphic file (type pdf)
+<use media/MERX.pdf, page 4>
+Package pdftex.def Info: media/MERX.pdf , page4 used on input line 811.
+(pdftex.def)             Requested size: 597.55899pt x 422.27727pt.
+[28
 
-[27]
-
-[28]
+ <./media/MERX.pdf>]
 
 [29]
-Overfull \hbox (11.99997pt too wide) in alignment at lines 979--983
- [] 
- []
-
-
-Overfull \hbox (11.99997pt too wide) in alignment at lines 983--990
- [] 
- []
-
-
 
 [30]
 
 [31]
+Overfull \hbox (11.99997pt too wide) in alignment at lines 1045--1049
+ [] 
+ []
+
+
+Overfull \hbox (11.99997pt too wide) in alignment at lines 1049--1056
+ [] 
+ []
+
+
 
 [32]
 
-[33] (./Informe.aux
+[33]
+
+[34]
+
+[35] (./Informe.aux
 LaTeX Info: Redefining \. on input line 11.
 LaTeX Info: Redefining \% on input line 11.
 )
@@ -1184,18 +1213,15 @@ L3 programming layer <2025-01-18>
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
-
-LaTeX Warning: There were undefined references.
-
 Package rerunfilecheck Info: File `Informe.out' has not changed.
-(rerunfilecheck)             Checksum: 0D6DC86C4269FBF2B718DD660DF3033C;10771.
+(rerunfilecheck)             Checksum: E8882673D6B3892EE3A5FB7E17E5004A;10829.
  ) 
 Here is how much of TeX's memory you used:
- 28591 strings out of 473190
- 514382 string characters out of 5719979
- 959488 words of memory out of 5000000
- 51102 multiletter control sequences out of 15000+600000
- 571105 words of font info for 162 fonts, out of 8000000 for 9000
+ 28675 strings out of 473190
+ 515907 string characters out of 5719979
+ 955744 words of memory out of 5000000
+ 51178 multiletter control sequences out of 15000+600000
+ 571164 words of font info for 163 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  84i,17n,87p,1192b,792s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <c:/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb><c:/tex
@@ -1210,10 +1236,10 @@ xlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb><c:/texlive/2025
 /texmf-dist/fonts/type1/public/amsfonts/cm/cmti12.pfb><c:/texlive/2025/texmf-di
 st/fonts/type1/public/amsfonts/cm/cmtt12.pfb><c:/texlive/2025/texmf-dist/fonts/
 type1/public/cm-super/sfrm1200.pfb>
-Output written on Informe.pdf (34 pages, 1522537 bytes).
+Output written on Informe.pdf (36 pages, 2308726 bytes).
 PDF statistics:
- 587 PDF objects out of 1000 (max. 8388607)
- 506 compressed objects within 6 object streams
- 117 named destinations out of 1000 (max. 500000)
- 25589 words of extra memory for PDF output out of 29859 (max. 10000000)
+ 614 PDF objects out of 1000 (max. 8388607)
+ 521 compressed objects within 6 object streams
+ 123 named destinations out of 1000 (max. 500000)
+ 25619 words of extra memory for PDF output out of 29859 (max. 10000000)
 
