@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using GestionDeMisiones.Models;
 using GestionDeMisiones.IService;
+using Microsoft.AspNetCore.Authorization;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -14,6 +15,7 @@ public class TecnicaMalditaController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize]
     public async Task<IActionResult> GetAllTecnicaMaldita([FromQuery] int? limit, [FromQuery] int? cursor)
     {
         if (limit.HasValue || cursor.HasValue)
@@ -27,6 +29,7 @@ public class TecnicaMalditaController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [Authorize]
     public async Task<ActionResult<TecnicaMaldita>> GetTecnicaMaldita(int id)
     {
         var tecnica = await _service.GetByIdAsync(id);
@@ -36,6 +39,7 @@ public class TecnicaMalditaController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "admin")]
     public async Task<ActionResult<TecnicaMaldita>> PostTecnicaMaldita([FromBody] TecnicaMaldita tecnica)
     {
         if (!ModelState.IsValid)
@@ -53,6 +57,7 @@ public class TecnicaMalditaController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> PutTecnicaMaldita(int id, [FromBody] TecnicaMaldita tecnica)
     {
         if (!ModelState.IsValid)
@@ -73,6 +78,7 @@ public class TecnicaMalditaController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> DeleteTecnicaMaldita(int id)
     {
         var deleted = await _service.DeleteAsync(id);

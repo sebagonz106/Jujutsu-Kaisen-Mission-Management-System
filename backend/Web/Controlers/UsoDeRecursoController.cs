@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using GestionDeMisiones.Models;
 using GestionDeMisiones.IService;
+using Microsoft.AspNetCore.Authorization;
 
 
 namespace GestionDeMisiones.Controllers
@@ -17,6 +18,7 @@ namespace GestionDeMisiones.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public async Task<ActionResult<IEnumerable<UsoDeRecurso>>> GetAll()
         {
             var usos = await _service.GetAllAsync();
@@ -24,6 +26,7 @@ namespace GestionDeMisiones.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize]
         public async Task<ActionResult<UsoDeRecurso>> GetById(int id)
         {
             var uso = await _service.GetByIdAsync(id);
@@ -34,6 +37,7 @@ namespace GestionDeMisiones.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult<UsoDeRecurso>> Post([FromBody] UsoDeRecurso usoDeRecurso)
         {
             if (!ModelState.IsValid)
@@ -51,6 +55,7 @@ namespace GestionDeMisiones.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult> Delete(int id)
         {
             var eliminado = await _service.DeleteAsync(id);
@@ -61,6 +66,7 @@ namespace GestionDeMisiones.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult<UsoDeRecurso>> Put(int id, [FromBody] UsoDeRecurso usoDeRecurso)
         {
             if (!ModelState.IsValid)

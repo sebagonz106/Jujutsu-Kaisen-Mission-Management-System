@@ -58,7 +58,7 @@ namespace GestionDeMisiones.Web.Controlers
         }
 
         [HttpPost("create")]
-        [Authorize(Roles = "admin,support")] // permitir admin o support (admin token expuesto como 'admin')
+        [Authorize(Roles = "admin")] // limitar creación a super admin
         public async Task<ActionResult<CreateUserResponse>> CreateUser([FromBody] CreateUserRequest request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);

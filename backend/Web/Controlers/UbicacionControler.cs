@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using GestionDeMisiones.Models;
 using GestionDeMisiones.IService;
+using Microsoft.AspNetCore.Authorization;
 
 namespace GestionDeMisiones.Controllers
 {
@@ -16,6 +17,7 @@ namespace GestionDeMisiones.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public async Task<IActionResult> GetAll([FromQuery] int? limit, [FromQuery] int? cursor)
         {
             if (limit.HasValue || cursor.HasValue)
@@ -29,6 +31,7 @@ namespace GestionDeMisiones.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize]
         public async Task<ActionResult<Ubicacion>> GetById(int id)
         {
             var ubicacion = await _service.GetByIdAsync(id);
@@ -37,6 +40,7 @@ namespace GestionDeMisiones.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult<Ubicacion>> Create([FromBody] Ubicacion ubicacion)
         {
             if (!ModelState.IsValid)
@@ -47,6 +51,7 @@ namespace GestionDeMisiones.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> Delete(int id)
         {
             var eliminado = await _service.DeleteAsync(id);
@@ -55,6 +60,7 @@ namespace GestionDeMisiones.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> Update(int id, [FromBody] Ubicacion ubicacion)
         {
             var actualizado = await _service.UpdateAsync(id, ubicacion);

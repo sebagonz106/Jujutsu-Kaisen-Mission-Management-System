@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using GestionDeMisiones.IService;
 using GestionDeMisiones.Models;
+using Microsoft.AspNetCore.Authorization;
 
 
 namespace GestionDeMisiones.Web.Controllers
@@ -17,6 +18,7 @@ namespace GestionDeMisiones.Web.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public async Task<ActionResult<IEnumerable<HechiceroEncargado>>> GetAll()
         {
             var items = await _service.GetAllAsync();
@@ -24,6 +26,7 @@ namespace GestionDeMisiones.Web.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize]
         public async Task<ActionResult<HechiceroEncargado>> GetById(int id)
         {
             var item = await _service.GetByIdAsync(id);
@@ -33,6 +36,7 @@ namespace GestionDeMisiones.Web.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult<HechiceroEncargado>> Create([FromBody] HechiceroEncargado hechiceroEncargado)
         {
             if (!ModelState.IsValid)
@@ -43,6 +47,7 @@ namespace GestionDeMisiones.Web.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> Update(int id, [FromBody] HechiceroEncargado hechiceroEncargado)
         {
             if (!ModelState.IsValid)
@@ -56,6 +61,7 @@ namespace GestionDeMisiones.Web.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> Delete(int id)
         {
             var success = await _service.DeleteAsync(id);

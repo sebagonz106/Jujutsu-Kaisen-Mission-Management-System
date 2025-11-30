@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using GestionDeMisiones.Models;
 using GestionDeMisiones.IService;
+using Microsoft.AspNetCore.Authorization;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -15,6 +16,7 @@ public class HechiceroController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize]
     public async Task<IActionResult> GetAllHechicero([FromQuery] int? limit, [FromQuery] int? cursor)
     {
         if (limit.HasValue || cursor.HasValue)
@@ -28,6 +30,7 @@ public class HechiceroController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [Authorize]
     public async Task<ActionResult<Hechicero>> GetHechiceroById(int id)
     {
         var hechicero = await _service.GetByIdAsync(id);
@@ -37,6 +40,7 @@ public class HechiceroController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "admin")]
     public async Task<ActionResult<Hechicero>> NewHechicero([FromBody] Hechicero hechicero)
     {
         if (!ModelState.IsValid)
@@ -54,6 +58,7 @@ public class HechiceroController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> PutHechicero(int id, [FromBody] Hechicero hechicero)
     {
         if (!ModelState.IsValid)
@@ -67,6 +72,7 @@ public class HechiceroController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> DeleteHechicero(int id)
     {
         var deleted = await _service.DeleteAsync(id);

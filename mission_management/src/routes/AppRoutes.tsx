@@ -4,13 +4,17 @@ import { LoginPage } from '../pages/LoginPage.tsx';
 import { RegisterPage } from '../pages/RegisterPage.tsx';
 import { ProtectedRoute } from './ProtectedRoute.tsx';
 import { RoleGuard } from './RoleGuard.tsx';
+import AdminUsersPage from '../pages/admin/AdminUsersPage.tsx';
+import { useAuth } from '../hooks/useAuth';
 
 // Placeholder dashboard components (texto en español)
 const SorcererDashboard = () => <div className="p-4">Panel Hechicero</div>;
 const SupportDashboard = () => <div className="p-4">Panel Soporte</div>;
 const ObserverDashboard = () => <div className="p-4">Panel Observador</div>;
 const Forbidden = () => <div className="p-4">403 - Acceso denegado</div>;
-const EntityIndex = () => (
+const EntityIndex = () => {
+  const { user } = useAuth();
+  return (
   <div className="space-y-4 fade-in">
     <h2 className="page-title">Panel</h2>
     <div className="card-surface p-4">
@@ -20,6 +24,9 @@ const EntityIndex = () => (
         <Link className="nav-link" to="/missions">Misiones</Link>
         <Link className="nav-link" to="/locations">Ubicaciones</Link>
         <Link className="nav-link" to="/techniques">Técnicas</Link>
+        {user?.role === 'admin' && (
+          <Link className="btn-primary" to="/admin/users">Administrar usuarios</Link>
+        )}
       </nav>
     </div>
     <div className="space-y-2">
@@ -29,7 +36,8 @@ const EntityIndex = () => (
       </div>
     </div>
   </div>
-);
+  );
+};
 import { SorcerersPage } from '../pages/sorcerers/SorcerersPage.tsx';
 import { CursesPage } from '../pages/curses/CursesPage.tsx';
 import { MissionsPage } from '../pages/missions/MissionsPage.tsx';
@@ -42,7 +50,7 @@ export const AppRoutes = () => (
     <Routes>
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/login" element={<LoginPage />} />
-  <Route path="/register" element={<RegisterPage />} />
+      <Route path="/register" element={<RegisterPage />} />
       <Route
         path="/dashboard/sorcerer"
         element={
@@ -134,7 +142,17 @@ export const AppRoutes = () => (
           </ProtectedRoute>
         }
       />
-  <Route path="*" element={<div className="p-4">404 - No encontrado</div>} />
+      <Route
+        path="/admin/users"
+        element={
+          <ProtectedRoute>
+            <RoleGuard roles={['admin']}>
+              <AdminUsersPage />
+            </RoleGuard>
+          </ProtectedRoute>
+        }
+      />
+      <Route path="*" element={<div className="p-4">404 - No encontrado</div>} />
     </Routes>
   </BrowserRouter>
 );

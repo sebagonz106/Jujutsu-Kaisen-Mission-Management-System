@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using GestionDeMisiones.Models;
 using GestionDeMisiones.IService;
+using Microsoft.AspNetCore.Authorization;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -14,6 +15,7 @@ public class SolicitudController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize]
     public async Task<ActionResult<IEnumerable<Solicitud>>> GetAllSolicitud()
     {
         var solicitudes = await _service.GetAllAsync();
@@ -21,6 +23,7 @@ public class SolicitudController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [Authorize]
     public async Task<ActionResult<Solicitud>> GetSolicitudById(int id)
     {
         var solicitud = await _service.GetByIdAsync(id);
@@ -30,6 +33,7 @@ public class SolicitudController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "admin")]
     public async Task<ActionResult<Solicitud>> NewSolicitud([FromBody] Solicitud solicitud)
     {
         if (!ModelState.IsValid)
@@ -47,6 +51,7 @@ public class SolicitudController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> PutSolicitud(int id, [FromBody] Solicitud solicitud)
     {
         if (!ModelState.IsValid)
@@ -67,6 +72,7 @@ public class SolicitudController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> DeleteSolicitud(int id)
     {
         var deleted = await _service.DeleteAsync(id);

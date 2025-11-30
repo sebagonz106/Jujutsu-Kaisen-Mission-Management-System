@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using GestionDeMisiones.Models;
 using GestionDeMisiones.IService;
+using Microsoft.AspNetCore.Authorization;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -14,6 +15,7 @@ public class RecursoController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize]
     public async Task<ActionResult<IEnumerable<Recurso>>> GetAllRecurso()
     {
         var recursos = await _service.GetAllAsync();
@@ -21,6 +23,7 @@ public class RecursoController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [Authorize]
     public async Task<ActionResult<Recurso>> GetRecurso(int id)
     {
         var recurso = await _service.GetByIdAsync(id);
@@ -30,6 +33,7 @@ public class RecursoController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "admin")]
     public async Task<ActionResult<Recurso>> PostRecurso([FromBody] Recurso recurso)
     {
         if (!ModelState.IsValid)
@@ -47,6 +51,7 @@ public class RecursoController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> PutRecurso(int id, [FromBody] Recurso recurso)
     {
         if (!ModelState.IsValid)
@@ -67,6 +72,7 @@ public class RecursoController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> DeleteRecurso(int id)
     {
         var deleted = await _service.DeleteAsync(id);
