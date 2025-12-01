@@ -26,7 +26,7 @@ public class RecursoController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize]
+    // [Authorize]
     public async Task<IActionResult> GetAllRecurso([FromQuery] int? limit, [FromQuery] int? cursor)
     {
         if (limit.HasValue || cursor.HasValue)
@@ -40,7 +40,7 @@ public class RecursoController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    [Authorize]
+    // [Authorize]
     public async Task<ActionResult<Recurso>> GetRecurso(int id)
     {
         var recurso = await _service.GetByIdAsync(id);
@@ -50,7 +50,7 @@ public class RecursoController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "admin")]
+    // [Authorize(Roles = "admin")]
     public async Task<ActionResult<Recurso>> PostRecurso([FromBody] Recurso recurso)
     {
         if (!ModelState.IsValid)
@@ -72,7 +72,7 @@ public class RecursoController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    [Authorize(Roles = "admin")]
+    // [Authorize(Roles = "admin")]
     public async Task<IActionResult> PutRecurso(int id, [FromBody] Recurso recurso)
     {
         if (!ModelState.IsValid)
@@ -96,7 +96,7 @@ public class RecursoController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [Authorize(Roles = "admin")]
+    // [Authorize(Roles = "admin")]
     public async Task<IActionResult> DeleteRecurso(int id)
     {
         var recurso = await _service.GetByIdAsync(id);

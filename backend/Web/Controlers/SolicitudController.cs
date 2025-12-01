@@ -26,7 +26,7 @@ public class SolicitudController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize]
+    // [Authorize]
     public async Task<IActionResult> GetAllSolicitud([FromQuery] int? limit, [FromQuery] int? cursor)
     {
         if (limit.HasValue || cursor.HasValue)
@@ -40,7 +40,7 @@ public class SolicitudController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    [Authorize]
+    // [Authorize]
     public async Task<ActionResult<Solicitud>> GetSolicitudById(int id)
     {
         var solicitud = await _service.GetByIdAsync(id);
@@ -50,7 +50,7 @@ public class SolicitudController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "admin")]
+    // [Authorize(Roles = "admin")]
     public async Task<ActionResult<Solicitud>> NewSolicitud([FromBody] Solicitud solicitud)
     {
         if (!ModelState.IsValid)
@@ -72,7 +72,7 @@ public class SolicitudController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    [Authorize(Roles = "admin")]
+    // [Authorize(Roles = "admin")]
     public async Task<IActionResult> PutSolicitud(int id, [FromBody] Solicitud solicitud)
     {
         if (!ModelState.IsValid)
@@ -96,7 +96,7 @@ public class SolicitudController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [Authorize(Roles = "admin")]
+    // [Authorize(Roles = "admin")]
     public async Task<IActionResult> DeleteSolicitud(int id)
     {
         var deleted = await _service.DeleteAsync(id);

@@ -26,7 +26,7 @@ public class PersonalDeApoyoController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize]
+    // [Authorize]
     public async Task<IActionResult> GetPersonalDeApoyo([FromQuery] int? limit, [FromQuery] int? cursor)
     {
         if (limit.HasValue || cursor.HasValue)
@@ -40,7 +40,7 @@ public class PersonalDeApoyoController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    [Authorize]
+    // [Authorize]
     public async Task<ActionResult<PersonalDeApoyo>> GetPersonalDeApoyoById(int id)
     {
         var personal = await _service.GetByIdAsync(id);
@@ -50,7 +50,7 @@ public class PersonalDeApoyoController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "admin")]
+    // [Authorize(Roles = "admin")]
     public async Task<ActionResult<PersonalDeApoyo>> PostPersonalDeApoyo([FromBody] PersonalDeApoyo personal)
     {
         if (!ModelState.IsValid)
@@ -72,7 +72,7 @@ public class PersonalDeApoyoController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    [Authorize(Roles = "admin")]
+    // [Authorize(Roles = "admin")]
     public async Task<IActionResult> PutPersonalDeApoyo(int id, [FromBody] PersonalDeApoyo personal)
     {
         if (!ModelState.IsValid)
@@ -96,7 +96,7 @@ public class PersonalDeApoyoController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [Authorize(Roles = "admin")]
+    // [Authorize(Roles = "admin")]
     public async Task<IActionResult> DeletePersonalDeApoyo(int id)
     {
         var personal = await _service.GetByIdAsync(id);

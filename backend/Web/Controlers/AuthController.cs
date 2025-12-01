@@ -49,7 +49,7 @@ namespace GestionDeMisiones.Web.Controlers
         }
 
         [HttpGet("me")]
-        [Authorize]
+        // [Authorize]
         public ActionResult<MeResponse> Me()
         {
             var user = _authService.GetUserFromClaims(User);
@@ -58,7 +58,7 @@ namespace GestionDeMisiones.Web.Controlers
         }
 
         [HttpPost("create")]
-        [Authorize(Roles = "admin")] // limitar creación a super admin
+        // [Authorize(Roles = "admin")] // limitar creación a super admin
         public async Task<ActionResult<CreateUserResponse>> CreateUser([FromBody] CreateUserRequest request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);

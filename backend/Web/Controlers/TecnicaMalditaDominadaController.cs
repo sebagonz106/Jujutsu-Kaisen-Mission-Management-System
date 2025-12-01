@@ -15,7 +15,7 @@ public class TecnicaMalditaDominadaController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize]
+    // [Authorize]
     public async Task<ActionResult<IEnumerable<TecnicaMalditaDominada>>> GetAllTecnicaMalditaDominada([FromQuery] int? limit, [FromQuery] int? cursor)
     {
         if (limit.HasValue || cursor.HasValue)
@@ -28,7 +28,7 @@ public class TecnicaMalditaDominadaController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    [Authorize]
+    // [Authorize]
     public async Task<ActionResult<TecnicaMalditaDominada>> GetTecnicaMalditaDominada(int id)
     {
         var tecnicaDominada = await _service.GetByIdAsync(id);
@@ -38,7 +38,7 @@ public class TecnicaMalditaDominadaController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "admin")]
+    // [Authorize(Roles = "admin")]
     public async Task<ActionResult<TecnicaMalditaDominada>> PostTecnicaMalditaDominada([FromBody] TecnicaMalditaDominada tecnicaDominada)
     {
         if (!ModelState.IsValid)
@@ -56,7 +56,7 @@ public class TecnicaMalditaDominadaController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    [Authorize(Roles = "admin")]
+    // [Authorize(Roles = "admin")]
     public async Task<IActionResult> PutTecnicaMalditaDominada(int id, [FromBody] TecnicaMalditaDominada tecnicaDominada)
     {
         if (!ModelState.IsValid)
@@ -77,7 +77,7 @@ public class TecnicaMalditaDominadaController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [Authorize(Roles = "admin")]
+    // [Authorize(Roles = "admin")]
     public async Task<IActionResult> DeleteTecnicaMalditaDominada(int id)
     {
         var deleted = await _service.DeleteAsync(id);

@@ -27,7 +27,7 @@ public class MisionController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize] // requiere autenticación para lectura
+    // [Authorize] // requiere autenticación para lectura
     public async Task<IActionResult> GetAllMision([FromQuery] int? limit, [FromQuery] int? cursor)
     {
         // If pagination params are provided, return paginated shape
@@ -43,7 +43,7 @@ public class MisionController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    [Authorize]
+    // [Authorize]
     public async Task<ActionResult<Mision>> GetMision(int id)
     {
         var mision = await _service.GetByIdAsync(id);
@@ -53,7 +53,7 @@ public class MisionController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "admin")] // solo super admin puede crear
+    // [Authorize(Roles = "admin")] // solo super admin puede crear
     public async Task<ActionResult<Mision>> PostMision([FromBody] Mision mision)
     {
         if (!ModelState.IsValid)
@@ -75,7 +75,7 @@ public class MisionController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    [Authorize(Roles = "admin")] // solo super admin puede actualizar
+    // [Authorize(Roles = "admin")] // solo super admin puede actualizar
     public async Task<IActionResult> PutMision(int id, [FromBody] Mision mision)
     {
         if (!ModelState.IsValid)
@@ -99,7 +99,7 @@ public class MisionController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [Authorize(Roles = "admin")] // solo super admin puede eliminar
+    // [Authorize(Roles = "admin")] // solo super admin puede eliminar
     public async Task<IActionResult> DeleteMision(int id)
     {
         var deleted = await _service.DeleteAsync(id);

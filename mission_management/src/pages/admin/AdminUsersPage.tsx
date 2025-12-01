@@ -223,7 +223,7 @@ export const AdminUsersPage: React.FC = () => {
       <UserFormModal
         open={showCreateModal}
         onClose={() => setShowCreateModal(false)}
-        onSubmit={handleCreate}
+        onSubmitCreate={handleCreate}
         title="Nuevo Usuario"
       />
 
@@ -231,7 +231,7 @@ export const AdminUsersPage: React.FC = () => {
       <UserFormModal
         open={!!editUser}
         onClose={() => setEditUser(null)}
-        onSubmit={(data) => editUser && handleUpdate(editUser.id, data)}
+        onSubmitUpdate={(data) => handleUpdate(editUser!.id, data)}
         title="Editar Usuario"
         initialData={editUser ?? undefined}
         isEdit
@@ -253,7 +253,8 @@ export const AdminUsersPage: React.FC = () => {
 interface UserFormModalProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (data: CreateUsuarioRequest | UpdateUsuarioRequest) => Promise<void>;
+  onSubmitCreate?: (data: CreateUsuarioRequest) => Promise<void>;
+  onSubmitUpdate?: (data: UpdateUsuarioRequest) => Promise<void>;
   title: string;
   initialData?: UsuarioDto;
   isEdit?: boolean;
@@ -262,7 +263,8 @@ interface UserFormModalProps {
 const UserFormModal: React.FC<UserFormModalProps> = ({
   open,
   onClose,
-  onSubmit,
+  onSubmitCreate,
+  onSubmitUpdate,
   title,
   initialData,
   isEdit = false,
@@ -292,16 +294,16 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
     setSaving(true);
     setError(null);
     try {
-      if (isEdit) {
-        await onSubmit({
+      if (isEdit && onSubmitUpdate) {
+        await onSubmitUpdate({
           nombre,
           email,
           ...(password ? { password } : {}),
           rol,
           rango: rango || null,
         });
-      } else {
-        await onSubmit({ nombre, email, password, rol, rango: rango || null });
+      } else if (!isEdit && onSubmitCreate) {
+        await onSubmitCreate({ nombre, email, password, rol, rango: rango || null });
       }
       onClose();
     } catch {

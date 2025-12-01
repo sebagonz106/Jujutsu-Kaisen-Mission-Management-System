@@ -7,7 +7,7 @@ namespace GestionDeMisiones.Web.Controlers
 {
     [ApiController]
     [Route("users")] // prefijado globalmente por RoutePrefixConvention("api/v1")
-    [Authorize(Roles = "admin")] // Solo super admin puede controlar usuarios
+    // [Authorize(Roles = "admin")] // Solo super admin puede controlar usuarios
     public class UsersController : ControllerBase
     {
         private readonly IUsuarioRepository _repo;

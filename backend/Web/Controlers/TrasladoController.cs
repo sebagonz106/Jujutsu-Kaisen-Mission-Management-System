@@ -25,7 +25,7 @@ public class TrasladoController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    [Authorize]
+    // [Authorize]
     public async Task<ActionResult<Traslado>> GetTrasladoById(int id)
     {
         var traslado = await _service.GetByIdAsync(id);
@@ -34,7 +34,7 @@ public class TrasladoController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "admin")]
+    // [Authorize(Roles = "admin")]
     public async Task<ActionResult<Traslado>> PostTraslado([FromBody] Traslado traslado)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -51,7 +51,7 @@ public class TrasladoController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    [Authorize(Roles = "admin")]
+    // [Authorize(Roles = "admin")]
     public async Task<IActionResult> PutTraslado(int id, [FromBody] Traslado traslado)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -62,7 +62,7 @@ public class TrasladoController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [Authorize(Roles = "admin")]
+    // [Authorize(Roles = "admin")]
     public async Task<IActionResult> DeleteTraslado(int id)
     {
         var deleted = await _service.DeleteAsync(id);
