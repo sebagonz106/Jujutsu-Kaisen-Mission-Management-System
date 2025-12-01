@@ -90,13 +90,11 @@ namespace GestionDeMisiones.Web.Controlers
             var r = input?.Trim().ToLowerInvariant();
             return r switch
             {
-                "observador" => "observador",
-                "observer" => "observador",
                 "hechicero" => "hechicero",
                 "sorcerer" => "hechicero",
                 "support" => "support",
                 "admin" => "admin",
-                _ => "observador"
+                _ => "support"
             };
         }
     }

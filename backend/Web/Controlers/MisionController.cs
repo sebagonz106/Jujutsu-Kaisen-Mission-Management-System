@@ -1,17 +1,29 @@
 using Microsoft.AspNetCore.Mvc;
 using GestionDeMisiones.Models;
 using GestionDeMisiones.IService;
+using GestionDeMisiones.IServices;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 [ApiController]
 [Route("api/[controller]")]
 public class MisionController : ControllerBase
 {
     private readonly IMisionService _service;
+    private readonly IAuditService _auditService;
 
-    public MisionController(IMisionService service)
+    public MisionController(IMisionService service, IAuditService auditService)
     {
         _service = service;
+        _auditService = auditService;
+    }
+
+    private (string role, string? rank, string? name) GetActorInfo()
+    {
+        var role = User.FindFirst(ClaimTypes.Role)?.Value ?? "unknown";
+        var rank = User.FindFirst("rank")?.Value;
+        var name = User.FindFirst("name")?.Value ?? User.FindFirst(ClaimTypes.Name)?.Value;
+        return (role, rank, name);
     }
 
     [HttpGet]
@@ -50,6 +62,10 @@ public class MisionController : ControllerBase
         try
         {
             var created = await _service.CreateAsync(mision);
+            
+            var (role, rank, name) = GetActorInfo();
+            await _auditService.LogActionAsync("mision", "create", created.Id, role, rank, name, $"Creada misión #{created.Id}");
+            
             return CreatedAtAction(nameof(GetMision), new { id = created.Id }, created);
         }
         catch (ArgumentException ex)
@@ -71,6 +87,9 @@ public class MisionController : ControllerBase
             if (!updated)
                 return NotFound("La misión que quiere modificar no existe");
 
+            var (role, rank, name) = GetActorInfo();
+            await _auditService.LogActionAsync("mision", "update", id, role, rank, name, $"Actualizada misión #{id}");
+
             return NoContent();
         }
         catch (ArgumentException ex)
@@ -86,6 +105,9 @@ public class MisionController : ControllerBase
         var deleted = await _service.DeleteAsync(id);
         if (!deleted)
             return NotFound("La misión que quiere eliminar no existe");
+
+        var (role, rank, name) = GetActorInfo();
+        await _auditService.LogActionAsync("mision", "delete", id, role, rank, name, $"Eliminada misión #{id}");
 
         return NoContent();
     }

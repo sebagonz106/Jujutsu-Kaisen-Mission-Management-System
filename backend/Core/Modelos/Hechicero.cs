@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
@@ -16,8 +17,13 @@ public class Hechicero
     public int Experiencia{ get; set; }
 
     public EEstado Estado { get; set; }
+
+    // FK explícita para binding desde JSON
+    public int TecnicaPrincipalId { get; set; }
+
+    [ForeignKey("TecnicaPrincipalId")]
     [AllowNull]
-    public TecnicaMaldita TecnicaPrincipal { get; set; }
+    public TecnicaMaldita? TecnicaPrincipal { get; set; }
 
     [JsonIgnore]
     public ICollection<HechiceroEnMision> Misiones { get; set; } = [];

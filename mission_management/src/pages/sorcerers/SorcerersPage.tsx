@@ -20,6 +20,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { canMutate as canMutateByRole } from '../../utils/permissions';
 import { t } from '../../i18n';
 import { useTechniques } from '../../hooks/useTechniques';
+import { sorcererGradeLabel, sorcererStatusLabel } from '../../utils/enumLabels';
 
 const schema = z.object({
   name: z.string().min(2, t('form.validation.nameTooShort')),
@@ -171,7 +172,6 @@ export const SorcerersPage = () => {
           <Table>
             <THead>
               <tr>
-                <TH><SortHeader label={t('ui.id')} active={sortKey==='id'} direction={sortDir} onClick={() => toggleSort('id')} /></TH>
                 <TH><SortHeader label={t('form.labels.name')} active={sortKey==='name'} direction={sortDir} onClick={() => toggleSort('name')} /></TH>
                 <TH><SortHeader label={t('form.labels.grade')} active={sortKey==='grado'} direction={sortDir} onClick={() => toggleSort('grado')} /></TH>
                 <TH><SortHeader label={t('form.labels.experience')} active={sortKey==='experiencia'} direction={sortDir} onClick={() => toggleSort('experiencia')} /></TH>
@@ -182,11 +182,10 @@ export const SorcerersPage = () => {
             <TBody>
               {sortedData.map((s) => (
                 <tr key={s.id} className="border-b hover:bg-slate-800/40">
-                  <TD>{s.id}</TD>
                   <TD>{s.name}</TD>
-                  <TD>{s.grado}</TD>
+                  <TD>{sorcererGradeLabel(s.grado)}</TD>
                   <TD>{s.experiencia}</TD>
-                  <TD>{s.estado}</TD>
+                  <TD>{sorcererStatusLabel(s.estado)}</TD>
                   {canMutate && (
                     <TD className="flex gap-2">
                       <Button size="sm" variant="secondary" onClick={() => startEdit(s)}>{t('ui.edit')}</Button>
@@ -228,12 +227,12 @@ export const SorcerersPage = () => {
           <Input label={t('form.labels.name')} placeholder={t('form.labels.name')} {...register('name')} />
           {errors.name && <p className="text-xs text-red-400">{errors.name.message}</p>}
           <Select label={t('form.labels.grade')} {...register('grado')}>
-            {Object.values(SORCERER_GRADE).map((g) => <option key={g} value={g}>{g}</option>)}
+            {Object.values(SORCERER_GRADE).map((g) => <option key={g} value={g}>{sorcererGradeLabel(g)}</option>)}
           </Select>
           <Input label={t('form.labels.experience')} type="number" {...register('experiencia', { valueAsNumber: true })} />
           {errors.experiencia && <p className="text-xs text-red-400">{errors.experiencia.message}</p>}
             <Select label={t('form.labels.state')} {...register('estado')}>
-            {Object.values(SORCERER_STATUS).map((s) => <option key={s} value={s}>{s}</option>)}
+            {Object.values(SORCERER_STATUS).map((s) => <option key={s} value={s}>{sorcererStatusLabel(s)}</option>)}
           </Select>
             <Select label={t('form.labels.mainTechnique')} {...register('tecnicaPrincipalId', { valueAsNumber: true })}>
               <option value="">{t('ui.selectPlaceholder')}</option>

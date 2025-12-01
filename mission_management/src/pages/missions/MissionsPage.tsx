@@ -315,7 +315,6 @@ export const MissionsPage = () => {
           <Table>
             <THead>
               <tr>
-                <TH><SortHeader label={t('ui.id')} active={sortKey==='id'} direction={sortDir} onClick={() => toggleSort('id')} /></TH>
                 <TH><SortHeader label={t('form.labels.state')} active={sortKey==='state'} direction={sortDir} onClick={() => toggleSort('state')} /></TH>
                 <TH><SortHeader label={t('form.labels.urgency')} active={sortKey==='urgency'} direction={sortDir} onClick={() => toggleSort('urgency')} /></TH>
                 <TH><SortHeader label={t('form.labels.ubicacion')} active={sortKey==='locationId'} direction={sortDir} onClick={() => toggleSort('locationId')} /></TH>
@@ -325,7 +324,6 @@ export const MissionsPage = () => {
             <TBody>
               {sortedData.map((m) => (
                 <tr key={m.id} className="border-b hover:bg-slate-800/40">
-                  <TD>{m.id}</TD>
                   <TD>{estadoLabel[m.state]}</TD>
                   <TD>{urgenciaLabel[m.urgency]}</TD>
                   <TD>{locationNameById.get(m.locationId) ?? m.locationId}</TD>

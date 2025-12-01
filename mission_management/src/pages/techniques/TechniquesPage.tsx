@@ -215,7 +215,6 @@ export const TechniquesPage = () => {
           <Table>
             <THead>
               <tr>
-                <TH><SortHeader label={t('ui.id')} active={sortKey==='id'} direction={sortDir} onClick={() => toggleSort('id')} /></TH>
                 <TH><SortHeader label={t('form.labels.name')} active={sortKey==='nombre'} direction={sortDir} onClick={() => toggleSort('nombre')} /></TH>
                 <TH><SortHeader label={t('form.labels.type')} active={sortKey==='tipo'} direction={sortDir} onClick={() => toggleSort('tipo')} /></TH>
                 <TH><SortHeader label={'Efectividad'} active={sortKey==='efectividadProm'} direction={sortDir} onClick={() => toggleSort('efectividadProm')} /></TH>
@@ -225,7 +224,6 @@ export const TechniquesPage = () => {
             <TBody>
               {sortedData.map((tech) => (
                 <tr key={tech.id} className="border-b hover:bg-slate-800/40">
-                  <TD>{tech.id}</TD>
                   <TD>{tech.nombre}</TD>
                   <TD>{tech.tipo}</TD>
                   <TD>{tech.efectividadProm}</TD>

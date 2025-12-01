@@ -84,7 +84,7 @@ export const curseApi = {
       tipo: payload.tipo,
       estadoActual: payload.estadoActual,
       nivelPeligro: payload.nivelPeligro,
-      ubicacionDeAparicion: payload.ubicacionId ? { id: payload.ubicacionId } : null,
+      ubicacionDeAparicionId: payload.ubicacionId,
     };
     const { data } = await apiClient.post<BackendCurse>('/curses', send);
     return normalizeCurse(data);
@@ -100,8 +100,9 @@ export const curseApi = {
   async update(id: number, payload: Partial<Omit<Curse, 'id'>>): Promise<void> {
     const send: Record<string, unknown> = { ...payload };
     if (Object.prototype.hasOwnProperty.call(payload, 'ubicacionId')) {
-      send.ubicacionDeAparicion = payload.ubicacionId ? { id: payload.ubicacionId } : null;
+      send.ubicacionDeAparicionId = payload.ubicacionId;
       delete (send as Record<string, unknown>).ubicacionId;
+      delete (send as Record<string, unknown>).ubicacionDeAparicion;
     }
     await apiClient.put(`/curses/${id}`, send);
   },

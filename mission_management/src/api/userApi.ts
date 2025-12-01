@@ -4,7 +4,7 @@ export interface UsuarioDto {
   id: number;
   nombre: string;
   email: string;
-  rol: 'observer' | 'support' | 'sorcerer' | 'admin' | string;
+  rol: 'support' | 'sorcerer' | 'admin' | string;
   rango?: string | null;
   creadoEn: string;
 }

@@ -2,17 +2,29 @@
 using Microsoft.AspNetCore.Mvc;
 using GestionDeMisiones.Models;
 using GestionDeMisiones.IService;
+using GestionDeMisiones.IServices;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 [ApiController]
 [Route("api/[controller]")]
 public class HechiceroController : ControllerBase
 {
     private readonly IHechiceroService _service;
+    private readonly IAuditService _auditService;
 
-    public HechiceroController(IHechiceroService service)
+    public HechiceroController(IHechiceroService service, IAuditService auditService)
     {
         _service = service;
+        _auditService = auditService;
+    }
+
+    private (string role, string? rank, string? name) GetActorInfo()
+    {
+        var role = User.FindFirst(ClaimTypes.Role)?.Value ?? "unknown";
+        var rank = User.FindFirst("rank")?.Value;
+        var name = User.FindFirst("name")?.Value ?? User.FindFirst(ClaimTypes.Name)?.Value;
+        return (role, rank, name);
     }
 
     [HttpGet]
@@ -49,6 +61,10 @@ public class HechiceroController : ControllerBase
         try
         {
             var created = await _service.CreateAsync(hechicero);
+            
+            var (role, rank, name) = GetActorInfo();
+            await _auditService.LogActionAsync("hechicero", "create", created.Id, role, rank, name, $"Creado hechicero: {created.Name}");
+            
             return CreatedAtAction(nameof(GetHechiceroById), new { id = created.Id }, created);
         }
         catch (ArgumentException ex)
@@ -68,6 +84,9 @@ public class HechiceroController : ControllerBase
         if (!updated)
             return NotFound("El hechicero que quiere editar no existe");
 
+        var (role, rank, name) = GetActorInfo();
+        await _auditService.LogActionAsync("hechicero", "update", id, role, rank, name, $"Actualizado hechicero: {hechicero.Name}");
+
         return NoContent();
     }
 
@@ -75,9 +94,13 @@ public class HechiceroController : ControllerBase
     [Authorize(Roles = "admin")]
     public async Task<IActionResult> DeleteHechicero(int id)
     {
+        var hechicero = await _service.GetByIdAsync(id);
         var deleted = await _service.DeleteAsync(id);
         if (!deleted)
             return NotFound("El hechicero que quiere eliminar no existe");
+
+        var (role, rank, name) = GetActorInfo();
+        await _auditService.LogActionAsync("hechicero", "delete", id, role, rank, name, $"Eliminado hechicero: {hechicero?.Name}");
 
         return NoContent();
     }

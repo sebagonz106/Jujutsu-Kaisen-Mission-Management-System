@@ -1,183 +1,377 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { userApi, type UsuarioDto } from '../../api/userApi';
+import { userApi, type UsuarioDto, type CreateUsuarioRequest, type UpdateUsuarioRequest } from '../../api/userApi';
 import { useAuth } from '../../hooks/useAuth';
 import { Navigate } from 'react-router-dom';
+import { Button } from '../../components/ui/Button';
+import { Input } from '../../components/ui/Input';
+import { Select } from '../../components/ui/Select';
+import { Modal } from '../../components/ui/Modal';
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
+import { Table, THead, TBody, TH, TD, SortHeader } from '../../components/ui/Table';
+import { RoleBadge } from '../../components/ui/RoleBadge';
+import { Skeleton } from '../../components/ui/Skeleton';
+import { EmptyState } from '../../components/ui/EmptyState';
+import { toast } from 'sonner';
+import { t } from '../../i18n';
 
-const roles = ['observer', 'support', 'sorcerer', 'admin'] as const;
+const ROLES = ['support', 'sorcerer', 'admin'] as const;
+type RoleType = (typeof ROLES)[number];
+
+const ROLE_LABELS: Record<RoleType, string> = {
+  support: 'Soporte',
+  sorcerer: 'Hechicero',
+  admin: 'Administrador',
+};
 
 export const AdminUsersPage: React.FC = () => {
   const { user } = useAuth();
   const [items, setItems] = useState<UsuarioDto[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState('');
+  
+  // Sort state
+  const [sortKey, setSortKey] = useState<keyof UsuarioDto>('id');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+  
+  // Modal states
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [editUser, setEditUser] = useState<UsuarioDto | null>(null);
+  const [deleteUserId, setDeleteUserId] = useState<number | null>(null);
+
+  const fetchUsers = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await userApi.list();
+      setItems(data);
+    } catch {
+      setError('No se pudo cargar usuarios');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    (async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const data = await userApi.list();
-        setItems(data);
-      } catch (e) {
-        setError('No se pudo cargar usuarios');
-      } finally {
-        setLoading(false);
-      }
-    })();
+    fetchUsers();
   }, []);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return items;
-    return items.filter(u =>
-      u.nombre.toLowerCase().includes(q) ||
-      u.email.toLowerCase().includes(q) ||
-      (u.rol || '').toLowerCase().includes(q),
-    );
-  }, [items, query]);
+    let result = items;
+    if (q) {
+      result = items.filter(u =>
+        u.nombre.toLowerCase().includes(q) ||
+        u.email.toLowerCase().includes(q) ||
+        (u.rol || '').toLowerCase().includes(q),
+      );
+    }
+    // Sort
+    return [...result].sort((a, b) => {
+      const av = a[sortKey];
+      const bv = b[sortKey];
+      if (typeof av === 'number' && typeof bv === 'number') {
+        return sortDir === 'asc' ? av - bv : bv - av;
+      }
+      return sortDir === 'asc'
+        ? String(av ?? '').localeCompare(String(bv ?? ''))
+        : String(bv ?? '').localeCompare(String(av ?? ''));
+    });
+  }, [items, query, sortKey, sortDir]);
+
+  const toggleSort = (key: keyof UsuarioDto) => {
+    if (sortKey === key) {
+      setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortKey(key);
+      setSortDir('asc');
+    }
+  };
+
+  const handleRoleChange = async (userId: number, newRole: string) => {
+    try {
+      await userApi.setRole(userId, newRole);
+      setItems(prev => prev.map(x => x.id === userId ? { ...x, rol: newRole } : x));
+      toast.success('Rol actualizado');
+    } catch {
+      toast.error('No se pudo cambiar el rol');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteUserId) return;
+    try {
+      await userApi.remove(deleteUserId);
+      setItems(prev => prev.filter(x => x.id !== deleteUserId));
+      toast.success('Usuario eliminado');
+    } catch {
+      toast.error('No se pudo eliminar');
+    }
+    setDeleteUserId(null);
+  };
+
+  const handleCreate = async (data: CreateUsuarioRequest) => {
+    const created = await userApi.create(data);
+    setItems(prev => [created, ...prev]);
+    toast.success('Usuario creado');
+  };
+
+  const handleUpdate = async (id: number, data: UpdateUsuarioRequest) => {
+    const updated = await userApi.update(id, data);
+    setItems(prev => prev.map(x => x.id === id ? updated : x));
+    toast.success('Usuario actualizado');
+  };
 
   if (!user) return <Navigate to="/login" replace />;
   if (user.role !== 'admin') return <Navigate to="/403" replace />;
 
+  if (loading) {
+    return (
+      <div className="p-4 space-y-4">
+        <Skeleton className="h-8 w-48" />
+        <div className="space-y-2">
+          <Skeleton className="h-6 w-full" />
+          <Skeleton className="h-6 w-full" />
+          <Skeleton className="h-6 w-full" />
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-4">
+        <h1 className="page-title">Gestión de Usuarios</h1>
+        <div className="card-surface p-6 text-center">
+          <p className="text-red-400 mb-4">{error}</p>
+          <Button onClick={fetchUsers}>{t('errors.tryAgain')}</Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-4 fade-in">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="page-title">Gestión de Usuarios</h2>
-        <a href="#create" className="btn-primary">Crear Usuario</a>
+        <h1 className="page-title">Gestión de Usuarios</h1>
+        <Button onClick={() => setShowCreateModal(true)}>{t('ui.new_masc')} Usuario</Button>
       </div>
 
+      {/* Search */}
       <div className="card-surface p-4">
-        <input
-          className="input w-full"
+        <Input
           placeholder="Buscar por nombre, email, rol..."
           value={query}
           onChange={e => setQuery(e.target.value)}
         />
       </div>
 
-      <div className="card-surface p-0 overflow-x-auto">
-        <table className="table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Nombre</th>
-              <th>Email</th>
-              <th>Rol</th>
-              <th>Rango</th>
-              <th>Creado</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading && (
-              <tr><td colSpan={7} className="p-4">Cargando...</td></tr>
-            )}
-            {error && (
-              <tr><td colSpan={7} className="p-4 text-red-600">{error}</td></tr>
-            )}
-            {!loading && !error && filtered.map(u => (
-              <tr key={u.id}>
-                <td>{u.id}</td>
-                <td>{u.nombre}</td>
-                <td>{u.email}</td>
-                <td>
-                  <select
-                    className="input"
-                    value={u.rol}
-                    onChange={async (e) => {
-                      const newRole = e.target.value;
-                      try {
-                        await userApi.setRole(u.id, newRole);
-                        setItems(prev => prev.map(x => x.id === u.id ? { ...x, rol: newRole } : x));
-                      } catch {
-                        setError('No se pudo cambiar el rol');
-                      }
-                    }}
-                  >
-                    {roles.map(r => <option key={r} value={r}>{r}</option>)}
-                  </select>
-                </td>
-                <td>{u.rango ?? '-'}</td>
-                <td>{new Date(u.creadoEn).toLocaleString()}</td>
-                <td>
-                  <div className="flex gap-2">
-                    <button className="btn" onClick={async () => {
-                      const nombre = prompt('Nuevo nombre', u.nombre) ?? u.nombre;
-                      const email = prompt('Nuevo email', u.email) ?? u.email;
-                      try {
-                        const updated = await userApi.update(u.id, { nombre, email });
-                        setItems(prev => prev.map(x => x.id === u.id ? updated : x));
-                      } catch {
-                        setError('No se pudo actualizar');
-                      }
-                    }}>Editar</button>
-                    <button className="btn-danger" onClick={async () => {
-                      if (!confirm('Eliminar usuario?')) return;
-                      try {
-                        await userApi.remove(u.id);
-                        setItems(prev => prev.filter(x => x.id !== u.id));
-                      } catch {
-                        setError('No se pudo eliminar');
-                      }
-                    }}>Eliminar</button>
-                  </div>
-                </td>
+      {/* Table or Empty State */}
+      {filtered.length === 0 ? (
+        <EmptyState
+          title="No hay usuarios"
+          description="Crea el primer usuario para comenzar"
+          action={<Button onClick={() => setShowCreateModal(true)}>Crear usuario</Button>}
+        />
+      ) : (
+        <div className="card-surface p-4 overflow-x-auto">
+          <Table>
+            <THead>
+              <tr>
+                <TH><SortHeader label="ID" active={sortKey === 'id'} direction={sortDir} onClick={() => toggleSort('id')} /></TH>
+                <TH><SortHeader label="Nombre" active={sortKey === 'nombre'} direction={sortDir} onClick={() => toggleSort('nombre')} /></TH>
+                <TH><SortHeader label="Email" active={sortKey === 'email'} direction={sortDir} onClick={() => toggleSort('email')} /></TH>
+                <TH><SortHeader label="Rol" active={sortKey === 'rol'} direction={sortDir} onClick={() => toggleSort('rol')} /></TH>
+                <TH>Rango</TH>
+                <TH><SortHeader label="Creado" active={sortKey === 'creadoEn'} direction={sortDir} onClick={() => toggleSort('creadoEn')} /></TH>
+                <TH>{t('ui.actions')}</TH>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </THead>
+            <TBody>
+              {filtered.map(u => (
+                <tr key={u.id} className="border-b hover:bg-slate-800/40">
+                  <TD>{u.id}</TD>
+                  <TD>{u.nombre}</TD>
+                  <TD>{u.email}</TD>
+                  <TD>
+                    {ROLES.includes(u.rol as RoleType) ? (
+                      <RoleBadge role={u.rol as RoleType} />
+                    ) : (
+                      <span className="text-slate-400">{u.rol}</span>
+                    )}
+                  </TD>
+                  <TD>{u.rango ?? '-'}</TD>
+                  <TD>{new Date(u.creadoEn).toLocaleDateString()}</TD>
+                  <TD>
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="secondary" onClick={() => setEditUser(u)}>
+                        {t('ui.edit')}
+                      </Button>
+                      <Button size="sm" variant="danger" onClick={() => setDeleteUserId(u.id)}>
+                        {t('ui.delete')}
+                      </Button>
+                    </div>
+                  </TD>
+                </tr>
+              ))}
+            </TBody>
+          </Table>
+        </div>
+      )}
 
-      <CreateUserPanel onCreated={u => setItems(prev => [u, ...prev])} />
+      {/* Create Modal */}
+      <UserFormModal
+        open={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSubmit={handleCreate}
+        title="Nuevo Usuario"
+      />
+
+      {/* Edit Modal */}
+      <UserFormModal
+        open={!!editUser}
+        onClose={() => setEditUser(null)}
+        onSubmit={(data) => editUser && handleUpdate(editUser.id, data)}
+        title="Editar Usuario"
+        initialData={editUser ?? undefined}
+        isEdit
+      />
+
+      {/* Delete Confirmation */}
+      <ConfirmDialog
+        open={deleteUserId !== null}
+        onClose={() => setDeleteUserId(null)}
+        onConfirm={handleDelete}
+        title="Eliminar usuario"
+        description="¿Estás seguro de que deseas eliminar este usuario? Esta acción no se puede deshacer."
+        confirmText={t('ui.delete')}
+      />
     </div>
   );
 };
 
-const CreateUserPanel: React.FC<{ onCreated: (u: UsuarioDto) => void }> = ({ onCreated }) => {
+interface UserFormModalProps {
+  open: boolean;
+  onClose: () => void;
+  onSubmit: (data: CreateUsuarioRequest | UpdateUsuarioRequest) => Promise<void>;
+  title: string;
+  initialData?: UsuarioDto;
+  isEdit?: boolean;
+}
+
+const UserFormModal: React.FC<UserFormModalProps> = ({
+  open,
+  onClose,
+  onSubmit,
+  title,
+  initialData,
+  isEdit = false,
+}) => {
   const [nombre, setNombre] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [rol, setRol] = useState<'observer' | 'support' | 'sorcerer' | 'admin'>('observer');
-  const [rango, setRango] = useState<string>('');
+  const [rol, setRol] = useState<RoleType>('support');
+  const [rango, setRango] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Reset form when modal opens
+  useEffect(() => {
+    if (open) {
+      setNombre(initialData?.nombre ?? '');
+      setEmail(initialData?.email ?? '');
+      setPassword('');
+      setRol((initialData?.rol as RoleType) ?? 'support');
+      setRango(initialData?.rango ?? '');
+      setError(null);
+    }
+  }, [open, initialData]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    setError(null);
+    try {
+      if (isEdit) {
+        await onSubmit({
+          nombre,
+          email,
+          ...(password ? { password } : {}),
+          rol,
+          rango: rango || null,
+        });
+      } else {
+        await onSubmit({ nombre, email, password, rol, rango: rango || null });
+      }
+      onClose();
+    } catch {
+      setError(isEdit ? 'No se pudo actualizar el usuario' : 'No se pudo crear el usuario');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
-    <div id="create" className="card-surface p-4 space-y-3">
-      <h3 className="section-title">Crear Usuario</h3>
-      {error && <div className="text-red-600">{error}</div>}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <input className="input" placeholder="Nombre" value={nombre} onChange={e => setNombre(e.target.value)} />
-        <input className="input" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} />
-        <input className="input" placeholder="Contraseña" type="password" value={password} onChange={e => setPassword(e.target.value)} />
-        <select className="input" value={rol} onChange={e => setRol(e.target.value as any)}>
-          {roles.map(r => <option key={r} value={r}>{r}</option>)}
-        </select>
-        <input className="input" placeholder="Rango (opcional)" value={rango} onChange={e => setRango(e.target.value)} />
-      </div>
-      <div>
-        <button
-          className="btn-primary"
-          disabled={saving}
-          onClick={async () => {
-            setSaving(true);
-            setError(null);
-            try {
-              const created = await userApi.create({ nombre, email, password, rol, rango: rango || null });
-              onCreated(created);
-              setNombre(''); setEmail(''); setPassword(''); setRango(''); setRol('observer');
-            } catch {
-              setError('No se pudo crear el usuario');
-            } finally {
-              setSaving(false);
-            }
-          }}
+    <Modal
+      open={open}
+      onClose={onClose}
+      title={title}
+      footer={
+        <div className="flex justify-end gap-2">
+          <Button variant="ghost" onClick={onClose}>{t('ui.cancel')}</Button>
+          <Button type="submit" form="user-form" disabled={saving}>
+            {isEdit ? t('ui.saveChanges') : t('ui.create')}
+          </Button>
+        </div>
+      }
+    >
+      <form id="user-form" onSubmit={handleSubmit} className="space-y-4">
+        {error && <p className="text-sm text-red-400">{error}</p>}
+        
+        <Input
+          label={t('form.labels.name')}
+          placeholder="Nombre del usuario"
+          value={nombre}
+          onChange={e => setNombre(e.target.value)}
+          required
+        />
+        
+        <Input
+          label={t('form.labels.email')}
+          type="email"
+          placeholder={t('form.placeholders.email')}
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          required
+        />
+        
+        <Input
+          label={isEdit ? 'Nueva contraseña (dejar en blanco para no cambiar)' : t('form.labels.password')}
+          type="password"
+          placeholder={t('form.placeholders.passwordDots')}
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+          required={!isEdit}
+        />
+        
+        <Select
+          label="Rol"
+          value={rol}
+          onChange={e => setRol(e.target.value as RoleType)}
         >
-          Crear
-        </button>
-      </div>
-    </div>
+          {ROLES.map(r => (
+            <option key={r} value={r}>{ROLE_LABELS[r]}</option>
+          ))}
+        </Select>
+        
+        <Input
+          label="Rango (opcional)"
+          placeholder="Ej: alto, especial..."
+          value={rango}
+          onChange={e => setRango(e.target.value)}
+        />
+      </form>
+    </Modal>
   );
 };
 

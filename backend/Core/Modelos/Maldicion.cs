@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Globalization;
 
 namespace GestionDeMisiones.Models;
@@ -22,8 +23,12 @@ public class Maldicion
     [Required]
     public ENivelPeligro NivelPeligro { get; set; }
 
+    // FK explícita para binding desde JSON
     [Required]
-    public Ubicacion UbicacionDeAparicion{ get; set; }
+    public int UbicacionDeAparicionId { get; set; }
+
+    [ForeignKey("UbicacionDeAparicionId")]
+    public Ubicacion? UbicacionDeAparicion { get; set; }
 
 
 

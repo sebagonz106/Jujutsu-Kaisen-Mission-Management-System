@@ -20,7 +20,7 @@ export interface LoginRequest {
 /**
  * Registration request payload.
  *
- * Note: Role is not user-selectable; the backend automatically assigns 'observer' role.
+ * Note: Role is not user-selectable; the backend automatically assigns 'support' role.
  */
 export interface RegisterRequest {
   /** User's display name. */
@@ -41,7 +41,7 @@ export interface AuthUser {
   id: number;
 
   /** User role: determines access permissions. */
-  role: 'sorcerer' | 'support' | 'observer' | 'admin';
+  role: 'sorcerer' | 'support' | 'admin';
 
   /** User's display name. */
   name: string;
@@ -67,13 +67,13 @@ export interface LoginResponse {
 /**
  * Registration response.
  *
- * Note: Newly registered users are assigned the 'observer' role.
+ * Note: Newly registered users are assigned the 'support' role.
  */
 export interface RegisterResponse {
   /** JWT or mock token for authenticated requests. */
   accessToken: string;
 
-  /** User data with 'observer' role. */
+  /** User data with 'support' role. */
   user: AuthUser;
 }
 

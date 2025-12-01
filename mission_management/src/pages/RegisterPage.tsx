@@ -62,7 +62,7 @@ export const RegisterPage = () => {
         <div className="text-center space-y-2">
           <h1 className="font-[Cinzel] text-3xl text-jjk-gold tracking-wide">{t('pages.register.title')}</h1>
           <p className="jp-mark text-jjk-purple text-lg">呪術廻戦</p>
-          <p className="text-xs text-jjk-fog">{t('pages.register.subtitleObserver')}</p>
+          <p className="text-xs text-jjk-fog">{t('pages.register.subtitleInfo')}</p>
         </div>
         <form onSubmit={onSubmit} className="space-y-5">
           <div className="space-y-1">

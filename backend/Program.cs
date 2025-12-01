@@ -3,8 +3,11 @@ using Microsoft.EntityFrameworkCore;
 using GestionDeMisiones.Data;
 using GestionDeMisiones.IRepository;
 using GestionDeMisiones.IService;
+using GestionDeMisiones.IServices;
 using GestionDeMisiones.Repository;
+using GestionDeMisiones.Repositories;
 using GestionDeMisiones.Service;
+using GestionDeMisiones.Services;
 using GestionDeMisiones.Conventions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -23,9 +26,11 @@ builder.Services.AddControllers(options =>
     options.Conventions.Insert(0, new RoutePrefixConvention("api/v1"));
 })
 // Ensure consistent camelCase JSON (frontend expects camelCase keys like accessToken)
+// Also serialize enums as strings (e.g., "amplificacion" instead of 0)
 .AddJsonOptions(opts =>
 {
     opts.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+    opts.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
 });
 
 // CORS: Allow Vite dev server (ports 5173-5175) with full headers/methods and credentials
@@ -74,6 +79,9 @@ builder.Services.AddScoped<ITecnicaMalditaRepository, TecnicaMalditaRepository>(
 builder.Services.AddScoped<ITecnicaMalditaService, TecnicaMalditaService>();
 builder.Services.AddScoped<ITecnicaMalditaDominadaRepository, TecnicaMalditaDominadaRepository>();
 builder.Services.AddScoped<ITecnicaMalditaDominadaService, TecnicaMalditaDominadaService>();
+// Audit service
+builder.Services.AddScoped<IAuditRepository, AuditRepository>();
+builder.Services.AddScoped<IAuditService, AuditService>();
 // Simple in-memory auth service
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();

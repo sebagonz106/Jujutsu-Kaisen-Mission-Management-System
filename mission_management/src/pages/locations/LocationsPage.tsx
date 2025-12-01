@@ -199,7 +199,6 @@ export const LocationsPage = () => {
           <Table>
             <THead>
               <tr>
-                <TH><SortHeader label={t('ui.id')} active={sortKey==='id'} direction={sortDir} onClick={() => toggleSort('id')} /></TH>
                 <TH><SortHeader label={t('form.labels.name')} active={sortKey==='nombre'} direction={sortDir} onClick={() => toggleSort('nombre')} /></TH>
                 {canMutate && <TH>{t('ui.actions')}</TH>}
               </tr>
@@ -207,7 +206,6 @@ export const LocationsPage = () => {
             <TBody>
               {sortedData.map((l) => (
                 <tr key={l.id} className="border-b hover:bg-slate-800/40">
-                  <TD>{l.id}</TD>
                   <TD>{l.nombre}</TD>
                   {canMutate && (
                     <TD className="flex gap-2">

@@ -9,7 +9,7 @@ import type { Technique } from '../../types/technique';
 import type { LoginRequest, LoginResponse, MeResponse, RegisterRequest, RegisterResponse } from '../../types/auth';
 
 // --- Helpers to simulate backend auth/authorization ---
-type MockUser = { role: 'sorcerer' | 'support' | 'observer'; rank?: string; name?: string };
+type MockUser = { role: 'sorcerer' | 'support' | 'admin'; rank?: string; name?: string };
 
 const parseUserFromToken = (authHeader?: string | null): MockUser | null => {
   if (!authHeader) return null;
@@ -25,14 +25,16 @@ const parseUserFromToken = (authHeader?: string | null): MockUser | null => {
   return { role, rank, name };
 };
 
-// Only allow mutations (POST/PUT/DELETE) for support or sorcerers with rank 'alto' or 'especial'.
+// Only allow mutations (POST/PUT/DELETE) for admin, support or sorcerers with rank 'alto' or 'especial'.
 const forbidIfNotHighRankSorcerer = (req: Request) => {
   // In mock mode, if no token is provided we default to support to keep DX smooth.
   const user = parseUserFromToken(req.headers.get('authorization')) ?? { role: 'support', rank: 'especial' } as MockUser;
   const allowedRanks = ['alto', 'especial'];
+  // Allow admin role full access.
+  if (user.role === 'admin') return null;
   // Allow support role to perform mutations.
   if (user.role === 'support') return null;
-  if (user.role !== 'sorcerer') return HttpResponse.json({ message: 'Forbidden: only sorcerers or support can mutate entities.' }, { status: 403 });
+  if (user.role !== 'sorcerer') return HttpResponse.json({ message: 'Forbidden: only sorcerers, support or admin can mutate entities.' }, { status: 403 });
   if (!user.rank || !allowedRanks.includes(user.rank)) return HttpResponse.json({ message: 'Forbidden: insufficient sorcerer rank.' }, { status: 403 });
   return null;
 };
@@ -68,7 +70,7 @@ const validateMissionPayload = (
 };
 
 // Helper to parse user for audit trail.
-const actorFromReq = (req: Request) => parseUserFromToken(req.headers.get('authorization')) ?? { role: 'observer', rank: 'novato' };
+const actorFromReq = (req: Request) => parseUserFromToken(req.headers.get('authorization')) ?? { role: 'support', rank: 'novato' };
 
 const pushAudit = (entity: AuditEntry['entity'], action: AuditEntry['action'], entityId: number, req: Request, summary?: string) => {
   const actor = actorFromReq(req);
@@ -123,8 +125,8 @@ export const handlers = [
   http.post('/auth/login', async ({ request }) => {
     const body = (await request.json()) as LoginRequest;
     console.info('[MSW] /auth/login called with', { email: body.email });
-    const userRole: LoginResponse['user']['role'] = body.email.includes('observer')
-      ? 'observer'
+    const userRole: LoginResponse['user']['role'] = body.email.includes('admin')
+      ? 'admin'
       : body.email.includes('support')
       ? 'support'
       : 'sorcerer';
@@ -151,10 +153,10 @@ export const handlers = [
   http.post('/auth/register', async ({ request }) => {
     const body = (await request.json()) as RegisterRequest;
     console.info('[MSW] /auth/register called with', { email: body.email });
-    // Always assign observer role in mock
+    // Always assign support role in mock for new registrations
     const resp: RegisterResponse = {
-      accessToken: 'MOCK_TOKEN:observer:novato',
-      user: { id: Date.now(), role: 'observer', name: body.name, rank: 'novato' },
+      accessToken: 'MOCK_TOKEN:support:novato',
+      user: { id: Date.now(), role: 'support', name: body.name, rank: 'novato' },
     };
     return HttpResponse.json(resp, { status: 201 });
   }),

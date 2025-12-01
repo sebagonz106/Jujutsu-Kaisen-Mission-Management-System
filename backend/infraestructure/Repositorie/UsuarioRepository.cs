@@ -86,13 +86,11 @@ namespace GestionDeMisiones.Repository
             var r = inputRole.Trim().ToLowerInvariant();
             return r switch
             {
-                "observador" => "observador",
-                "observer" => "observador",
                 "hechicero" => "hechicero",
                 "sorcerer" => "hechicero",
                 "support" => "support",
                 "admin" => "admin",
-                _ => null
+                _ => "support" // Default to support for new users
             };
         }
     }

@@ -27,8 +27,11 @@ namespace GestionDeMisiones.Data
 
         public DbSet<TecnicaMalditaDominada> TecnicasMalditasDominadas { get; set; }
 
-    // Usuarios (para autenticación persistente)
-    public DbSet<Usuario> Usuarios { get; set; }
+        // Usuarios (para autenticación persistente)
+        public DbSet<Usuario> Usuarios { get; set; }
+
+        // Auditoría del sistema
+        public DbSet<AuditEntry> AuditEntries { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

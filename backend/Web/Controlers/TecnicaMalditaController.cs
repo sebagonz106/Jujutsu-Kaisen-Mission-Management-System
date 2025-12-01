@@ -1,17 +1,29 @@
 using Microsoft.AspNetCore.Mvc;
 using GestionDeMisiones.Models;
 using GestionDeMisiones.IService;
+using GestionDeMisiones.IServices;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 [ApiController]
 [Route("api/[controller]")]
 public class TecnicaMalditaController : ControllerBase
 {
     private readonly ITecnicaMalditaService _service;
+    private readonly IAuditService _auditService;
 
-    public TecnicaMalditaController(ITecnicaMalditaService service)
+    public TecnicaMalditaController(ITecnicaMalditaService service, IAuditService auditService)
     {
         _service = service;
+        _auditService = auditService;
+    }
+
+    private (string role, string? rank, string? name) GetActorInfo()
+    {
+        var role = User.FindFirst(ClaimTypes.Role)?.Value ?? "unknown";
+        var rank = User.FindFirst("rank")?.Value;
+        var name = User.FindFirst("name")?.Value ?? User.FindFirst(ClaimTypes.Name)?.Value;
+        return (role, rank, name);
     }
 
     [HttpGet]
@@ -48,6 +60,10 @@ public class TecnicaMalditaController : ControllerBase
         try
         {
             var created = await _service.CreateAsync(tecnica);
+            
+            var (role, rank, name) = GetActorInfo();
+            await _auditService.LogActionAsync("tecnica", "create", created.Id, role, rank, name, $"Creada técnica: {created.Nombre}");
+            
             return CreatedAtAction(nameof(GetTecnicaMaldita), new { id = created.Id }, created);
         }
         catch (ArgumentException ex)
@@ -69,6 +85,9 @@ public class TecnicaMalditaController : ControllerBase
             if (!updated)
                 return NotFound("La técnica maldita que quiere modificar no existe");
 
+            var (role, rank, name) = GetActorInfo();
+            await _auditService.LogActionAsync("tecnica", "update", id, role, rank, name, $"Actualizada técnica: {tecnica.Nombre}");
+
             return NoContent();
         }
         catch (ArgumentException ex)
@@ -81,9 +100,13 @@ public class TecnicaMalditaController : ControllerBase
     [Authorize(Roles = "admin")]
     public async Task<IActionResult> DeleteTecnicaMaldita(int id)
     {
+        var tecnica = await _service.GetByIdAsync(id);
         var deleted = await _service.DeleteAsync(id);
         if (!deleted)
             return NotFound("La técnica maldita que quiere eliminar no existe");
+
+        var (role, rank, name) = GetActorInfo();
+        await _auditService.LogActionAsync("tecnica", "delete", id, role, rank, name, $"Eliminada técnica: {tecnica?.Nombre}");
 
         return NoContent();
     }

@@ -17,7 +17,7 @@ export interface AuthUser {
   id: number;
 
   /** User role: determines access permissions. */
-  role: 'sorcerer' | 'support' | 'observer' | 'admin';
+  role: 'sorcerer' | 'support' | 'admin';
 
   /** Sorcerer rank (e.g., 'alto', 'especial'). Only applicable for sorcerers. */
   rank?: string;

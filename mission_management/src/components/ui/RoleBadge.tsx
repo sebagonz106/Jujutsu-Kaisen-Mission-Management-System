@@ -1,4 +1,4 @@
-type Role = 'sorcerer' | 'support' | 'observer';
+type Role = 'sorcerer' | 'support' | 'admin';
 
 type RoleBadgeProps = {
   role: Role;
@@ -9,7 +9,7 @@ type RoleBadgeProps = {
 const ROLE_STYLES: Record<Role, string> = {
   sorcerer: 'bg-jjk-indigo text-white',
   support: 'bg-jjk-gold text-jjk-dark',
-  observer: 'bg-jjk-ash text-jjk-fog',
+  admin: 'bg-red-600 text-white',
 };
 
 export const RoleBadge: React.FC<RoleBadgeProps> = ({ role, size = 'sm', className }) => {
@@ -21,7 +21,7 @@ export const RoleBadge: React.FC<RoleBadgeProps> = ({ role, size = 'sm', classNa
     <span aria-label={`Rol: ${role}`} className={classes}>
       {role === 'sorcerer' && 'Hechicero'}
       {role === 'support' && 'Soporte'}
-      {role === 'observer' && 'Observador'}
+      {role === 'admin' && 'Administrador'}
     </span>
   );
 };

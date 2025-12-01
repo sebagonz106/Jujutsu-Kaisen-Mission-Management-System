@@ -20,6 +20,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { canMutate as canMutateByRole } from '../../utils/permissions';
 import { t } from '../../i18n';
 import { useLocations } from '../../hooks/useLocations';
+import { curseGradeLabel, curseTypeLabel, curseStateLabel, curseDangerLabel } from '../../utils/enumLabels';
 
 const schema = z.object({
   nombre: z.string().min(2, t('form.validation.nameTooShort')),
@@ -184,7 +185,6 @@ export const CursesPage = () => {
           <Table>
             <THead>
               <tr>
-                <TH><SortHeader label={t('ui.id')} active={sortKey==='id'} direction={sortDir} onClick={() => toggleSort('id')} /></TH>
                 <TH><SortHeader label={t('form.curse.name')} active={sortKey==='nombre'} direction={sortDir} onClick={() => toggleSort('nombre')} /></TH>
                 <TH><SortHeader label={t('form.curse.grade')} active={sortKey==='grado'} direction={sortDir} onClick={() => toggleSort('grado')} /></TH>
                 <TH><SortHeader label={t('form.curse.type')} active={sortKey==='tipo'} direction={sortDir} onClick={() => toggleSort('tipo')} /></TH>
@@ -196,12 +196,11 @@ export const CursesPage = () => {
             <TBody>
               {sortedData.map((c) => (
                 <tr key={c.id} className="border-b hover:bg-slate-800/40">
-                  <TD>{c.id}</TD>
                   <TD>{c.nombre}</TD>
-                  <TD>{c.grado}</TD>
-                  <TD>{c.tipo}</TD>
-                  <TD>{c.estadoActual}</TD>
-                  <TD>{c.nivelPeligro}</TD>
+                  <TD>{curseGradeLabel(c.grado)}</TD>
+                  <TD>{curseTypeLabel(c.tipo)}</TD>
+                  <TD>{curseStateLabel(c.estadoActual)}</TD>
+                  <TD>{curseDangerLabel(c.nivelPeligro)}</TD>
                   {canMutate && (
                     <TD className="flex gap-2">
                       <Button size="sm" variant="secondary" onClick={() => startEdit(c)}>{t('ui.edit')}</Button>
@@ -250,16 +249,16 @@ export const CursesPage = () => {
           </Select>
           {errors.ubicacionId && <p className="text-xs text-red-400">{errors.ubicacionId.message}</p>}
           <Select label={t('form.curse.grade')} {...register('grado')}>
-            {Object.values(CURSE_GRADE).map((g) => <option key={g} value={g}>{g}</option>)}
+            {Object.values(CURSE_GRADE).map((g) => <option key={g} value={g}>{curseGradeLabel(g)}</option>)}
           </Select>
           <Select label={t('form.curse.type')} {...register('tipo')}>
-            {Object.values(CURSE_TYPE).map((t) => <option key={t} value={t}>{t}</option>)}
+            {Object.values(CURSE_TYPE).map((ct) => <option key={ct} value={ct}>{curseTypeLabel(ct)}</option>)}
           </Select>
           <Select label={t('form.curse.state')} {...register('estadoActual')}>
-            {Object.values(CURSE_STATE).map((s) => <option key={s} value={s}>{s}</option>)}
+            {Object.values(CURSE_STATE).map((s) => <option key={s} value={s}>{curseStateLabel(s)}</option>)}
           </Select>
           <Select label={t('form.curse.danger')} {...register('nivelPeligro')}>
-            {Object.values(CURSE_DANGER_LEVEL).map((n) => <option key={n} value={n}>{n}</option>)}
+            {Object.values(CURSE_DANGER_LEVEL).map((n) => <option key={n} value={n}>{curseDangerLabel(n)}</option>)}
           </Select>
         </form>
       </Modal>

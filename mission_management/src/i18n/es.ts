@@ -110,7 +110,7 @@ export const es = {
     },
     register: {
       title: 'Registro',
-      subtitleObserver: 'Crear cuenta observador',
+      subtitleInfo: 'Crear cuenta de soporte',
       buttonCreate: 'Crear cuenta',
       buttonRegistering: 'Registrando...',
       linkHasAccount: '¿Ya tienes cuenta?',
@@ -229,5 +229,59 @@ export const es = {
     welcome: 'Bienvenido',
     registered: 'Registrado',
     invalidCredentials: 'Credenciales inválidas',
+  },
+  // Labels amigables para enums
+  enums: {
+    sorcerer: {
+      grade: {
+        estudiante: 'Estudiante',
+        aprendiz: 'Aprendiz',
+        medio: 'Grado Medio',
+        alto: 'Grado Alto',
+        especial: 'Grado Especial',
+      },
+      status: {
+        activo: 'Activo',
+        lesionado: 'Lesionado',
+        recuperandose: 'Recuperándose',
+        baja: 'Baja',
+        inactivo: 'Inactivo',
+      },
+    },
+    curse: {
+      grade: {
+        grado_1: 'Grado 1',
+        grado_2: 'Grado 2',
+        grado_3: 'Grado 3',
+        semi_especial: 'Semi-Especial',
+        especial: 'Especial',
+      },
+      type: {
+        maligna: 'Maligna',
+        semi_maldicion: 'Semi-Maldición',
+        residual: 'Residual',
+        desconocida: 'Desconocida',
+      },
+      state: {
+        activa: 'Activa',
+        en_proceso_de_exorcismo: 'En Exorcismo',
+        exorcisada: 'Exorcisada',
+      },
+      danger: {
+        bajo: 'Bajo',
+        moderado: 'Moderado',
+        alto: 'Alto',
+      },
+    },
+    technique: {
+      type: {
+        amplificacion: 'Amplificación',
+        barrera: 'Barrera',
+        manipulacion: 'Manipulación',
+        proyeccion: 'Proyección',
+        shikigami: 'Shikigami',
+        otro: 'Otro',
+      },
+    },
   },
 } as const;

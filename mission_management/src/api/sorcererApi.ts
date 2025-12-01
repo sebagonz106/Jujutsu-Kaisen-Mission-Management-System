@@ -72,7 +72,7 @@ export const sorcererApi = {
       grado: payload.grado,
       experiencia: payload.experiencia,
       estado: payload.estado,
-      tecnicaPrincipal: payload.tecnicaPrincipalId ? { id: payload.tecnicaPrincipalId } : null,
+      tecnicaPrincipalId: payload.tecnicaPrincipalId ?? 0,
     };
     const { data } = await apiClient.post<BackendSorcerer>('/sorcerers', send);
     return normalizeSorcerer(data);
@@ -88,8 +88,8 @@ export const sorcererApi = {
   async update(id: number, payload: Partial<Omit<Sorcerer, 'id'>>): Promise<void> {
     const send: Record<string, unknown> = { ...payload };
     if (Object.prototype.hasOwnProperty.call(payload, 'tecnicaPrincipalId')) {
-      send.tecnicaPrincipal = payload.tecnicaPrincipalId ? { id: payload.tecnicaPrincipalId } : null;
-      delete (send as Record<string, unknown>).tecnicaPrincipalId;
+      send.tecnicaPrincipalId = payload.tecnicaPrincipalId ?? 0;
+      delete (send as Record<string, unknown>).tecnicaPrincipal;
     }
     await apiClient.put(`/sorcerers/${id}`, send);
   },

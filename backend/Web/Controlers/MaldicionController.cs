@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using GestionDeMisiones.Models;
 using GestionDeMisiones.IService;
+using GestionDeMisiones.IServices;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace GestionDeMisiones.Controllers
 {
@@ -10,10 +12,19 @@ namespace GestionDeMisiones.Controllers
     public class MaldicionController : ControllerBase
     {
         private readonly IMaldicionService _service;
+        private readonly IAuditService _auditService;
 
-        public MaldicionController(IMaldicionService service)
+        public MaldicionController(IMaldicionService service, IAuditService auditService)
         {
             _service = service;
+            _auditService = auditService;
+        }
+
+        private (string role, string? name) GetActorInfo()
+        {
+            var role = User.FindFirst(ClaimTypes.Role)?.Value ?? "unknown";
+            var name = User.FindFirst("name")?.Value ?? User.FindFirst(ClaimTypes.Name)?.Value;
+            return (role, name);
         }
 
         [HttpGet]
@@ -49,6 +60,10 @@ namespace GestionDeMisiones.Controllers
                 return BadRequest("Envíe una maldición válida.");
 
             var created = await _service.CreateAsync(maldicion);
+            
+            var (role, name) = GetActorInfo();
+            await _auditService.LogActionAsync("maldicion", "create", created!.Id, role, null, name, $"Creada maldición: {created.Nombre}");
+            
             return CreatedAtAction(nameof(GetById), new { id = created!.Id }, created);
         }
 
@@ -63,6 +78,9 @@ namespace GestionDeMisiones.Controllers
             if (!updated)
                 return NotFound("La maldición que desea editar no existe.");
 
+            var (role, name) = GetActorInfo();
+            await _auditService.LogActionAsync("maldicion", "update", id, role, null, name, $"Actualizada maldición: {maldicion.Nombre}");
+
             return NoContent();
         }
 
@@ -70,9 +88,13 @@ namespace GestionDeMisiones.Controllers
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> Delete(int id)
         {
+            var maldicion = await _service.GetByIdAsync(id);
             var deleted = await _service.DeleteAsync(id);
             if (!deleted)
                 return NotFound("La maldición que desea eliminar no existe.");
+
+            var (role, name) = GetActorInfo();
+            await _auditService.LogActionAsync("maldicion", "delete", id, role, null, name, $"Eliminada maldición: {maldicion?.Nombre}");
 
             return NoContent();
         }

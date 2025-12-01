@@ -10,7 +10,7 @@ import { useAuth } from '../hooks/useAuth';
 // Placeholder dashboard components (texto en español)
 const SorcererDashboard = () => <div className="p-4">Panel Hechicero</div>;
 const SupportDashboard = () => <div className="p-4">Panel Soporte</div>;
-const ObserverDashboard = () => <div className="p-4">Panel Observador</div>;
+const AdminDashboard = () => <div className="p-4">Panel Administrador</div>;
 const Forbidden = () => <div className="p-4">403 - Acceso denegado</div>;
 const EntityIndex = () => {
   const { user } = useAuth();
@@ -25,7 +25,7 @@ const EntityIndex = () => {
         <Link className="nav-link" to="/locations">Ubicaciones</Link>
         <Link className="nav-link" to="/techniques">Técnicas</Link>
         {user?.role === 'admin' && (
-          <Link className="btn-primary" to="/admin/users">Administrar usuarios</Link>
+          <Link className="nav-link" to="/admin/users">Administrar usuarios</Link>
         )}
       </nav>
     </div>
@@ -72,11 +72,11 @@ export const AppRoutes = () => (
         }
       />
       <Route
-        path="/dashboard/observer"
+        path="/dashboard/admin"
         element={
           <ProtectedRoute>
-            <RoleGuard roles={['observer']}>
-              <ObserverDashboard />
+            <RoleGuard roles={['admin']}>
+              <AdminDashboard />
             </RoleGuard>
           </ProtectedRoute>
         }
@@ -147,7 +147,9 @@ export const AppRoutes = () => (
         element={
           <ProtectedRoute>
             <RoleGuard roles={['admin']}>
-              <AdminUsersPage />
+              <Layout>
+                <AdminUsersPage />
+              </Layout>
             </RoleGuard>
           </ProtectedRoute>
         }

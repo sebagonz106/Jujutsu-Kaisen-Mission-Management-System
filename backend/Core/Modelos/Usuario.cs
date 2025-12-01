@@ -19,7 +19,7 @@ namespace GestionDeMisiones.Models
         public string PasswordHash { get; set; } = string.Empty;
 
         [MaxLength(50)]
-        public string Rol { get; set; } = "observer";
+        public string Rol { get; set; } = "support";
 
         [MaxLength(50)]
         public string? Rango { get; set; }
