@@ -32,7 +32,10 @@ const routeMap: Record<string, string> = {
   '/techniques': '/TecnicaMaldita',
   '/applied-techniques': '/TecnicaMalditaAplicada',
   '/dominated-techniques': '/TecnicaMalditaDominada',
+  '/mastered-techniques': '/TecnicaMalditaDominada',
   '/requests': '/Solicitud',
+  '/resource-usages': '/UsoDeRecurso',
+  '/sorcerers-in-charge': '/HechiceroEncargado',
   '/audit': '/Audit', // si existe equivalente
 };
 

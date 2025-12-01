@@ -6,6 +6,7 @@ namespace GestionDeMisiones.IRepository
     public interface IUsoDeRecursoRepository
     {
         Task<IEnumerable<UsoDeRecurso>> GetAllAsync();
+        Task<List<UsoDeRecurso>> GetPagedAsync(int? cursor, int limit);
         Task<UsoDeRecurso?> GetByIdAsync(int id);
         Task AddAsync(UsoDeRecurso usoDeRecurso);
         void Update(UsoDeRecurso usoDeRecurso);

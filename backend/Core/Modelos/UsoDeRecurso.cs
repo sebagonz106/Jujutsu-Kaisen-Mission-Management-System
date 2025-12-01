@@ -19,5 +19,8 @@ public class UsoDeRecurso
     [DataType(DataType.DateTime)]
     public DateTime? FechaFin { get; set; }
 
+    [Range(1, int.MaxValue)]
+    public int Cantidad { get; set; } = 1;
+
     public string? Observaciones { get; set; } = "";
 }

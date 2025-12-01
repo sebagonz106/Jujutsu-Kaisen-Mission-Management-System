@@ -18,6 +18,19 @@ public class TecnicaMalditaDominadaRepository : ITecnicaMalditaDominadaRepositor
             .Include(tmd => tmd.TecnicaMaldita)
             .ToListAsync();
 
+    public async Task<List<TecnicaMalditaDominada>> GetPagedAsync(int? cursor, int limit)
+    {
+        var query = _context.TecnicasMalditasDominadas
+            .Include(tmd => tmd.Hechicero)
+            .Include(tmd => tmd.TecnicaMaldita)
+            .AsQueryable();
+
+        if (cursor.HasValue)
+            query = query.Where(tmd => tmd.Id > cursor.Value);
+
+        return await query.OrderBy(tmd => tmd.Id).Take(limit + 1).ToListAsync();
+    }
+
     public async Task<TecnicaMalditaDominada?> GetByIdAsync(int id)
         => await _context.TecnicasMalditasDominadas
             .Include(tmd => tmd.Hechicero)

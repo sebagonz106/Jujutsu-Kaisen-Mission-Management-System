@@ -12,10 +12,35 @@ public class TrasladoRepository : ITrasladoRepository
     public TrasladoRepository(AppDbContext context) => _context = context;
 
     public async Task<IEnumerable<Traslado>> GetAllAsync()
-        => await _context.Traslados.ToListAsync();
+        => await _context.Traslados
+            .Include(t => t.Origen)
+            .Include(t => t.Destino)
+            .Include(t => t.Mision)
+            .Include(t => t.Hechiceros)
+            .ToListAsync();
+
+    public async Task<List<Traslado>> GetPagedAsync(int? cursor, int limit)
+    {
+        var query = _context.Traslados
+            .Include(t => t.Origen)
+            .Include(t => t.Destino)
+            .Include(t => t.Mision)
+            .Include(t => t.Hechiceros)
+            .AsQueryable();
+
+        if (cursor.HasValue)
+            query = query.Where(t => t.Id > cursor.Value);
+
+        return await query.OrderBy(t => t.Id).Take(limit + 1).ToListAsync();
+    }
 
     public async Task<Traslado> GetByIdAsync(int id)
-        => await _context.Traslados.FirstOrDefaultAsync(t => t.Id == id);
+        => await _context.Traslados
+            .Include(t => t.Origen)
+            .Include(t => t.Destino)
+            .Include(t => t.Mision)
+            .Include(t => t.Hechiceros)
+            .FirstOrDefaultAsync(t => t.Id == id);
 
     public async Task<Traslado> AddAsync(Traslado traslado)
     {
@@ -23,6 +48,44 @@ public class TrasladoRepository : ITrasladoRepository
         await _context.Traslados.AddAsync(traslado);
         await _context.SaveChangesAsync();
         return traslado;
+    }
+
+    public async Task<Traslado> AddWithHechicerosAsync(Traslado traslado, List<int>? hechicerosIds)
+    {
+        traslado.Id = 0;
+        
+        if (hechicerosIds != null && hechicerosIds.Count > 0)
+        {
+            var hechiceros = await _context.Hechiceros
+                .Where(h => hechicerosIds.Contains(h.Id))
+                .ToListAsync();
+            traslado.Hechiceros = hechiceros;
+        }
+        
+        await _context.Traslados.AddAsync(traslado);
+        await _context.SaveChangesAsync();
+        return traslado;
+    }
+
+    public async Task UpdateWithHechicerosAsync(Traslado traslado, List<int>? hechicerosIds)
+    {
+        // Cargar los hechiceros actuales
+        await _context.Entry(traslado).Collection(t => t.Hechiceros).LoadAsync();
+        
+        // Limpiar y reasignar
+        traslado.Hechiceros.Clear();
+        
+        if (hechicerosIds != null && hechicerosIds.Count > 0)
+        {
+            var hechiceros = await _context.Hechiceros
+                .Where(h => hechicerosIds.Contains(h.Id))
+                .ToListAsync();
+            foreach (var h in hechiceros)
+                traslado.Hechiceros.Add(h);
+        }
+        
+        _context.Traslados.Update(traslado);
+        await _context.SaveChangesAsync();
     }
 
     public async Task UpdateAsync(Traslado traslado)

@@ -19,8 +19,13 @@ namespace GestionDeMisiones.Web.Controllers
 
         [HttpGet]
         [Authorize]
-        public async Task<ActionResult<IEnumerable<HechiceroEncargado>>> GetAll()
+        public async Task<ActionResult<IEnumerable<HechiceroEncargado>>> GetAll([FromQuery] int? limit, [FromQuery] int? cursor)
         {
+            if (limit.HasValue || cursor.HasValue)
+            {
+                var (pagedItems, nextCursor, hasMore) = await _service.GetPagedAsync(cursor, limit ?? 20);
+                return Ok(new { items = pagedItems, nextCursor, hasMore });
+            }
             var items = await _service.GetAllAsync();
             return Ok(items);
         }

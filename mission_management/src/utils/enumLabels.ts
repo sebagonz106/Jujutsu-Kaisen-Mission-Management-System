@@ -67,3 +67,10 @@ export const requestStatusLabel = (value: string): string => {
   return labels[value] ?? value;
 };
 export const getRequestStatusLabel = requestStatusLabel;
+
+// Transfer status labels
+export const transferStatusLabel = (value: string): string => {
+  const labels = es.enums.transfer.status as Record<string, string>;
+  return labels[value] ?? value;
+};
+export const getTransferStatusLabel = transferStatusLabel;

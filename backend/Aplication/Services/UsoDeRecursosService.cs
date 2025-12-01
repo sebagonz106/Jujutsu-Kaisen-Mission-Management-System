@@ -18,6 +18,16 @@ namespace GestionDeMisiones.Service
             return await _repository.GetAllAsync();
         }
 
+        public async Task<(IEnumerable<UsoDeRecurso> items, int? nextCursor, bool hasMore)> GetPagedAsync(int? cursor, int limit)
+        {
+            limit = Math.Clamp(limit, 1, 100);
+            var items = await _repository.GetPagedAsync(cursor, limit);
+            var hasMore = items.Count > limit;
+            if (hasMore) items = items.Take(limit).ToList();
+            var nextCursor = hasMore && items.Count > 0 ? items[^1].Id : (int?)null;
+            return (items, nextCursor, hasMore);
+        }
+
         public async Task<UsoDeRecurso?> GetByIdAsync(int id)
         {
             return await _repository.GetByIdAsync(id);
@@ -59,6 +69,7 @@ namespace GestionDeMisiones.Service
             existente.RecursoId = usoDeRecurso.RecursoId;
             existente.FechaInicio = usoDeRecurso.FechaInicio;
             existente.FechaFin = usoDeRecurso.FechaFin;
+            existente.Cantidad = usoDeRecurso.Cantidad;
             existente.Observaciones = usoDeRecurso.Observaciones;
 
             _repository.Update(existente);

@@ -88,15 +88,15 @@ export const AdminUsersPage: React.FC = () => {
     }
   };
 
-  const handleRoleChange = async (userId: number, newRole: string) => {
-    try {
-      await userApi.setRole(userId, newRole);
-      setItems(prev => prev.map(x => x.id === userId ? { ...x, rol: newRole } : x));
-      toast.success('Rol actualizado');
-    } catch {
-      toast.error('No se pudo cambiar el rol');
-    }
-  };
+  // const handleRoleChange = async (userId: number, newRole: string) => {
+  //   try {
+  //     await userApi.setRole(userId, newRole);
+  //     setItems(prev => prev.map(x => x.id === userId ? { ...x, rol: newRole } : x));
+  //     toast.success('Rol actualizado');
+  //   } catch {
+  //     toast.error('No se pudo cambiar el rol');
+  //   }
+  // };
 
   const handleDelete = async () => {
     if (!deleteUserId) return;

@@ -24,6 +24,20 @@ namespace GestionDeMisiones.Repository
                 .ToListAsync();
         }
 
+        public async Task<List<HechiceroEncargado>> GetPagedAsync(int? cursor, int limit)
+        {
+            var query = _context.HechiceroEncargado
+                .Include(h => h.Hechicero)
+                .Include(h => h.Mision)
+                .Include(h => h.Solicitud)
+                .AsQueryable();
+
+            if (cursor.HasValue)
+                query = query.Where(h => h.Id > cursor.Value);
+
+            return await query.OrderBy(h => h.Id).Take(limit + 1).ToListAsync();
+        }
+
         public async Task<HechiceroEncargado?> GetByIdAsync(int id)
         {
             return await _context.HechiceroEncargado

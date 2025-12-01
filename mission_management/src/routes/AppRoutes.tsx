@@ -28,6 +28,10 @@ const EntityIndex = () => {
         <Link className="nav-link" to="/resources">{t('nav.resources')}</Link>
         <Link className="nav-link" to="/requests">{t('nav.requests')}</Link>
         <Link className="nav-link" to="/support-staff">{t('nav.supportStaff')}</Link>
+        <Link className="nav-link" to="/transfers">{t('nav.transfers')}</Link>
+        <Link className="nav-link" to="/resource-usages">{t('nav.resourceUsages')}</Link>
+        <Link className="nav-link" to="/sorcerers-in-charge">{t('nav.sorcerersInCharge')}</Link>
+        <Link className="nav-link" to="/mastered-techniques">{t('nav.masteredTechniques')}</Link>
         {user?.role === 'admin' && (
           <Link className="nav-link" to="/admin/users">Administrar usuarios</Link>
         )}
@@ -50,6 +54,10 @@ import { TechniquesPage } from '../pages/techniques/TechniquesPage.tsx';
 import { ResourcesPage } from '../pages/resources/ResourcesPage.tsx';
 import { RequestsPage } from '../pages/requests/RequestsPage.tsx';
 import { SupportStaffPage } from '../pages/support-staff/SupportStaffPage.tsx';
+import { TransfersPage } from '../pages/transfers/TransfersPage.tsx';
+import { ResourceUsagesPage } from '../pages/resource-usages/ResourceUsagesPage.tsx';
+import { SorcerersInChargePage } from '../pages/sorcerers-in-charge/SorcerersInChargePage.tsx';
+import { MasteredTechniquesPage } from '../pages/mastered-techniques/MasteredTechniquesPage.tsx';
 import Layout from '../components/Layout.tsx';
 
 export const AppRoutes = () => (
@@ -175,6 +183,46 @@ export const AppRoutes = () => (
           <ProtectedRoute>
             <Layout>
               <SupportStaffPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/transfers"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <TransfersPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/resource-usages"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <ResourceUsagesPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/sorcerers-in-charge"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <SorcerersInChargePage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/mastered-techniques"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <MasteredTechniquesPage />
             </Layout>
           </ProtectedRoute>
         }

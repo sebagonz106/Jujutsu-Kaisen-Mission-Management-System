@@ -16,8 +16,13 @@ public class TecnicaMalditaDominadaController : ControllerBase
 
     [HttpGet]
     [Authorize]
-    public async Task<ActionResult<IEnumerable<TecnicaMalditaDominada>>> GetAllTecnicaMalditaDominada()
+    public async Task<ActionResult<IEnumerable<TecnicaMalditaDominada>>> GetAllTecnicaMalditaDominada([FromQuery] int? limit, [FromQuery] int? cursor)
     {
+        if (limit.HasValue || cursor.HasValue)
+        {
+            var (items, nextCursor, hasMore) = await _service.GetPagedAsync(cursor, limit ?? 20);
+            return Ok(new { items, nextCursor, hasMore });
+        }
         var tecnicasDominadas = await _service.GetAllAsync();
         return Ok(tecnicasDominadas);
     }

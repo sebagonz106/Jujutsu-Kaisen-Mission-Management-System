@@ -31,6 +31,10 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           <NavLink to="/resources" className={({ isActive }) => `nav-link ${isActive ? 'nav-link--active' : ''}`}>{t('nav.resources')}</NavLink>
           <NavLink to="/requests" className={({ isActive }) => `nav-link ${isActive ? 'nav-link--active' : ''}`}>{t('nav.requests')}</NavLink>
           <NavLink to="/support-staff" className={({ isActive }) => `nav-link ${isActive ? 'nav-link--active' : ''}`}>{t('nav.supportStaff')}</NavLink>
+          <NavLink to="/transfers" className={({ isActive }) => `nav-link ${isActive ? 'nav-link--active' : ''}`}>{t('nav.transfers')}</NavLink>
+          <NavLink to="/resource-usages" className={({ isActive }) => `nav-link ${isActive ? 'nav-link--active' : ''}`}>{t('nav.resourceUsages')}</NavLink>
+          <NavLink to="/sorcerers-in-charge" className={({ isActive }) => `nav-link ${isActive ? 'nav-link--active' : ''}`}>{t('nav.sorcerersInCharge')}</NavLink>
+          <NavLink to="/mastered-techniques" className={({ isActive }) => `nav-link ${isActive ? 'nav-link--active' : ''}`}>{t('nav.masteredTechniques')}</NavLink>
           {user?.role === 'admin' && (
             <NavLink to="/admin/users" className={({ isActive }) => `nav-link ${isActive ? 'nav-link--active' : ''}`}>Usuarios</NavLink>
           )}

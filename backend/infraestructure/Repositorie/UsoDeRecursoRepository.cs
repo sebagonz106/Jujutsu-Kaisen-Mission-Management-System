@@ -23,6 +23,19 @@ namespace GestionDeMisiones.Repository
                 .ToListAsync();
         }
 
+        public async Task<List<UsoDeRecurso>> GetPagedAsync(int? cursor, int limit)
+        {
+            var query = _context.UsosDeRecurso
+                .Include(u => u.Mision)
+                .Include(u => u.Recurso)
+                .AsQueryable();
+
+            if (cursor.HasValue)
+                query = query.Where(u => u.Id > cursor.Value);
+
+            return await query.OrderBy(u => u.Id).Take(limit + 1).ToListAsync();
+        }
+
         public async Task<UsoDeRecurso?> GetByIdAsync(int id)
         {
             return await _context.UsosDeRecurso

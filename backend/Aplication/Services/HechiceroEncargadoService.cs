@@ -17,6 +17,16 @@ namespace GestionDeMisiones.Service
         public async Task<IEnumerable<HechiceroEncargado>> GetAllAsync() =>
             await _repository.GetAllAsync();
 
+        public async Task<(IEnumerable<HechiceroEncargado> items, int? nextCursor, bool hasMore)> GetPagedAsync(int? cursor, int limit)
+        {
+            limit = Math.Clamp(limit, 1, 100);
+            var items = await _repository.GetPagedAsync(cursor, limit);
+            var hasMore = items.Count > limit;
+            if (hasMore) items = items.Take(limit).ToList();
+            var nextCursor = hasMore && items.Count > 0 ? items[^1].Id : (int?)null;
+            return (items, nextCursor, hasMore);
+        }
+
         public async Task<HechiceroEncargado?> GetByIdAsync(int id) =>
             await _repository.GetByIdAsync(id);
 
@@ -31,9 +41,9 @@ namespace GestionDeMisiones.Service
             var existing = await _repository.GetByIdAsync(id);
             if (existing == null) return false;
 
-            existing.Hechicero = hechiceroEncargado.Hechicero;
-            existing.Mision = hechiceroEncargado.Mision;
-            existing.Solicitud = hechiceroEncargado.Solicitud;
+            existing.HechiceroId = hechiceroEncargado.HechiceroId;
+            existing.MisionId = hechiceroEncargado.MisionId;
+            existing.SolicitudId = hechiceroEncargado.SolicitudId;
 
             await _repository.UpdateAsync(existing);
             return true;
