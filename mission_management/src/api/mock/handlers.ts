@@ -1,13 +1,15 @@
 import { http, HttpResponse } from 'msw';
-import { sorcerers, curses, missions, createSorcerer, updateSorcerer, removeSorcerer, createCurse, updateCurse, removeCurse, createMission, updateMission, removeMission, createAuditEntry, auditLog } from './data';
+import { sorcerers, curses, missions, locations, techniques, createSorcerer, updateSorcerer, removeSorcerer, createCurse, updateCurse, removeCurse, createMission, updateMission, removeMission, createAuditEntry, auditLog, createLocation, updateLocation, removeLocation, createTechnique, updateTechnique, removeTechnique } from './data';
 import type { Sorcerer } from '../../types/sorcerer';
 import type { Curse } from '../../types/curse';
 import type { Mission } from '../../types/mission';
 import type { AuditEntry } from '../../types/audit';
+import type { Location } from '../../types/location';
+import type { Technique } from '../../types/technique';
 import type { LoginRequest, LoginResponse, MeResponse, RegisterRequest, RegisterResponse } from '../../types/auth';
 
 // --- Helpers to simulate backend auth/authorization ---
-type MockUser = { role: 'sorcerer' | 'support' | 'observer'; rank?: string; name?: string };
+type MockUser = { role: 'sorcerer' | 'support' | 'admin'; rank?: string; name?: string };
 
 const parseUserFromToken = (authHeader?: string | null): MockUser | null => {
   if (!authHeader) return null;
@@ -23,14 +25,16 @@ const parseUserFromToken = (authHeader?: string | null): MockUser | null => {
   return { role, rank, name };
 };
 
-// Only allow mutations (POST/PUT/DELETE) for support or sorcerers with rank 'alto' or 'especial'.
+// Only allow mutations (POST/PUT/DELETE) for admin, support or sorcerers with rank 'alto' or 'especial'.
 const forbidIfNotHighRankSorcerer = (req: Request) => {
-  const user = parseUserFromToken(req.headers.get('authorization'));
+  // In mock mode, if no token is provided we default to support to keep DX smooth.
+  const user = parseUserFromToken(req.headers.get('authorization')) ?? { role: 'support', rank: 'especial' } as MockUser;
   const allowedRanks = ['alto', 'especial'];
-  if (!user) return HttpResponse.json({ message: 'Forbidden: missing or invalid token.' }, { status: 403 });
+  // Allow admin role full access.
+  if (user.role === 'admin') return null;
   // Allow support role to perform mutations.
   if (user.role === 'support') return null;
-  if (user.role !== 'sorcerer') return HttpResponse.json({ message: 'Forbidden: only sorcerers or support can mutate entities.' }, { status: 403 });
+  if (user.role !== 'sorcerer') return HttpResponse.json({ message: 'Forbidden: only sorcerers, support or admin can mutate entities.' }, { status: 403 });
   if (!user.rank || !allowedRanks.includes(user.rank)) return HttpResponse.json({ message: 'Forbidden: insufficient sorcerer rank.' }, { status: 403 });
   return null;
 };
@@ -66,12 +70,34 @@ const validateMissionPayload = (
 };
 
 // Helper to parse user for audit trail.
-const actorFromReq = (req: Request) => parseUserFromToken(req.headers.get('authorization')) ?? { role: 'observer', rank: 'novato' };
+const actorFromReq = (req: Request) => parseUserFromToken(req.headers.get('authorization')) ?? { role: 'support', rank: 'novato' };
 
 const pushAudit = (entity: AuditEntry['entity'], action: AuditEntry['action'], entityId: number, req: Request, summary?: string) => {
   const actor = actorFromReq(req);
   createAuditEntry({ entity, action, entityId, actorRole: actor.role, actorRank: actor.rank, actorName: actor.name, summary });
 };
+
+// Type guard for backend-style technique payloads in PascalCase
+function isBackendTechniquePayload(v: unknown): v is { Nombre?: unknown; Tipo?: unknown; EfectividadProm?: unknown; CondicionesDeUso?: unknown } {
+  return typeof v === 'object' && v !== null && (
+    'Nombre' in v || 'Tipo' in v || 'EfectividadProm' in v || 'CondicionesDeUso' in v
+  );
+}
+
+// Type guard for backend-style mission payloads (Spanish camelCase)
+function isBackendMissionPayload(v: unknown): v is {
+  fechaYHoraDeInicio?: unknown;
+  fechaYHoraDeFin?: unknown;
+  ubicacionId?: unknown;
+  estado?: unknown;
+  eventosOcurridos?: unknown;
+  dannosColaterales?: unknown;
+  nivelUrgencia?: unknown;
+} {
+  return typeof v === 'object' && v !== null && (
+    'fechaYHoraDeInicio' in v || 'ubicacionId' in v || 'estado' in v || 'nivelUrgencia' in v
+  );
+}
 
 // Helper to select highest-grade curse name for a mission
 const curseGradeRank: Record<string, number> = {
@@ -98,8 +124,9 @@ export const handlers = [
   // Auth
   http.post('/auth/login', async ({ request }) => {
     const body = (await request.json()) as LoginRequest;
-    const userRole: LoginResponse['user']['role'] = body.email.includes('observer')
-      ? 'observer'
+    console.info('[MSW] /auth/login called with', { email: body.email });
+    const userRole: LoginResponse['user']['role'] = body.email.includes('admin')
+      ? 'admin'
       : body.email.includes('support')
       ? 'support'
       : 'sorcerer';
@@ -125,10 +152,11 @@ export const handlers = [
   }),
   http.post('/auth/register', async ({ request }) => {
     const body = (await request.json()) as RegisterRequest;
-    // Always assign observer role in mock
+    console.info('[MSW] /auth/register called with', { email: body.email });
+    // Always assign support role in mock for new registrations
     const resp: RegisterResponse = {
-      accessToken: 'MOCK_TOKEN:observer:novato',
-      user: { id: Date.now(), role: 'observer', name: body.name, rank: 'novato' },
+      accessToken: 'MOCK_TOKEN:support:novato',
+      user: { id: Date.now(), role: 'support', name: body.name, rank: 'novato' },
     };
     return HttpResponse.json(resp, { status: 201 });
   }),
@@ -255,7 +283,32 @@ export const handlers = [
   http.post('/missions', async ({ request }) => {
     const forbid = forbidIfNotHighRankSorcerer(request);
     if (forbid) return forbid;
-    const body = (await request.json()) as Omit<Mission, 'id'>;
+    const raw = (await request.json()) as unknown;
+    // Accept either frontend camelCase or backend Spanish camelCase
+    const body: Omit<Mission, 'id'> = ((): Omit<Mission, 'id'> => {
+      if (isBackendMissionPayload(raw)) {
+        return {
+          startAt: String(raw.fechaYHoraDeInicio ?? new Date().toISOString()),
+          endAt: raw.fechaYHoraDeFin ? String(raw.fechaYHoraDeFin) : undefined,
+          locationId: Number(raw.ubicacionId ?? 0),
+          state: String(raw.estado ?? 'Pendiente')
+            .replace('Pendiente', 'pending')
+            .replace('EnProgreso', 'in_progress')
+            .replace('CompletadaConExito', 'success')
+            .replace('CompletadaConFracaso', 'failure')
+            .replace('Cancelada', 'canceled') as Mission['state'],
+          events: String(raw.eventosOcurridos ?? ''),
+          collateralDamage: String(raw.dannosColaterales ?? ''),
+          urgency: String(raw.nivelUrgencia ?? 'Planificada')
+            .replace('Planificada', 'planned')
+            .replace('Urgente', 'urgent')
+            .replace('EmergenciaCritica', 'critical') as Mission['urgency'],
+          sorcererIds: [],
+          curseIds: [],
+        };
+      }
+      return raw as Omit<Mission, 'id'>;
+    })();
     const validated = validateMissionPayload(body);
     if (!validated.ok) return HttpResponse.json({ message: validated.error }, { status: 400 });
     const created = createMission(body);
@@ -273,7 +326,33 @@ export const handlers = [
     const forbid = forbidIfNotHighRankSorcerer(request);
     if (forbid) return forbid;
     const id = Number(params.id);
-    const body = (await request.json()) as Partial<Omit<Mission, 'id'>>;
+    const raw = (await request.json()) as unknown;
+    const body: Partial<Omit<Mission, 'id'>> = ((): Partial<Omit<Mission, 'id'>> => {
+      if (isBackendMissionPayload(raw)) {
+        const patch: Partial<Omit<Mission, 'id'>> = {};
+        if (raw.fechaYHoraDeInicio !== undefined) patch.startAt = String(raw.fechaYHoraDeInicio);
+        if (raw.fechaYHoraDeFin !== undefined) patch.endAt = raw.fechaYHoraDeFin ? String(raw.fechaYHoraDeFin) : undefined;
+        if (raw.ubicacionId !== undefined) patch.locationId = Number(raw.ubicacionId);
+        if (raw.estado !== undefined) {
+          patch.state = String(raw.estado)
+            .replace('Pendiente', 'pending')
+            .replace('EnProgreso', 'in_progress')
+            .replace('CompletadaConExito', 'success')
+            .replace('CompletadaConFracaso', 'failure')
+            .replace('Cancelada', 'canceled') as Mission['state'];
+        }
+        if (raw.eventosOcurridos !== undefined) patch.events = String(raw.eventosOcurridos);
+        if (raw.dannosColaterales !== undefined) patch.collateralDamage = String(raw.dannosColaterales);
+        if (raw.nivelUrgencia !== undefined) {
+          patch.urgency = String(raw.nivelUrgencia)
+            .replace('Planificada', 'planned')
+            .replace('Urgente', 'urgent')
+            .replace('EmergenciaCritica', 'critical') as Mission['urgency'];
+        }
+        return patch;
+      }
+      return raw as Partial<Omit<Mission, 'id'>>;
+    })();
     // merge current mission to allow validation with partial patch
     const current = missions.find(m => m.id === id);
     if (!current) return HttpResponse.json({ message: 'Not found' }, { status: 404 });
@@ -318,5 +397,152 @@ export const handlers = [
     const hasMore = list.length > slice.length;
     const nextCursor = hasMore ? slice[slice.length - 1]?.id ?? null : null;
     return HttpResponse.json({ items: slice, nextCursor, hasMore });
+  }),
+
+  // Locations
+  http.get('/locations', ({ request }) => {
+    const url = new URL(request.url);
+    const limitParam = url.searchParams.get('limit');
+    const cursorParam = url.searchParams.get('cursor');
+    const limit = limitParam ? Math.max(1, Math.min(100, Number(limitParam))) : undefined;
+    let list = locations;
+    if (cursorParam) {
+      const cursor = Number(cursorParam);
+      if (!Number.isNaN(cursor)) list = list.filter(l => l.id < cursor);
+    }
+    if (!limit) return HttpResponse.json({ items: list, nextCursor: null, hasMore: false });
+    const slice = list.slice(0, limit);
+    const hasMore = list.length > slice.length;
+    const nextCursor = hasMore ? slice[slice.length - 1]?.id ?? null : null;
+    return HttpResponse.json({ items: slice, nextCursor, hasMore });
+  }),
+  http.get('/locations/:id', ({ params }) => {
+    const id = Number(params.id);
+    const found = locations.find(l => l.id === id);
+    return found ? HttpResponse.json(found) : HttpResponse.json({ message: 'Not found' }, { status: 404 });
+  }),
+  http.post('/locations', async ({ request }) => {
+    const forbid = forbidIfNotHighRankSorcerer(request);
+    if (forbid) return forbid;
+    const body = (await request.json()) as Omit<Location, 'id'>;
+    if (!body.nombre || String(body.nombre).trim().length < 2) {
+      return HttpResponse.json({ message: 'Nombre requerido (>=2)' }, { status: 400 });
+    }
+    const created = createLocation({ nombre: String(body.nombre).trim() });
+    pushAudit('location', 'create', created.id, request, `Creó ubicación ${created.nombre}`);
+    return HttpResponse.json(created, { status: 201 });
+  }),
+  http.put('/locations/:id', async ({ params, request }) => {
+    const forbid = forbidIfNotHighRankSorcerer(request);
+    if (forbid) return forbid;
+    const id = Number(params.id);
+    const body = (await request.json()) as Partial<Omit<Location, 'id'>>;
+    if (body.nombre !== undefined && String(body.nombre).trim().length < 2) {
+      return HttpResponse.json({ message: 'Nombre demasiado corto' }, { status: 400 });
+    }
+    const updated = updateLocation(id, body);
+    if (updated) pushAudit('location', 'update', id, request, `Actualizó ubicación ${updated.nombre}`);
+    return updated ? HttpResponse.json(updated) : HttpResponse.json({ message: 'Not found' }, { status: 404 });
+  }),
+  http.delete('/locations/:id', ({ params, request }) => {
+    const forbid = forbidIfNotHighRankSorcerer(request);
+    if (forbid) return forbid;
+    const id = Number(params.id);
+    const found = locations.find(l => l.id === id);
+    const ok = removeLocation(id);
+    if (ok) pushAudit('location', 'delete', id, request, `Eliminó ubicación ${found?.nombre ?? id}`);
+    return ok ? new HttpResponse(null, { status: 204 }) : HttpResponse.json({ message: 'Not found' }, { status: 404 });
+  }),
+
+  // Techniques
+  http.get('/techniques', ({ request }) => {
+    const url = new URL(request.url);
+    const limitParam = url.searchParams.get('limit');
+    const cursorParam = url.searchParams.get('cursor');
+    const limit = limitParam ? Math.max(1, Math.min(100, Number(limitParam))) : undefined;
+    let list = techniques;
+    if (cursorParam) {
+      const cursor = Number(cursorParam);
+      if (!Number.isNaN(cursor)) list = list.filter(t => t.id < cursor);
+    }
+    if (!limit) return HttpResponse.json({ items: list, nextCursor: null, hasMore: false });
+    const slice = list.slice(0, limit);
+    const hasMore = list.length > slice.length;
+    const nextCursor = hasMore ? slice[slice.length - 1]?.id ?? null : null;
+    return HttpResponse.json({ items: slice, nextCursor, hasMore });
+  }),
+  http.get('/techniques/:id', ({ params }) => {
+    const id = Number(params.id);
+    const found = techniques.find(t => t.id === id);
+    return found ? HttpResponse.json(found) : HttpResponse.json({ message: 'Not found' }, { status: 404 });
+  }),
+  http.post('/techniques', async ({ request }) => {
+    const forbid = forbidIfNotHighRankSorcerer(request);
+    if (forbid) return forbid;
+  const raw = (await request.json()) as unknown;
+    // Accept either camelCase or PascalCase payloads
+    const body: Omit<Technique, 'id'> = ((): Omit<Technique, 'id'> => {
+      if (isBackendTechniquePayload(raw)) {
+        return {
+          nombre: String(raw.Nombre ?? ''),
+          tipo: raw.Tipo as Technique['tipo'],
+          efectividadProm: Number(raw.EfectividadProm ?? 0),
+          condicionesDeUso: String(raw.CondicionesDeUso ?? ''),
+        };
+      }
+      return raw as Omit<Technique, 'id'>;
+    })();
+    const eff = Number(body.efectividadProm);
+    if (Number.isNaN(eff) || eff < 0 || eff > 100) {
+      return HttpResponse.json({ message: 'efectividadProm debe estar entre 0 y 100' }, { status: 400 });
+    }
+    const allowedTypes = ['amplificacion', 'dominio', 'restriccion', 'soporte'];
+    if (!allowedTypes.includes(String(body.tipo))) {
+      return HttpResponse.json({ message: 'tipo inválido' }, { status: 400 });
+    }
+    const created = createTechnique({
+      nombre: String(body.nombre),
+      tipo: body.tipo,
+      efectividadProm: eff,
+      condicionesDeUso: body.condicionesDeUso ?? 'ninguna',
+    });
+    pushAudit('technique', 'create', created.id, request, `Creó técnica ${created.nombre}`);
+    return HttpResponse.json(created, { status: 201 });
+  }),
+  http.put('/techniques/:id', async ({ params, request }) => {
+    const forbid = forbidIfNotHighRankSorcerer(request);
+    if (forbid) return forbid;
+    const id = Number(params.id);
+  const raw = (await request.json()) as unknown;
+    // Accept either camelCase or PascalCase payloads
+    const body: Partial<Omit<Technique, 'id'>> = ((): Partial<Omit<Technique, 'id'>> => {
+      if (isBackendTechniquePayload(raw)) {
+        const patch: Partial<Omit<Technique, 'id'>> = {};
+        if (raw.Nombre !== undefined) patch.nombre = String(raw.Nombre);
+        if (raw.Tipo !== undefined) patch.tipo = raw.Tipo as Technique['tipo'];
+        if (raw.EfectividadProm !== undefined) patch.efectividadProm = Number(raw.EfectividadProm);
+        if (raw.CondicionesDeUso !== undefined) patch.condicionesDeUso = String(raw.CondicionesDeUso);
+        return patch;
+      }
+      return raw as Partial<Omit<Technique, 'id'>>;
+    })();
+    if (body.efectividadProm !== undefined) {
+      const eff = Number(body.efectividadProm);
+      if (Number.isNaN(eff) || eff < 0 || eff > 100) {
+        return HttpResponse.json({ message: 'efectividadProm debe estar entre 0 y 100' }, { status: 400 });
+      }
+    }
+    const updated = updateTechnique(id, body);
+    if (updated) pushAudit('technique', 'update', id, request, `Actualizó técnica ${updated.nombre}`);
+    return updated ? HttpResponse.json(updated) : HttpResponse.json({ message: 'Not found' }, { status: 404 });
+  }),
+  http.delete('/techniques/:id', ({ params, request }) => {
+    const forbid = forbidIfNotHighRankSorcerer(request);
+    if (forbid) return forbid;
+    const id = Number(params.id);
+    const found = techniques.find(t => t.id === id);
+    const ok = removeTechnique(id);
+    if (ok) pushAudit('technique', 'delete', id, request, `Eliminó técnica ${found?.nombre ?? id}`);
+    return ok ? new HttpResponse(null, { status: 204 }) : HttpResponse.json({ message: 'Not found' }, { status: 404 });
   }),
 ];

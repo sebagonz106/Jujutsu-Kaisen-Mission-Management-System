@@ -1,0 +1,72 @@
+// TrasladoController.cs
+using Microsoft.AspNetCore.Mvc;
+using GestionDeMisiones.IService;
+using GestionDeMisiones.Models;
+using Microsoft.AspNetCore.Authorization;
+
+[ApiController]
+[Route("api/[controller]")]
+public class TrasladoController : ControllerBase
+{
+    private readonly ITrasladoService _service;
+    public TrasladoController(ITrasladoService service) => _service = service;
+
+    [HttpGet]
+    [Authorize]
+    public async Task<ActionResult<IEnumerable<Traslado>>> GetAllTransport([FromQuery] int? limit, [FromQuery] int? cursor)
+    {
+        if (limit.HasValue || cursor.HasValue)
+        {
+            var (items, nextCursor, hasMore) = await _service.GetPagedAsync(cursor, limit ?? 20);
+            return Ok(new { items, nextCursor, hasMore });
+        }
+        var list = await _service.GetAllAsync();
+        return Ok(list);
+    }
+
+    [HttpGet("{id}")]
+    // [Authorize]
+    public async Task<ActionResult<Traslado>> GetTrasladoById(int id)
+    {
+        var traslado = await _service.GetByIdAsync(id);
+        if (traslado == null) return NotFound("El Traslado Solicitado no Existe");
+        return Ok(traslado);
+    }
+
+    [HttpPost]
+    // [Authorize(Roles = "admin")]
+    public async Task<ActionResult<Traslado>> PostTraslado([FromBody] Traslado traslado)
+    {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+
+        try
+        {
+            var created = await _service.CreateAsync(traslado);
+            return CreatedAtAction(nameof(GetTrasladoById), new { id = created.Id }, created);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpPut("{id}")]
+    // [Authorize(Roles = "admin")]
+    public async Task<IActionResult> PutTraslado(int id, [FromBody] Traslado traslado)
+    {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+
+        var updated = await _service.UpdateAsync(id, traslado);
+        if (!updated) return NotFound("El traslado que quiere modificar no existe");
+        return NoContent();
+    }
+
+    [HttpDelete("{id}")]
+    // [Authorize(Roles = "admin")]
+    public async Task<IActionResult> DeleteTraslado(int id)
+    {
+        var deleted = await _service.DeleteAsync(id);
+        if (!deleted) return NotFound("El Traslado que intento eliminar no existe");
+        return NoContent();
+    }
+}

@@ -218,53 +218,61 @@ canAccessDashboard(user): boolean
 src/
 ├── api/                      # HTTP layer
 │   ├── client.ts            # Axios instance, interceptors, token management
-│   ├── pagedApi.ts          # ⭐ Pagination adapter (normalizes responses)
+│   ├── pagedApi.ts          # Pagination adapter (normalizes responses)
 │   ├── authApi.ts           # Authentication endpoints (login, register, me)
-│   ├── auditApi.ts          # ⭐ Audit log endpoints with pagination
+│   ├── auditApi.ts          # Audit log endpoints with pagination
 │   ├── sorcererApi.ts       # Sorcerer CRUD operations with pagination
 │   ├── curseApi.ts          # Curse CRUD operations with pagination
 │   ├── missionApi.ts        # Mission CRUD operations with pagination
+│   ├── locationApi.ts       # Location CRUD operations with pagination
+│   ├── techniqueApi.ts      # Cursed technique CRUD operations with pagination
 │   └── mock/                # MSW (Mock Service Worker)
 │       ├── data.ts          # In-memory mock data + audit log
 │       ├── handlers.ts      # Request handlers with auth + pagination
 │       └── server.ts        # MSW worker setup
 │
 ├── components/              # Reusable UI components
-│   ├── AuditList.tsx        # ⭐ Recent actions component (infinite scroll)
+│   ├── AuditList.tsx        # Recent actions component (infinite scroll)
 │   └── ui/                  # Base UI primitives
-│       ├── MultiSelect.tsx  # ⭐ Dropdown multi-select with search
+│       ├── MultiSelect.tsx  # Dropdown multi-select with search
 │       ├── Button.tsx
 │       ├── Modal.tsx
 │       ├── Table.tsx
 │       └── ...
 │
-├── context/                 # React Context providers
-│   ├── AuthContext.tsx      # AuthProvider component
-│   └── AuthContextInstance.ts # Context definition and types
+├── context/                      # React Context providers
+│   ├── AuthContext.tsx           # AuthProvider component
+│   └── AuthContextInstance.ts    # Context definition and types
 │
-├── hooks/                   # Custom React hooks
-│   ├── useAuth.ts           # Authentication hook
-│   ├── useAudit.ts          # Fixed-size audit query with polling
-│   ├── useInfiniteAudit.ts  # ⭐ Infinite audit pagination
-│   ├── useSorcerers.ts      # Sorcerer CRUD hooks (cache invalidation)
-│   ├── useInfiniteSorcerers.ts # ⭐ Infinite sorcerer pagination
-│   ├── useCurses.ts         # Curse CRUD hooks (cache invalidation)
-│   ├── useInfiniteCurses.ts # ⭐ Infinite curse pagination
-│   ├── useMissions.ts       # Mission CRUD hooks (cache invalidation)
-│   └── useInfiniteMissions.ts # ⭐ Infinite mission pagination
+├── hooks/                        # Custom React hooks
+│   ├── useAuth.ts                # Authentication hook
+│   ├── useAudit.ts               # Fixed-size audit query with polling
+│   ├── useInfiniteAudit.ts       # Infinite audit pagination
+│   ├── useSorcerers.ts           # Sorcerer CRUD hooks (cache invalidation)
+│   ├── useInfiniteSorcerers.ts   # Infinite sorcerer pagination
+│   ├── useCurses.ts              # Curse CRUD hooks (cache invalidation)
+│   ├── useInfiniteCurses.ts      # Infinite curse pagination
+│   ├── useMissions.ts            # Mission CRUD hooks (cache invalidation)
+│   ├── useInfiniteMissions.ts    # Infinite mission pagination
+│   ├── useLocations.ts           # Location CRUD hooks (cache invalidation)
+│   └── useTechniques.ts          # Cursed technique CRUD hooks (cache invalidation)
 │
-├── i18n/                    # ⭐ Internationalization
+├── i18n/                    # Internationalization
 │   ├── index.ts             # Translation function (t())
 │   └── es.ts                # Spanish translation dictionary
 │
-├── pages/                   # Route components
-│   ├── LoginPage.tsx        # Login form
-│   ├── sorcerers/           # Sorcerer management pages
-│   │   └── SorcerersPage.tsx # ⭐ With infinite pagination
-│   ├── curses/              # Curse management pages
-│   │   └── CursesPage.tsx   # ⭐ With infinite pagination
-│   └── missions/            # Mission management pages
-│       └── MissionsPage.tsx # ⭐ With infinite pagination + multi-select
+├── pages/                        # Route components
+│   ├── LoginPage.tsx             # Login form
+│   ├── sorcerers/                # Sorcerer management pages
+│   │   └── SorcerersPage.tsx     # With infinite pagination + technique dropdown
+│   ├── curses/                   # Curse management pages
+│   │   └── CursesPage.tsx        # With infinite pagination + location dropdown
+│   ├── missions/                 # Mission management pages
+│   │   └── MissionsPage.tsx      # With infinite pagination + multi-select
+│   ├── locations/                # Location management pages
+│   │   └── LocationsPage.tsx     # With CRUD + sorting + pagination
+│   └── techniques/               # Cursed technique management pages
+│       └── TechniquesPage.tsx    # With CRUD + effectiveness validation + pagination
 │
 ├── routes/                  # Routing configuration
 │   ├── AppRoutes.tsx        # Route definitions
@@ -273,21 +281,23 @@ src/
 │
 ├── types/                   # TypeScript type definitions
 │   ├── auth.ts              # Authentication types
-│   ├── audit.ts             # ⭐ Audit log entry types
+│   ├── audit.ts             # Audit log entry types
 │   ├── sorcerer.ts          # Sorcerer entity types
 │   ├── curse.ts             # Curse entity types
-│   └── mission.ts           # Mission entity types
+│   ├── mission.ts           # Mission entity types
+│   ├── location.ts          # Location entity types
+│   └── technique.ts         # Cursed technique entity types
 │
 ├── utils/                   # Utility functions
 │   ├── permissions.ts       # Permission checking logic
-│   ├── auditFormat.ts       # ⭐ Natural language audit formatter
-│   └── auditFormat.test.ts  # ⭐ Unit tests for formatter
+│   ├── auditFormat.ts       # Natural language audit formatter
+│   └── auditFormat.test.ts  # Unit tests for formatter
 │
 ├── App.tsx                  # Root component
 └── main.tsx                 # Application entry point
 ```
 
-**⭐ = Recently added/significantly updated for pagination & audit features**
+
 
 ## 🚦 Getting Started
 
@@ -437,7 +447,7 @@ Key handlers with pagination:
 
 ### Real Backend Integration
 
-**Expected Endpoints**:
+### Expected Endpoints**:
 
 ```
 POST   /auth/login        # Returns { accessToken, user }
@@ -462,6 +472,18 @@ POST   /missions                       # Create (support/high-rank only)
 PUT    /missions/:id                   # Update (support/high-rank only)
 DELETE /missions/:id                   # Delete (support/high-rank only)
 
+GET    /locations?limit&cursor         # List locations (paginated)
+GET    /locations/:id                  # Get location by ID
+POST   /locations                      # Create (support/high-rank only)
+PUT    /locations/:id                  # Update (support/high-rank only)
+DELETE /locations/:id                  # Delete (support/high-rank only)
+
+GET    /techniques?limit&cursor        # List cursed techniques (paginated)
+GET    /techniques/:id                 # Get technique by ID
+POST   /techniques                     # Create (support/high-rank only)
+PUT    /techniques/:id                 # Update (support/high-rank only)
+DELETE /techniques/:id                 # Delete (support/high-rank only)
+
 GET    /audit?limit&cursor             # List audit logs (paginated)
 ```
 
@@ -485,9 +507,10 @@ GET    /audit?limit&cursor             # List audit logs (paginated)
 - Backend enforces permission rules before processing mutations
 
 **Audit Logging (Backend Responsibility)**:
-- Track all CRUD operations on sorcerers, curses, and missions
+- Track all CRUD operations on sorcerers, curses, missions, locations, and techniques
 - Store: timestamp, entity type, action, entity ID, actor info, summary
 - Provide `/audit` endpoint with pagination support
+- Frontend expects extended `AuditEntity` type: `'sorcerer' | 'curse' | 'mission' | 'location' | 'technique'`
 
 ## � Pagination System
 
@@ -610,7 +633,7 @@ The application tracks all CRUD operations on sorcerers, curses, and missions wi
 type AuditEntry = {
   id: number;
   timestamp: string;              // ISO timestamp
-  entity: 'sorcerer' | 'curse' | 'mission';
+  entity: 'sorcerer' | 'curse' | 'mission' | 'location' | 'technique';
   action: 'create' | 'update' | 'delete';
   entityId: number;               // ID of affected entity
   actorRole: string;              // 'support', 'sorcerer', 'observer'
@@ -635,6 +658,9 @@ formatAuditLine(entry: AuditEntry): string
 - `"Se actualizó la maldición Rot Curse"`
 - `"Se eliminó la misión que atendía Finger Bearer"`
 - `"Se creó una misión que atiende Rot Curse"`
+- `"Se añadió la ubicación Tokyo Metropolitan Magic Technical College"`
+- `"Se modificó la técnica maldita Limitless"`
+- `"Se eliminó la técnica maldita Idle Transfiguration"`
 
 **Regex-based extraction** from `summary` JSON for entity names:
 - Sorcerer: `/\\"name\\":\\s*\\"([^"]+)\\"/`
@@ -693,28 +719,39 @@ For production, implement:
 
 ## ✨ Key Features
 
-### 1. Infinite Pagination with Backend Support
-- **Server-side cursor-based pagination** for sorcerers, curses, missions, and audit logs
+### 1. Locations & Cursed Techniques Management (NEW)
+- **Location tracking** (`Ubicación`) for missions and curse appearances with dedicated CRUD interface
+- **Cursed technique registry** (`Técnica Maldita`) with type classification (amplificacion, dominio, restriccion, soporte)
+- **Effectiveness validation**: Techniques include `efectividadProm` field (0-100 float) with UI and server-side constraints
+- **Relational dropdowns**: Curse location and sorcerer principal technique fields now use searchable select inputs
+- **Full audit support**: All location and technique operations appear in audit log with custom Spanish messages
+- **Mock API support**: Complete MSW handlers with pagination, validation, and permission enforcement
+
+### 2. Infinite Pagination with Backend Support
+- **Server-side cursor-based pagination** for sorcerers, curses, missions, locations, techniques, and audit logs
 - **Normalized API adapter** (`pagedApi`) supports multiple response shapes with graceful fallback
 - **Infinite scrolling** via React Query's `useInfiniteQuery` with "Load More" button
 - **Automatic cache management** with proper invalidation on mutations
 - MSW handlers simulate real pagination behavior (limit + cursor params)
 
-### 2. Comprehensive Audit Logging
-- **Automatic tracking** of all CRUD operations on entities
-- **Natural language formatting** in Spanish (e.g., "Se creó una misión que atiende Rot Curse")
+### 3. Comprehensive Audit Logging
+- **Automatic tracking** of all CRUD operations on entities (sorcerers, curses, missions, locations, techniques)
+- **Natural language formatting** in Spanish with entity-specific messages:
+  - Locations: "Se añadió la ubicación Tokyo Metropolitan Magic Technical College"
+  - Techniques: "Se modificó la técnica maldita Limitless"
 - **Actor information** including role, rank, and parsed username from token
 - **Inline display** in entity management pages with infinite pagination
 - **Dedicated audit view** at `/recent-actions` with polling for real-time updates
-- **i18n support** with centralized translation dictionary
+- **i18n support** with centralized translation dictionary and entity labels
 
-### 3. Type-Safe Data Fetching
+### 4. Type-Safe Data Fetching
 - All API responses strongly typed with TypeScript
 - React Query hooks provide loading/error states
 - Automatic cache invalidation after mutations (both base and infinite queries)
 - Normalized paged responses via `PagedResponse<T>` type
+- Consistent entity typing with Spanish property names matching backend contracts
 
-### 4. Form Validation with Conditional Rules
+### 5. Form Validation with Conditional Rules
 - React Hook Form for performance
 - Zod schemas for runtime validation with conditional logic
 - Type inference from schemas to forms
@@ -722,49 +759,61 @@ For production, implement:
   - `urgency` field required only for pending missions
   - `events` and `collateralDamage` required only for completed missions (success, failure, canceled)
   - Form UI conditionally shows/hides fields based on mission state
+- **Technique validation**:
+  - `efectividadProm` enforced as float between 0-100 with step=0.1 in UI
+  - Server-side validation in MSW handlers rejects out-of-range values
 
-### 5. Multi-Select Entity Assignment
-- **Reusable `MultiSelect` component** with dark theme styling
+### 6. Multi-Select & Smart Dropdowns
+- **Reusable `MultiSelect` component** with dark theme styling for mission assignments
 - **Dropdown with checkboxes** for assigning sorcerers and curses to missions
 - **Search/filter** capability for large lists
 - **Selected items display** as chips with overflow counter
-- Dynamic option lists from API with proper loading states
-- Form values automatically handled as arrays of IDs via React Hook Form `Controller`
+- **Relational dropdowns** for curse locations and sorcerer techniques:
+  - Dynamically populated from locations/techniques API
+  - Replace free-text inputs with structured data entry
+  - Loading states and graceful error handling
+- Form values automatically handled via React Hook Form `Controller`
 
-### 6. Permission System
+### 7. Permission System
 - **Centralized permission logic** in `utils/permissions.ts`
 - **UI-level enforcement**: Components conditionally render based on `canMutate(user)`
 - **Server-side enforcement**: MSW and real backend return 403 for unauthorized operations
+- **Applied to all entities**: Sorcerers, curses, missions, locations, and techniques
 - **Role-based access**:
-  - Support: Full CRUD access
-  - High-rank sorcerers (alto, especial): Full CRUD access
-  - Low-rank sorcerers & observers: Read-only access
+  - Support: Full CRUD access to all entities
+  - High-rank sorcerers (alto, especial): Full CRUD access to all entities
+  - Low-rank sorcerers & observers: Read-only access to all entities
 
-### 7. Spanish UI with English Internals
+### 8. Spanish UI with English Internals
 - All user-facing labels, buttons, and messages in Spanish
 - Internal enums, code, and documentation remain in English
+- Comprehensive i18n dictionary (`src/i18n/es.ts`) with nested keys for scalability
+- Entity labels for consistent audit log and UI translations
 - Mapping dictionaries (`estadoLabel`, `urgenciaLabel`) for display translation
 - Validation error messages shown in Spanish
 
-### 8. Error Handling & User Feedback
+### 9. Error Handling & User Feedback
 - Axios interceptors catch 401/403 responses
 - Toast notifications (Sonner) for user feedback with Spanish messages
+- Entity-specific success/error messages (e.g., "Ubicación creada", "Error al eliminar técnica")
 - Graceful degradation for network errors
 - Loading skeletons for better perceived performance
 
-### 9. Theming & UI Polish
+### 10. Theming & UI Polish
 - Custom Tailwind configuration with JJK-inspired palette
 - Custom fonts: Cinzel (headings), Inter (body), Noto Serif JP (accents)
 - Mystical shadows and cohesive color scheme
 - Responsive design with mobile-first considerations
 - Semantic HTML and ARIA attributes for accessibility
+- Consistent table layouts with sortable headers across all entity pages
 
-### 10. Developer Experience
+### 11. Developer Experience
 - Hot Module Replacement (HMR) with Vite
 - ESLint + TypeScript for code quality
 - Comprehensive TSDoc documentation (in English)
 - MSW for API-independent development with realistic backend simulation
 - Modular architecture with clear separation of concerns
+- Type-safe route mapping for backend integration (`routeMap` in `client.ts`)
 
 ## � Scripts
 

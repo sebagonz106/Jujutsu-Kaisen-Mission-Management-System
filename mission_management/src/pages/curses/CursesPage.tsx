@@ -19,10 +19,12 @@ import { toast } from 'sonner';
 import { useAuth } from '../../hooks/useAuth';
 import { canMutate as canMutateByRole } from '../../utils/permissions';
 import { t } from '../../i18n';
+import { useLocations } from '../../hooks/useLocations';
+import { curseGradeLabel, curseTypeLabel, curseStateLabel, curseDangerLabel } from '../../utils/enumLabels';
 
 const schema = z.object({
   nombre: z.string().min(2, t('form.validation.nameTooShort')),
-  ubicacionDeAparicion: z.string().min(2, t('form.validation.locationRequired')),
+  ubicacionId: z.coerce.number().int().positive(t('form.validation.locationRequired')).optional(),
   fechaYHoraDeAparicion: z.string(),
   grado: z.union([
     z.literal(CURSE_GRADE.grado_1),
@@ -53,6 +55,7 @@ type FormValues = z.infer<typeof schema>;
 export const CursesPage = () => {
   const { data, isLoading, isError, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteCurses({ pageSize: 20 });
   const { list, create, update, remove } = useCurses();
+  const { list: locationList } = useLocations();
   const { user } = useAuth();
   const canMutate = canMutateByRole(user);
   const [editId, setEditId] = useState<number | null>(null);
@@ -65,7 +68,7 @@ export const CursesPage = () => {
     resolver: zodResolver(schema),
     defaultValues: {
       nombre: '',
-      ubicacionDeAparicion: '',
+      ubicacionId: undefined,
       grado: CURSE_GRADE.grado_1,
       tipo: CURSE_TYPE.maligna,
       estadoActual: CURSE_STATE.activa,
@@ -76,14 +79,14 @@ export const CursesPage = () => {
 
   const openCreate = () => {
     setEditId(null);
-    reset({ nombre: '', ubicacionDeAparicion: '', grado: CURSE_GRADE.grado_1, tipo: CURSE_TYPE.maligna, estadoActual: CURSE_STATE.activa, nivelPeligro: CURSE_DANGER_LEVEL.bajo, fechaYHoraDeAparicion: new Date().toISOString() });
+    reset({ nombre: '', ubicacionId: undefined, grado: CURSE_GRADE.grado_1, tipo: CURSE_TYPE.maligna, estadoActual: CURSE_STATE.activa, nivelPeligro: CURSE_DANGER_LEVEL.bajo, fechaYHoraDeAparicion: new Date().toISOString() });
     setShowForm(true);
   };
   const startEdit = (c: Curse) => {
     setEditId(c.id);
     reset({
       nombre: c.nombre,
-      ubicacionDeAparicion: c.ubicacionDeAparicion,
+      ubicacionId: c.ubicacionId,
       grado: c.grado,
       tipo: c.tipo,
       estadoActual: c.estadoActual,
@@ -96,7 +99,8 @@ export const CursesPage = () => {
     try {
       const payload: Omit<Curse, 'id'> = {
         nombre: values.nombre,
-        ubicacionDeAparicion: values.ubicacionDeAparicion,
+        ubicacionDeAparicion: '', // backend mapper will ignore this when ubicacionId provided
+        ubicacionId: values.ubicacionId,
         grado: values.grado,
         tipo: values.tipo,
         estadoActual: values.estadoActual,
@@ -128,6 +132,10 @@ export const CursesPage = () => {
   };
 
   const flat = useMemo(() => (data?.pages ?? []).flatMap(p => p.items), [data]);
+  const locationItems = useMemo(() => {
+    const d = locationList.data as { items?: Array<{ id: number; nombre: string }> } | undefined;
+    return d?.items ?? [];
+  }, [locationList.data]);
   const sortedData = useMemo(() => {
     const base: Curse[] = flat.length
       ? flat
@@ -177,7 +185,6 @@ export const CursesPage = () => {
           <Table>
             <THead>
               <tr>
-                <TH><SortHeader label={t('ui.id')} active={sortKey==='id'} direction={sortDir} onClick={() => toggleSort('id')} /></TH>
                 <TH><SortHeader label={t('form.curse.name')} active={sortKey==='nombre'} direction={sortDir} onClick={() => toggleSort('nombre')} /></TH>
                 <TH><SortHeader label={t('form.curse.grade')} active={sortKey==='grado'} direction={sortDir} onClick={() => toggleSort('grado')} /></TH>
                 <TH><SortHeader label={t('form.curse.type')} active={sortKey==='tipo'} direction={sortDir} onClick={() => toggleSort('tipo')} /></TH>
@@ -189,12 +196,11 @@ export const CursesPage = () => {
             <TBody>
               {sortedData.map((c) => (
                 <tr key={c.id} className="border-b hover:bg-slate-800/40">
-                  <TD>{c.id}</TD>
                   <TD>{c.nombre}</TD>
-                  <TD>{c.grado}</TD>
-                  <TD>{c.tipo}</TD>
-                  <TD>{c.estadoActual}</TD>
-                  <TD>{c.nivelPeligro}</TD>
+                  <TD>{curseGradeLabel(c.grado)}</TD>
+                  <TD>{curseTypeLabel(c.tipo)}</TD>
+                  <TD>{curseStateLabel(c.estadoActual)}</TD>
+                  <TD>{curseDangerLabel(c.nivelPeligro)}</TD>
                   {canMutate && (
                     <TD className="flex gap-2">
                       <Button size="sm" variant="secondary" onClick={() => startEdit(c)}>{t('ui.edit')}</Button>
@@ -235,19 +241,24 @@ export const CursesPage = () => {
         <form id="curse-form" onSubmit={onSubmit} className="space-y-3">
           <Input label={t('form.curse.name')} placeholder={t('form.curse.name')} {...register('nombre')} />
           {errors.nombre && <p className="text-xs text-red-400">{errors.nombre.message}</p>}
-          <Input label={t('form.curse.location')} placeholder={t('form.curse.location')} {...register('ubicacionDeAparicion')} />
-          {errors.ubicacionDeAparicion && <p className="text-xs text-red-400">{errors.ubicacionDeAparicion.message}</p>}
+          <Select label={t('form.curse.location')} {...register('ubicacionId', { valueAsNumber: true })}>
+            <option value="">{t('ui.selectPlaceholder')}</option>
+            {locationItems.map((l) => (
+              <option key={l.id} value={l.id}>{l.nombre}</option>
+            ))}
+          </Select>
+          {errors.ubicacionId && <p className="text-xs text-red-400">{errors.ubicacionId.message}</p>}
           <Select label={t('form.curse.grade')} {...register('grado')}>
-            {Object.values(CURSE_GRADE).map((g) => <option key={g} value={g}>{g}</option>)}
+            {Object.values(CURSE_GRADE).map((g) => <option key={g} value={g}>{curseGradeLabel(g)}</option>)}
           </Select>
           <Select label={t('form.curse.type')} {...register('tipo')}>
-            {Object.values(CURSE_TYPE).map((t) => <option key={t} value={t}>{t}</option>)}
+            {Object.values(CURSE_TYPE).map((ct) => <option key={ct} value={ct}>{curseTypeLabel(ct)}</option>)}
           </Select>
           <Select label={t('form.curse.state')} {...register('estadoActual')}>
-            {Object.values(CURSE_STATE).map((s) => <option key={s} value={s}>{s}</option>)}
+            {Object.values(CURSE_STATE).map((s) => <option key={s} value={s}>{curseStateLabel(s)}</option>)}
           </Select>
           <Select label={t('form.curse.danger')} {...register('nivelPeligro')}>
-            {Object.values(CURSE_DANGER_LEVEL).map((n) => <option key={n} value={n}>{n}</option>)}
+            {Object.values(CURSE_DANGER_LEVEL).map((n) => <option key={n} value={n}>{curseDangerLabel(n)}</option>)}
           </Select>
         </form>
       </Modal>

@@ -35,7 +35,7 @@ export const RegisterPage = () => {
         password: values.password,
       });
       login(accessToken, user);
-  toast.success(t('auth.registered'));
+      toast.success(t('auth.registered'));
       const target = fromPath && fromPath !== '/login' ? fromPath : '/entities';
       navigate(target, { replace: true });
     } catch (err) {
@@ -47,7 +47,7 @@ export const RegisterPage = () => {
             : t('errors.tryAgain');
           toast.error(`Error ${err.response.status}: ${message}`);
         } else {
-          toast.error(t('errors.networkMock'));
+          toast.error(t('errors.network'));
         }
       } else {
         toast.error(t('errors.unexpected'));
@@ -62,7 +62,7 @@ export const RegisterPage = () => {
         <div className="text-center space-y-2">
           <h1 className="font-[Cinzel] text-3xl text-jjk-gold tracking-wide">{t('pages.register.title')}</h1>
           <p className="jp-mark text-jjk-purple text-lg">呪術廻戦</p>
-          <p className="text-xs text-jjk-fog">{t('pages.register.subtitleObserver')}</p>
+          <p className="text-xs text-jjk-fog">{t('pages.register.subtitleInfo')}</p>
         </div>
         <form onSubmit={onSubmit} className="space-y-5">
           <div className="space-y-1">

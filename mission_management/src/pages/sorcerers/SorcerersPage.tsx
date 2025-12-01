@@ -19,6 +19,8 @@ import { toast } from 'sonner';
 import { useAuth } from '../../hooks/useAuth';
 import { canMutate as canMutateByRole } from '../../utils/permissions';
 import { t } from '../../i18n';
+import { useTechniques } from '../../hooks/useTechniques';
+import { sorcererGradeLabel, sorcererStatusLabel } from '../../utils/enumLabels';
 
 const schema = z.object({
   name: z.string().min(2, t('form.validation.nameTooShort')),
@@ -37,7 +39,7 @@ const schema = z.object({
     z.literal(SORCERER_STATUS.baja),
     z.literal(SORCERER_STATUS.inactivo),
   ]),
-  tecnicaPrincipal: z.string().optional(),
+  tecnicaPrincipalId: z.coerce.number().int().positive().optional(),
 });
 type FormValues = z.infer<typeof schema>;
 
@@ -45,6 +47,7 @@ export const SorcerersPage = () => {
   const { data, isLoading, isError, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteSorcerers({ pageSize: 20 });
   // Use legacy hook only for mutations & cache invalidation.
   const { list, create, update, remove } = useSorcerers();
+  const { list: techniqueList } = useTechniques();
   const { user } = useAuth();
   const canMutate = canMutateByRole(user);
   const [editId, setEditId] = useState<number | null>(null);
@@ -65,13 +68,13 @@ export const SorcerersPage = () => {
       grado: SORCERER_GRADE.estudiante,
       experiencia: 0,
       estado: SORCERER_STATUS.activo,
-      tecnicaPrincipal: '',
+      tecnicaPrincipalId: undefined,
     },
   });
 
   const openCreate = () => {
     setEditId(null);
-    reset({ name: '', grado: SORCERER_GRADE.estudiante, experiencia: 0, estado: SORCERER_STATUS.activo, tecnicaPrincipal: '' });
+    reset({ name: '', grado: SORCERER_GRADE.estudiante, experiencia: 0, estado: SORCERER_STATUS.activo, tecnicaPrincipalId: undefined });
     setShowForm(true);
   };
   const startEdit = (s: Sorcerer) => {
@@ -81,7 +84,7 @@ export const SorcerersPage = () => {
       grado: s.grado,
       experiencia: s.experiencia,
       estado: s.estado,
-      tecnicaPrincipal: s.tecnicaPrincipal ?? '',
+      tecnicaPrincipalId: s.tecnicaPrincipalId,
     });
     setShowForm(true);
   };
@@ -127,6 +130,10 @@ export const SorcerersPage = () => {
         : String(bv).localeCompare(String(av));
     });
   }, [flat, list.data, sortKey, sortDir]);
+  const techniqueItems = useMemo(() => {
+    const d = techniqueList.data as { items?: Array<{ id: number; nombre: string }> } | undefined;
+    return d?.items ?? [];
+  }, [techniqueList.data]);
 
   const toggleSort = (key: keyof Sorcerer) => {
     if (sortKey === key) setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
@@ -165,7 +172,6 @@ export const SorcerersPage = () => {
           <Table>
             <THead>
               <tr>
-                <TH><SortHeader label={t('ui.id')} active={sortKey==='id'} direction={sortDir} onClick={() => toggleSort('id')} /></TH>
                 <TH><SortHeader label={t('form.labels.name')} active={sortKey==='name'} direction={sortDir} onClick={() => toggleSort('name')} /></TH>
                 <TH><SortHeader label={t('form.labels.grade')} active={sortKey==='grado'} direction={sortDir} onClick={() => toggleSort('grado')} /></TH>
                 <TH><SortHeader label={t('form.labels.experience')} active={sortKey==='experiencia'} direction={sortDir} onClick={() => toggleSort('experiencia')} /></TH>
@@ -176,11 +182,10 @@ export const SorcerersPage = () => {
             <TBody>
               {sortedData.map((s) => (
                 <tr key={s.id} className="border-b hover:bg-slate-800/40">
-                  <TD>{s.id}</TD>
                   <TD>{s.name}</TD>
-                  <TD>{s.grado}</TD>
+                  <TD>{sorcererGradeLabel(s.grado)}</TD>
                   <TD>{s.experiencia}</TD>
-                  <TD>{s.estado}</TD>
+                  <TD>{sorcererStatusLabel(s.estado)}</TD>
                   {canMutate && (
                     <TD className="flex gap-2">
                       <Button size="sm" variant="secondary" onClick={() => startEdit(s)}>{t('ui.edit')}</Button>
@@ -222,14 +227,19 @@ export const SorcerersPage = () => {
           <Input label={t('form.labels.name')} placeholder={t('form.labels.name')} {...register('name')} />
           {errors.name && <p className="text-xs text-red-400">{errors.name.message}</p>}
           <Select label={t('form.labels.grade')} {...register('grado')}>
-            {Object.values(SORCERER_GRADE).map((g) => <option key={g} value={g}>{g}</option>)}
+            {Object.values(SORCERER_GRADE).map((g) => <option key={g} value={g}>{sorcererGradeLabel(g)}</option>)}
           </Select>
           <Input label={t('form.labels.experience')} type="number" {...register('experiencia', { valueAsNumber: true })} />
           {errors.experiencia && <p className="text-xs text-red-400">{errors.experiencia.message}</p>}
             <Select label={t('form.labels.state')} {...register('estado')}>
-            {Object.values(SORCERER_STATUS).map((s) => <option key={s} value={s}>{s}</option>)}
+            {Object.values(SORCERER_STATUS).map((s) => <option key={s} value={s}>{sorcererStatusLabel(s)}</option>)}
           </Select>
-          <Input label={t('form.labels.mainTechnique')} placeholder={t('form.placeholders.tecnicaprincipal')} {...register('tecnicaPrincipal')} />
+            <Select label={t('form.labels.mainTechnique')} {...register('tecnicaPrincipalId', { valueAsNumber: true })}>
+              <option value="">{t('ui.selectPlaceholder')}</option>
+              {techniqueItems.map((t) => (
+                <option key={t.id} value={t.id}>{t.nombre}</option>
+              ))}
+            </Select>
         </form>
       </Modal>
 

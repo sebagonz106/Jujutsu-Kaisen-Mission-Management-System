@@ -17,6 +17,7 @@ import { useInfiniteMissions } from '../../hooks/useInfiniteMissions';
 import type { PagedResponse } from '../../api/pagedApi';
 import { useSorcerers } from '../../hooks/useSorcerers';
 import { useCurses } from '../../hooks/useCurses';
+import { useLocations } from '../../hooks/useLocations';
 import type { Mission } from '../../types/mission';
 import { MISSION_STATE, MISSION_URGENCY } from '../../types/mission';
 import { Button } from '../../components/ui/Button';
@@ -65,7 +66,7 @@ const urgenciaLabel: Record<Mission['urgency'], string> = {
  */
 const schema = z
   .object({
-  locationId: z.coerce.number().min(0, t('form.validation.locationIdNonNegative')),
+  locationId: z.coerce.number().int().positive(t('form.validation.locationRequired')),
     state: z.union([
       z.literal(MISSION_STATE.pending),
       z.literal(MISSION_STATE.in_progress),
@@ -135,6 +136,7 @@ export const MissionsPage = () => {
   const { list, create, update, remove } = useMissions();
   const { list: sorcerersQ } = useSorcerers();
   const { list: cursesQ } = useCurses();
+  const { list: locationsQ } = useLocations();
   const { user } = useAuth();
   const canMutate = canMutateByRole(user);
   const [editId, setEditId] = useState<number | null>(null);
@@ -146,7 +148,7 @@ export const MissionsPage = () => {
   const { register, handleSubmit, reset, watch, control, formState: { errors, isSubmitting } } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      locationId: 0,
+      locationId: undefined as unknown as number,
       state: MISSION_STATE.pending,
       urgency: MISSION_URGENCY.planned,
       events: '',
@@ -174,13 +176,19 @@ export const MissionsPage = () => {
       : (cursesQ.data as PagedResponse<import('../../types/curse').Curse> | undefined)?.items ?? [];
     return list.map((c) => ({ value: c.id, label: `${c.nombre} · ${c.grado}` }));
   }, [cursesQ.data]);
+  const locationOptions = useMemo(() => {
+    const list = Array.isArray(locationsQ.data)
+      ? locationsQ.data
+      : (locationsQ.data as PagedResponse<import('../../types/location').Location> | undefined)?.items ?? [];
+    return list.map((l) => ({ value: l.id, label: l.nombre }));
+  }, [locationsQ.data]);
 
   /**
    * Opens the create form with empty default values.
    */
   const openCreate = () => {
     setEditId(null);
-    reset({ locationId: 0, state: MISSION_STATE.pending, urgency: MISSION_URGENCY.planned, events: '', collateralDamage: '', sorcererIds: [], curseIds: [] });
+    reset({ locationId: undefined as unknown as number, state: MISSION_STATE.pending, urgency: MISSION_URGENCY.planned, events: '', collateralDamage: '', sorcererIds: [], curseIds: [] });
     setShowForm(true);
   };
 
@@ -208,6 +216,7 @@ export const MissionsPage = () => {
    */
   const onSubmit = handleSubmit(async (values) => {
     try {
+      const effectiveUrgency = values.urgency ?? MISSION_URGENCY.planned; // backend requires a value
       const payload: Omit<Mission, 'id'> = {
         startAt: new Date().toISOString(),
         endAt: undefined,
@@ -215,7 +224,7 @@ export const MissionsPage = () => {
         state: values.state,
         events: values.events || '',
         collateralDamage: values.collateralDamage || '',
-        urgency: values.urgency as Mission['urgency'],
+        urgency: effectiveUrgency as Mission['urgency'],
         sorcererIds: (values.sorcererIds ?? []) as number[],
         curseIds: (values.curseIds ?? []) as number[],
       };
@@ -264,6 +273,14 @@ export const MissionsPage = () => {
         : String(bv).localeCompare(String(av));
     });
   }, [flat, list.data, sortKey, sortDir]);
+  const locationNameById = useMemo(() => {
+    const list = Array.isArray(locationsQ.data)
+      ? locationsQ.data
+      : (locationsQ.data as PagedResponse<import('../../types/location').Location> | undefined)?.items ?? [];
+    const map = new Map<number, string>();
+    for (const l of list) map.set(l.id, l.nombre);
+    return map;
+  }, [locationsQ.data]);
 
   const toggleSort = (key: keyof Mission) => {
     if (sortKey === key) setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
@@ -298,7 +315,6 @@ export const MissionsPage = () => {
           <Table>
             <THead>
               <tr>
-                <TH><SortHeader label={t('ui.id')} active={sortKey==='id'} direction={sortDir} onClick={() => toggleSort('id')} /></TH>
                 <TH><SortHeader label={t('form.labels.state')} active={sortKey==='state'} direction={sortDir} onClick={() => toggleSort('state')} /></TH>
                 <TH><SortHeader label={t('form.labels.urgency')} active={sortKey==='urgency'} direction={sortDir} onClick={() => toggleSort('urgency')} /></TH>
                 <TH><SortHeader label={t('form.labels.ubicacion')} active={sortKey==='locationId'} direction={sortDir} onClick={() => toggleSort('locationId')} /></TH>
@@ -308,10 +324,9 @@ export const MissionsPage = () => {
             <TBody>
               {sortedData.map((m) => (
                 <tr key={m.id} className="border-b hover:bg-slate-800/40">
-                  <TD>{m.id}</TD>
                   <TD>{estadoLabel[m.state]}</TD>
                   <TD>{urgenciaLabel[m.urgency]}</TD>
-                  <TD>{m.locationId}</TD>
+                  <TD>{locationNameById.get(m.locationId) ?? m.locationId}</TD>
                   {canMutate && (
                     <TD className="flex gap-2">
                       <Button size="sm" variant="secondary" onClick={() => startEdit(m)}>{t('ui.edit')}</Button>
@@ -350,7 +365,12 @@ export const MissionsPage = () => {
         }
       >
         <form id="mission-form" onSubmit={onSubmit} className="space-y-3">
-          <Input label={t('form.mission.locationId')} type="number" {...register('locationId', { valueAsNumber: true })} />
+          <Select label={t('form.mission.location')} {...register('locationId', { valueAsNumber: true })}>
+            <option value="">{t('ui.selectPlaceholder')}</option>
+            {locationOptions.map((opt) => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </Select>
           {errors.locationId && <p className="text-xs text-red-400">{errors.locationId.message}</p>}
           <Select label={t('form.mission.state')} {...register('state')}>
             {Object.values(MISSION_STATE).map(s => (
