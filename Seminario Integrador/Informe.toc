@@ -1,0 +1,57 @@
+\babel@toc {spanish}{}\relax 
+\contentsline {section}{\numberline {1}Introducción}{4}{section.1}%
+\contentsline {section}{\numberline {2}Alcance del Producto}{4}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Capacidades Principales del Sistema}{4}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Descripción General del Producto}{6}{subsection.2.2}%
+\contentsline {section}{\numberline {3}Requerimientos Específicos}{7}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Requerimientos Funcionales}{7}{subsection.3.1}%
+\contentsline {subsubsection}{\numberline {3.1.1}Requerimientos Funcionales Implementados}{7}{subsubsection.3.1.1}%
+\contentsline {subsubsection}{\numberline {3.1.2}Requerimientos Funcionales en Desarrollo}{8}{subsubsection.3.1.2}%
+\contentsline {subsection}{\numberline {3.2}Requerimientos No Funcionales}{9}{subsection.3.2}%
+\contentsline {subsubsection}{\numberline {3.2.1}Usabilidad}{9}{subsubsection.3.2.1}%
+\contentsline {subsubsection}{\numberline {3.2.2}Seguridad}{9}{subsubsection.3.2.2}%
+\contentsline {subsubsection}{\numberline {3.2.3}Rendimiento}{10}{subsubsection.3.2.3}%
+\contentsline {subsubsection}{\numberline {3.2.4}Diseño e Implementación}{10}{subsubsection.3.2.4}%
+\contentsline {subsection}{\numberline {3.3}Requerimientos de Entorno}{12}{subsection.3.3}%
+\contentsline {subsubsection}{\numberline {3.3.1}Hardware del Servidor en desarrollo}{12}{subsubsection.3.3.1}%
+\contentsline {subsubsection}{\numberline {3.3.2}Hardware del Servidor en producción}{12}{subsubsection.3.3.2}%
+\contentsline {subsubsection}{\numberline {3.3.3}Software del Servidor}{12}{subsubsection.3.3.3}%
+\contentsline {subsubsection}{\numberline {3.3.4}Cliente}{12}{subsubsection.3.3.4}%
+\contentsline {subsubsection}{\numberline {3.3.5}Entorno de Desarrollo}{13}{subsubsection.3.3.5}%
+\contentsline {section}{\numberline {4}Funcionalidades del Producto}{13}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Diagrama de Casos de Uso}{13}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Descripción de Actores}{14}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Prototipos de Interfaz}{14}{subsection.4.3}%
+\contentsline {section}{\numberline {5}Enfoque Metodológico}{15}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Metodología de Desarrollo}{15}{subsection.5.1}%
+\contentsline {subsubsection}{\numberline {5.1.1}Marco Ágil Adaptado}{15}{subsubsection.5.1.1}%
+\contentsline {subsubsection}{\numberline {5.1.2}Prácticas de Ingeniería}{16}{subsubsection.5.1.2}%
+\contentsline {subsection}{\numberline {5.2}Proceso de Análisis y Diseño}{17}{subsection.5.2}%
+\contentsline {subsection}{\numberline {5.3}Gestión de Configuración y Herramientas}{18}{subsection.5.3}%
+\contentsline {subsection}{\numberline {5.4}Organización del Equipo}{18}{subsection.5.4}%
+\contentsline {subsection}{\numberline {5.5}Justificación del Enfoque}{19}{subsection.5.5}%
+\contentsline {section}{\numberline {6}Arquitectura del Sistema}{19}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Visión General de la Arquitectura}{19}{subsection.6.1}%
+\contentsline {subsubsection}{\numberline {6.1.1}Capas del Sistema}{19}{subsubsection.6.1.1}%
+\contentsline {subsection}{\numberline {6.2}Diagrama de la Arquitectura}{22}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}Justificación de la selección}{22}{subsection.6.3}%
+\contentsline {subsection}{\numberline {6.4}Patrones de Diseño Aplicados}{23}{subsection.6.4}%
+\contentsline {section}{\numberline {7}Patrones de Diseño, Visualización y Datos \cite {fowler2002}}{23}{section.7}%
+\contentsline {subsection}{\numberline {7.1}Patrones Arquitectónicos}{23}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}Patrones de Diseño}{24}{subsection.7.2}%
+\contentsline {subsection}{\numberline {7.3}Patrones de Visualización}{24}{subsection.7.3}%
+\contentsline {subsection}{\numberline {7.4}Patrones de Datos}{24}{subsection.7.4}%
+\contentsline {section}{\numberline {8}Modelo de Datos}{24}{section.8}%
+\contentsline {subsection}{\numberline {8.1}Modelo Conceptual Relacional-Extendido (MERX)}{24}{subsection.8.1}%
+\contentsline {subsection}{\numberline {8.2}Correctitud del diseño de la base de datos}{29}{subsection.8.2}%
+\contentsline {subsection}{\numberline {8.3}Extracción de un cubrimiento minimal}{29}{subsection.8.3}%
+\contentsline {subsubsection}{\numberline {8.3.1}Cubrimiento minimal}{29}{subsubsection.8.3.1}%
+\contentsline {subsection}{\numberline {8.4}Descomposición en 3FN}{30}{subsection.8.4}%
+\contentsline {subsubsection}{\numberline {8.4.1}Descomposición}{30}{subsubsection.8.4.1}%
+\contentsline {subsection}{\numberline {8.5}Garantía de cumplimiento de la PLJ}{32}{subsection.8.5}%
+\contentsline {section}{\numberline {9}Discusión del diseño}{33}{section.9}%
+\contentsline {subsection}{\numberline {9.1}Correctitud}{33}{subsection.9.1}%
+\contentsline {subsection}{\numberline {9.2}Completitud respecto a los requerimientos}{33}{subsection.9.2}%
+\contentsline {subsection}{\numberline {9.3}Normalización y consistencia}{33}{subsection.9.3}%
+\contentsline {subsection}{\numberline {9.4}Flexibilidad y extensibilidad}{34}{subsection.9.4}%
+\contentsline {section}{\numberline {10}Conclusiones}{34}{section.10}%
