@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.9.12)  21 NOV 2025 16:58
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.9.12)  21 NOV 2025 23:01
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -992,11 +992,11 @@ Package microtype Info: Loading generic protrusion settings for font family
 [11]
 
 [12]
-<media/use.png, id=364, 2032.59375pt x 1015.795pt>
+<media/use.png, id=364, 2036.60875pt x 1015.795pt>
 File: media/use.png Graphic file (type png)
 <use media/use.png>
 Package pdftex.def Info: media/use.png  used on input line 432.
-(pdftex.def)             Requested size: 455.23587pt x 256.0716pt.
+(pdftex.def)             Requested size: 455.23389pt x 256.0716pt.
 
 
 [13 <./media/use.png (PNG copy)>]
@@ -1236,7 +1236,7 @@ xlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb><c:/texlive/2025
 /texmf-dist/fonts/type1/public/amsfonts/cm/cmti12.pfb><c:/texlive/2025/texmf-di
 st/fonts/type1/public/amsfonts/cm/cmtt12.pfb><c:/texlive/2025/texmf-dist/fonts/
 type1/public/cm-super/sfrm1200.pfb>
-Output written on Informe.pdf (36 pages, 2308726 bytes).
+Output written on Informe.pdf (36 pages, 2309651 bytes).
 PDF statistics:
  614 PDF objects out of 1000 (max. 8388607)
  521 compressed objects within 6 object streams
