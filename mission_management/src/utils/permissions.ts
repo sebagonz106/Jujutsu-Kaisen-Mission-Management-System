@@ -4,9 +4,10 @@
  * Centralizes authorization logic so UI components and server-side checks remain consistent.
  *
  * **Current Policy:**
+ * - **Admin** users: Full access to all operations and user management.
  * - **Support** users: Full CRUD access to all entities.
  * - **Sorcerers** with rank `alto` or `especial`: Full CRUD access.
- * - **Observers** and low-rank sorcerers: Read-only access.
+ * - Low-rank sorcerers: Read-only access.
  *
  * @module utils/permissions
  */
@@ -23,13 +24,14 @@ export type Role = AuthUser['role'];
  *
  * @example
  * ```ts
- * const user = { role: 'support', id: 1, name: 'Ana' };
+ * const user = { role: 'admin', id: 1, name: 'Admin' };
  * canMutate(user); // true
  * ```
  */
 export const canMutate = (user?: AuthUser | null) => {
   if (!user) return false;
-  if (user.role == 'support') return true;
+  if (user.role === 'admin') return true;
+  if (user.role === 'support') return true;
   if (user.role !== 'sorcerer') return false;
   const allowedRanks = ['alto', 'especial'];
   return !!user.rank && allowedRanks.includes(user.rank as string);
@@ -49,5 +51,5 @@ export const canViewEntities = () => true; // all roles for now
  * @param allowed - Array of roles allowed to access the dashboard (default: all roles).
  * @returns `true` if the user's role is in the allowed list.
  */
-export const canAccessDashboard = (role?: Role | null, allowed: Role[] = ['sorcerer', 'support', 'observer']) =>
+export const canAccessDashboard = (role?: Role | null, allowed: Role[] = ['sorcerer', 'support', 'admin']) =>
   !!role && allowed.includes(role);

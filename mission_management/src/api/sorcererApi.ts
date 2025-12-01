@@ -10,6 +10,26 @@ import { apiClient } from './client';
 import { normalizePaged } from './pagedApi';
 import type { Sorcerer } from '../types/sorcerer';
 
+// Backend sorcerer shape (partial) including nested technique optional
+interface BackendSorcerer {
+  id: number; name: string; grado: Sorcerer['grado']; experiencia: number; estado: Sorcerer['estado'];
+  tecnicaPrincipal?: { id: number; nombre: string } | null;
+  tecnicaPrincipalId?: number; // in case backend ever returns flattened id
+  [k: string]: unknown; // allow extra props safely
+}
+function normalizeSorcerer(raw: BackendSorcerer): Sorcerer {
+  const tecnica = raw.tecnicaPrincipal;
+  return {
+    id: raw.id,
+    name: raw.name,
+    grado: raw.grado,
+    experiencia: raw.experiencia,
+    estado: raw.estado,
+    tecnicaPrincipal: tecnica?.nombre ?? undefined,
+    tecnicaPrincipalId: tecnica?.id ?? raw.tecnicaPrincipalId ?? undefined,
+  };
+}
+
 /**
  * Sorcerer API methods.
  */
@@ -25,8 +45,8 @@ export const sorcererApi = {
     if (params?.cursor) qp.push(`cursor=${encodeURIComponent(String(params.cursor))}`);
     const qs = qp.length ? `?${qp.join('&')}` : '';
     const { data } = await apiClient.get(`/sorcerers${qs}`);
-    const norm = normalizePaged<Sorcerer>(data, { limit: params?.limit });
-    return norm;
+    const norm = normalizePaged<BackendSorcerer>(data, { limit: params?.limit });
+    return { ...norm, items: norm.items.map(normalizeSorcerer) };
   },
 
   /**
@@ -36,8 +56,8 @@ export const sorcererApi = {
    * @returns Promise resolving to the sorcerer object.
    */
   async get(id: number): Promise<Sorcerer> {
-    const { data } = await apiClient.get<Sorcerer>(`/sorcerers/${id}`);
-    return data;
+    const { data } = await apiClient.get<BackendSorcerer>(`/sorcerers/${id}`);
+    return normalizeSorcerer(data);
   },
 
   /**
@@ -47,8 +67,15 @@ export const sorcererApi = {
    * @returns Promise resolving to the created sorcerer with assigned ID.
    */
   async create(payload: Omit<Sorcerer, 'id'>): Promise<Sorcerer> {
-    const { data } = await apiClient.post<Sorcerer>('/sorcerers', payload);
-    return data;
+    const send: Record<string, unknown> = {
+      name: payload.name,
+      grado: payload.grado,
+      experiencia: payload.experiencia,
+      estado: payload.estado,
+      tecnicaPrincipalId: payload.tecnicaPrincipalId ?? 0,
+    };
+    const { data } = await apiClient.post<BackendSorcerer>('/sorcerers', send);
+    return normalizeSorcerer(data);
   },
 
   /**
@@ -58,9 +85,13 @@ export const sorcererApi = {
    * @param payload - Partial sorcerer data to update.
    * @returns Promise resolving to the updated sorcerer.
    */
-  async update(id: number, payload: Partial<Omit<Sorcerer, 'id'>>): Promise<Sorcerer> {
-    const { data } = await apiClient.put<Sorcerer>(`/sorcerers/${id}`, payload);
-    return data;
+  async update(id: number, payload: Partial<Omit<Sorcerer, 'id'>>): Promise<void> {
+    const send: Record<string, unknown> = { ...payload };
+    if (Object.prototype.hasOwnProperty.call(payload, 'tecnicaPrincipalId')) {
+      send.tecnicaPrincipalId = payload.tecnicaPrincipalId ?? 0;
+      delete (send as Record<string, unknown>).tecnicaPrincipal;
+    }
+    await apiClient.put(`/sorcerers/${id}`, send);
   },
 
   /**

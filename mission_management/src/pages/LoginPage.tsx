@@ -24,8 +24,8 @@ export const LoginPage = () => {
   const onSubmit = handleSubmit(async (values) => {
     try {
       const { accessToken, user } = await authApi.login(values);
-  login(accessToken, user);
-  toast.success(t('auth.welcome'));
+      login(accessToken, user);
+      toast.success(t('auth.welcome'));
       const target = fromPath && fromPath !== '/login' ? fromPath : '/entities';
       navigate(target, { replace: true });
     } catch (err) {
@@ -41,10 +41,10 @@ export const LoginPage = () => {
             toast.error(`Error ${err.response.status}: ${message}`);
           }
         } else {
-          toast.error(t('errors.networkMockWithHint'));
+          toast.error(t('errors.network'));
         }
       } else {
-  toast.error(t('errors.unexpected'));
+        toast.error(t('errors.unexpected'));
       }
       console.debug('[Login error]', err);
     }

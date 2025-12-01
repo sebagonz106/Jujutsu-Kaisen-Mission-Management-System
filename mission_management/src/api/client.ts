@@ -17,7 +17,48 @@ import type { AxiosError, InternalAxiosRequestConfig, AxiosResponse } from 'axio
 const useMock = import.meta.env.DEV && import.meta.env.VITE_USE_MOCK === 'true';
 // When using MSW in dev, use same-origin relative base URL so the Service Worker can intercept.
 // Otherwise, fall back to configured API URL (or sensible default).
-const baseURL = useMock ? '' : (import.meta.env.VITE_API_URL ?? 'http://localhost:5000/api');
+const baseURL = useMock ? '' : (import.meta.env.VITE_API_URL ?? 'http://localhost:5189/api/v1');
+
+// Route translation layer: maps frontend English/plural resource paths to backend Spanish/singular controller names.
+// Only applied when NOT using mock.
+const routeMap: Record<string, string> = {
+  '/missions': '/Mision',
+  '/sorcerers': '/Hechicero',
+  '/curses': '/Maldicion',
+  '/resources': '/Recurso',
+  '/support-staff': '/PersonalDeApoyo',
+  '/locations': '/Ubicacion',
+  '/transfers': '/Traslado',
+  '/techniques': '/TecnicaMaldita',
+  '/applied-techniques': '/TecnicaMalditaAplicada',
+  '/dominated-techniques': '/TecnicaMalditaDominada',
+  '/mastered-techniques': '/TecnicaMalditaDominada',
+  '/requests': '/Solicitud',
+  '/resource-usages': '/UsoDeRecurso',
+  '/sorcerers-in-charge': '/HechiceroEncargado',
+  '/audit': '/Audit', // si existe equivalente
+};
+
+/**
+ * Translate an outgoing relative URL path based on the first segment.
+ * Preserves query string and trailing segments (e.g. /missions/123 -> /Mision/123).
+ */
+function translatePath(url?: string): string | undefined {
+  if (!url || useMock) return url; // Skip when mocking or no url.
+  // Absolute URLs (http...) should not be remapped.
+  if (/^https?:\/\//i.test(url)) return url;
+  const [pathPart, query] = url.split('?');
+  // Ensure leading slash
+  const normalized = pathPart.startsWith('/') ? pathPart : '/' + pathPart;
+  const segments = normalized.split('/').filter(Boolean);
+  if (segments.length === 0) return url;
+  const baseSeg = '/' + segments[0].toLowerCase();
+  const mappedBase = routeMap[baseSeg];
+  if (!mappedBase) return url; // No mapping needed
+  const rest = segments.slice(1).join('/');
+  const newPath = mappedBase + (rest ? '/' + rest : '');
+  return query ? newPath + '?' + query : newPath;
+}
 
 /**
  * Pre-configured Axios instance for all API calls.
@@ -50,10 +91,12 @@ export const setAccessToken = (token: string | null) => {
  * Request interceptor: attach Authorization header with the JWT token.
  */
 apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+  // Rewrite URL path to backend controller naming if necessary.
+  if (config.url) {
+    config.url = translatePath(config.url);
+  }
   if (accessToken) {
-    // For Axios v1, config.headers may be an AxiosHeaders instance; mutate rather than replace to satisfy types.
     const headers = config.headers || {};
-    // Use bracket to avoid TS index signature complaints.
     (headers as Record<string, unknown>)['Authorization'] = `Bearer ${accessToken}`;
     config.headers = headers;
   }
