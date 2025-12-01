@@ -15,6 +15,19 @@ public class PersonalDeApoyoRepository : IPersonalDeApoyoRepository
     public async Task<IEnumerable<PersonalDeApoyo>> GetAllAsync()
         => await _context.PersonalDeApoyo.ToListAsync();
 
+    public async Task<List<PersonalDeApoyo>> GetPagedAsync(int? cursor, int limit)
+    {
+        var query = _context.PersonalDeApoyo.AsQueryable();
+
+        if (cursor.HasValue)
+            query = query.Where(p => p.Id > cursor.Value);
+
+        return await query
+            .OrderBy(p => p.Id)
+            .Take(limit + 1)
+            .ToListAsync();
+    }
+
     public async Task<PersonalDeApoyo?> GetByIdAsync(int id)
         => await _context.PersonalDeApoyo
             .FirstOrDefaultAsync(p => p.Id == id);

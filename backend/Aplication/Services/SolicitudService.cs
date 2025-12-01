@@ -18,17 +18,28 @@ public class SolicitudService : ISolicitudService
     public async Task<IEnumerable<Solicitud>> GetAllAsync()
         => await _solicitudRepo.GetAllAsync();
 
+    public async Task<(IEnumerable<Solicitud> items, int? nextCursor, bool hasMore)> GetPagedAsync(int? cursor, int limit)
+    {
+        if (limit <= 0) limit = 20;
+        if (limit > 100) limit = 100;
+        var list = await _solicitudRepo.GetPagedAsync(cursor, limit);
+        var hasMore = list.Count > limit;
+        if (hasMore) list.RemoveAt(list.Count - 1);
+        int? nextCursor = list.Count > 0 ? list.Last().Id : null;
+        return (list, nextCursor, hasMore);
+    }
+
     public async Task<Solicitud?> GetByIdAsync(int id)
         => await _solicitudRepo.GetByIdAsync(id);
 
     public async Task<Solicitud> CreateAsync(Solicitud solicitud)
     {
         // Validaciones de negocio
-        if (solicitud.Maldicion == null)
+        if (solicitud.MaldicionId <= 0)
             throw new ArgumentException("La maldición es obligatoria");
 
-        // Validar que la maldición existe usando GetByIdAsync (método que probablemente ya existe)
-        var maldicionExistente = await _maldicionRepo.GetByIdAsync(solicitud.Maldicion.Id);
+        // Validar que la maldición existe usando GetByIdAsync
+        var maldicionExistente = await _maldicionRepo.GetByIdAsync(solicitud.MaldicionId);
         if (maldicionExistente == null)
             throw new ArgumentException("La maldición especificada no existe");
 
@@ -45,11 +56,11 @@ public class SolicitudService : ISolicitudService
             return false;
 
         // Validaciones de negocio
-        if (solicitud.Maldicion == null)
+        if (solicitud.MaldicionId <= 0)
             throw new ArgumentException("La maldición es obligatoria");
 
         // Validar que la maldición existe usando GetByIdAsync
-        var maldicionExistente = await _maldicionRepo.GetByIdAsync(solicitud.Maldicion.Id);
+        var maldicionExistente = await _maldicionRepo.GetByIdAsync(solicitud.MaldicionId);
         if (maldicionExistente == null)
             throw new ArgumentException("La maldición especificada no existe");
 
@@ -57,7 +68,7 @@ public class SolicitudService : ISolicitudService
             throw new ArgumentException("Estado de solicitud no válido");
 
         // Actualizar solo campos permitidos
-        existing.Maldicion = solicitud.Maldicion;
+        existing.MaldicionId = solicitud.MaldicionId;
         existing.Estado = solicitud.Estado;
 
         await _solicitudRepo.UpdateAsync(existing);

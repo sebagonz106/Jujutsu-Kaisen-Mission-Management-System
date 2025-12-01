@@ -7,7 +7,7 @@
 
 import { useMemo, useState } from 'react';
 import { useTechniques } from '../../hooks/useTechniques';
-import type { PagedResponse } from '../../api/pagedApi';
+import { useInfiniteTechniques } from '../../hooks/useInfiniteTechniques';
 import type { Technique } from '../../types/technique';
 import { TECHNIQUE_TYPE } from '../../types/technique';
 import { Button } from '../../components/ui/Button';
@@ -25,6 +25,7 @@ import { toast } from 'sonner';
 import { useAuth } from '../../hooks/useAuth';
 import { canMutate as canMutateByRole } from '../../utils/permissions';
 import { t } from '../../i18n';
+import { getTechniqueTypeLabel } from '../../utils/enumLabels';
 
 /**
  * Zod validation schema for cursed technique form.
@@ -88,7 +89,8 @@ type FormValues = z.infer<typeof schema>;
  * ```
  */
 export const TechniquesPage = () => {
-  const { list, create, update, remove } = useTechniques();
+  const { data, isLoading, isError, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteTechniques({ pageSize: 20 });
+  const { create, update, remove } = useTechniques();
   const { user } = useAuth();
   const canMutate = canMutateByRole(user);
   const [editId, setEditId] = useState<number | null>(null);
@@ -169,9 +171,7 @@ export const TechniquesPage = () => {
    * Supports sorting by any Technique field in ascending or descending order.
    */
   const sortedData = useMemo(() => {
-    const base: Technique[] = Array.isArray(list.data)
-      ? list.data as Technique[]
-      : (list.data as PagedResponse<Technique> | undefined)?.items ?? [];
+    const base: Technique[] = data?.pages.flatMap((p) => p.items) ?? [];
     return [...base].sort((a,b) => {
       const av = a[sortKey];
       const bv = b[sortKey];
@@ -180,14 +180,14 @@ export const TechniquesPage = () => {
         ? String(av).localeCompare(String(bv))
         : String(bv).localeCompare(String(av));
     });
-  }, [list.data, sortKey, sortDir]);
+  }, [data, sortKey, sortDir]);
 
   const toggleSort = (key: keyof Technique) => {
     if (sortKey === key) setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
     else { setSortKey(key); setSortDir('asc'); }
   };
 
-  if (list.isLoading) return (
+  if (isLoading) return (
     <div className="p-4 space-y-4">
       <Skeleton className="h-8 w-40" />
       <div className="space-y-2">
@@ -196,7 +196,7 @@ export const TechniquesPage = () => {
       </div>
     </div>
   );
-  if (list.isError) return <div className="p-4 text-red-400">{t('errors.loadTechniques')}</div>;
+  if (isError) return <div className="p-4 text-red-400">{t('errors.loadTechniques')}</div>;
 
   return (
     <div className="space-y-4">
@@ -225,7 +225,7 @@ export const TechniquesPage = () => {
               {sortedData.map((tech) => (
                 <tr key={tech.id} className="border-b hover:bg-slate-800/40">
                   <TD>{tech.nombre}</TD>
-                  <TD>{tech.tipo}</TD>
+                  <TD>{getTechniqueTypeLabel(tech.tipo)}</TD>
                   <TD>{tech.efectividadProm}</TD>
                   {canMutate && (
                     <TD className="flex gap-2">
@@ -237,6 +237,17 @@ export const TechniquesPage = () => {
               ))}
             </TBody>
           </Table>
+        </div>
+      )}
+      {sortedData.length > 0 && hasNextPage && (
+        <div className="pt-3">
+          <Button
+            variant="secondary"
+            onClick={() => fetchNextPage()}
+            disabled={isFetchingNextPage}
+          >
+            {isFetchingNextPage ? t('ui.loadingMore') : t('ui.loadMore')}
+          </Button>
         </div>
       )}
 
@@ -255,7 +266,7 @@ export const TechniquesPage = () => {
           <Input label={t('form.labels.name')} placeholder={t('form.labels.name')} {...register('nombre')} />
           {errors.nombre && <p className="text-xs text-red-400">{errors.nombre.message}</p>}
           <Select label={t('form.labels.type')} {...register('tipo')}>
-            {Object.values(TECHNIQUE_TYPE).map(tp => <option key={tp} value={tp}>{tp}</option>)}
+            {Object.values(TECHNIQUE_TYPE).map(tp => <option key={tp} value={tp}>{getTechniqueTypeLabel(tp)}</option>)}
           </Select>
           <Input label={'Efectividad promedio'} type="number" {...register('efectividadProm', { valueAsNumber: true })} />
           {errors.efectividadProm && <p className="text-xs text-red-400">{errors.efectividadProm.message}</p>}

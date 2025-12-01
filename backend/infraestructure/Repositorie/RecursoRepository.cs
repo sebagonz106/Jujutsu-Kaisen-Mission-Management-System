@@ -15,6 +15,19 @@ public class RecursoRepository : IRecursoRepository
     public async Task<IEnumerable<Recurso>> GetAllAsync()
         => await _context.Recursos.ToListAsync();
 
+    public async Task<List<Recurso>> GetPagedAsync(int? cursor, int limit)
+    {
+        var query = _context.Recursos.AsQueryable();
+
+        if (cursor.HasValue)
+            query = query.Where(r => r.Id > cursor.Value);
+
+        return await query
+            .OrderBy(r => r.Id)
+            .Take(limit + 1)
+            .ToListAsync();
+    }
+
     public async Task<Recurso?> GetByIdAsync(int id)
         => await _context.Recursos
             .FirstOrDefaultAsync(r => r.Id == id);

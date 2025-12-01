@@ -16,6 +16,17 @@ public class PersonalDeApoyoService : IPersonalDeApoyoService
     public async Task<IEnumerable<PersonalDeApoyo>> GetAllAsync()
         => await _repo.GetAllAsync();
 
+    public async Task<(IEnumerable<PersonalDeApoyo> items, int? nextCursor, bool hasMore)> GetPagedAsync(int? cursor, int limit)
+    {
+        if (limit <= 0) limit = 20;
+        if (limit > 100) limit = 100;
+        var list = await _repo.GetPagedAsync(cursor, limit);
+        var hasMore = list.Count > limit;
+        if (hasMore) list.RemoveAt(list.Count - 1);
+        int? nextCursor = list.Count > 0 ? list.Last().Id : null;
+        return (list, nextCursor, hasMore);
+    }
+
     public async Task<PersonalDeApoyo?> GetByIdAsync(int id)
         => await _repo.GetByIdAsync(id);
 
@@ -46,6 +57,7 @@ public class PersonalDeApoyoService : IPersonalDeApoyoService
 
         // Actualizar solo campos permitidos
         existing.Name = personal.Name;
+        existing.Estado = personal.Estado;
 
         await _repo.UpdateAsync(existing);
         return true;

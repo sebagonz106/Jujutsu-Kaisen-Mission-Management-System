@@ -7,7 +7,7 @@
 
 import { useMemo, useState } from 'react';
 import { useLocations } from '../../hooks/useLocations';
-import type { PagedResponse } from '../../api/pagedApi';
+import { useInfiniteLocations } from '../../hooks/useInfiniteLocations';
 import type { Location } from '../../types/location';
 import { Button } from '../../components/ui/Button';
 import { Modal } from '../../components/ui/Modal';
@@ -66,7 +66,8 @@ type FormValues = z.infer<typeof schema>;
  * ```
  */
 export const LocationsPage = () => {
-  const { list, create, update, remove } = useLocations();
+  const { data, isLoading, isError, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteLocations({ pageSize: 20 });
+  const { create, update, remove } = useLocations();
   const { user } = useAuth();
   const canMutate = canMutateByRole(user);
   const [editId, setEditId] = useState<number | null>(null);
@@ -146,9 +147,7 @@ export const LocationsPage = () => {
    * Supports sorting by any Location field (id, nombre) in ascending or descending order.
    */
   const sortedData = useMemo(() => {
-    const base: Location[] = Array.isArray(list.data)
-      ? list.data as Location[]
-      : (list.data as PagedResponse<Location> | undefined)?.items ?? [];
+    const base: Location[] = data?.pages.flatMap((p) => p.items) ?? [];
     return [...base].sort((a,b) => {
       const av = a[sortKey];
       const bv = b[sortKey];
@@ -157,7 +156,7 @@ export const LocationsPage = () => {
         ? String(av).localeCompare(String(bv))
         : String(bv).localeCompare(String(av));
     });
-  }, [list.data, sortKey, sortDir]);
+  }, [data, sortKey, sortDir]);
 
   /**
    * Toggles sort direction or changes sort column.
@@ -171,7 +170,7 @@ export const LocationsPage = () => {
     else { setSortKey(key); setSortDir('asc'); }
   };
 
-  if (list.isLoading) return (
+  if (isLoading) return (
     <div className="p-4 space-y-4">
       <Skeleton className="h-8 w-40" />
       <div className="space-y-2">
@@ -180,7 +179,7 @@ export const LocationsPage = () => {
       </div>
     </div>
   );
-  if (list.isError) return <div className="p-4 text-red-400">{t('errors.loadLocations')}</div>;
+  if (isError) return <div className="p-4 text-red-400">{t('errors.loadLocations')}</div>;
 
   return (
     <div className="space-y-4">
@@ -217,6 +216,17 @@ export const LocationsPage = () => {
               ))}
             </TBody>
           </Table>
+        </div>
+      )}
+      {sortedData.length > 0 && hasNextPage && (
+        <div className="pt-3">
+          <Button
+            variant="secondary"
+            onClick={() => fetchNextPage()}
+            disabled={isFetchingNextPage}
+          >
+            {isFetchingNextPage ? t('ui.loadingMore') : t('ui.loadMore')}
+          </Button>
         </div>
       )}
 

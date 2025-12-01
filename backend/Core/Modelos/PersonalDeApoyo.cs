@@ -1,10 +1,15 @@
 using System.ComponentModel.DataAnnotations;
-using System.Globalization;
+using static GestionDeMisiones.Models.Hechicero;
 
 namespace GestionDeMisiones.Models;
+
 public class PersonalDeApoyo
 {
     [Key]
     public int Id { get; set; }
-    public string Name { get; set; }
+
+    [Required]
+    public string Name { get; set; } = "";
+
+    public EEstado Estado { get; set; } = EEstado.activo;
 } 

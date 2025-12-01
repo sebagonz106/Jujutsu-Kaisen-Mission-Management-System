@@ -6,6 +6,7 @@ import { ProtectedRoute } from './ProtectedRoute.tsx';
 import { RoleGuard } from './RoleGuard.tsx';
 import AdminUsersPage from '../pages/admin/AdminUsersPage.tsx';
 import { useAuth } from '../hooks/useAuth';
+import { t } from '../i18n';
 
 // Placeholder dashboard components (texto en español)
 const SorcererDashboard = () => <div className="p-4">Panel Hechicero</div>;
@@ -17,13 +18,16 @@ const EntityIndex = () => {
   return (
   <div className="space-y-4 fade-in">
     <h2 className="page-title">Panel</h2>
-    <div className="card-surface p-4">
+    <div className="card-surface p-4 overflow-x-auto">
       <nav className="flex gap-2 flex-wrap">
-        <Link className="nav-link" to="/sorcerers">Hechiceros</Link>
-        <Link className="nav-link" to="/curses">Maldiciones</Link>
-        <Link className="nav-link" to="/missions">Misiones</Link>
-        <Link className="nav-link" to="/locations">Ubicaciones</Link>
-        <Link className="nav-link" to="/techniques">Técnicas</Link>
+        <Link className="nav-link" to="/sorcerers">{t('nav.sorcerers')}</Link>
+        <Link className="nav-link" to="/curses">{t('nav.curses')}</Link>
+        <Link className="nav-link" to="/missions">{t('nav.missions')}</Link>
+        <Link className="nav-link" to="/locations">{t('nav.locations')}</Link>
+        <Link className="nav-link" to="/techniques">{t('nav.techniques')}</Link>
+        <Link className="nav-link" to="/resources">{t('nav.resources')}</Link>
+        <Link className="nav-link" to="/requests">{t('nav.requests')}</Link>
+        <Link className="nav-link" to="/support-staff">{t('nav.supportStaff')}</Link>
         {user?.role === 'admin' && (
           <Link className="nav-link" to="/admin/users">Administrar usuarios</Link>
         )}
@@ -43,6 +47,9 @@ import { CursesPage } from '../pages/curses/CursesPage.tsx';
 import { MissionsPage } from '../pages/missions/MissionsPage.tsx';
 import { LocationsPage } from '../pages/locations/LocationsPage.tsx';
 import { TechniquesPage } from '../pages/techniques/TechniquesPage.tsx';
+import { ResourcesPage } from '../pages/resources/ResourcesPage.tsx';
+import { RequestsPage } from '../pages/requests/RequestsPage.tsx';
+import { SupportStaffPage } from '../pages/support-staff/SupportStaffPage.tsx';
 import Layout from '../components/Layout.tsx';
 
 export const AppRoutes = () => (
@@ -138,6 +145,36 @@ export const AppRoutes = () => (
           <ProtectedRoute>
             <Layout>
               <TechniquesPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/resources"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <ResourcesPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/requests"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <RequestsPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/support-staff"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <SupportStaffPage />
             </Layout>
           </ProtectedRoute>
         }

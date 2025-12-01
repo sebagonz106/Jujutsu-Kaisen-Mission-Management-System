@@ -1,23 +1,40 @@
 using Microsoft.AspNetCore.Mvc;
 using GestionDeMisiones.Models;
 using GestionDeMisiones.IService;
+using GestionDeMisiones.IServices;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 [ApiController]
 [Route("api/[controller]")]
 public class SolicitudController : ControllerBase
 {
     private readonly ISolicitudService _service;
+    private readonly IAuditService _auditService;
 
-    public SolicitudController(ISolicitudService service)
+    public SolicitudController(ISolicitudService service, IAuditService auditService)
     {
         _service = service;
+        _auditService = auditService;
+    }
+
+    private (string role, string? name) GetActorInfo()
+    {
+        var role = User.FindFirst(ClaimTypes.Role)?.Value ?? "unknown";
+        var name = User.FindFirst("name")?.Value ?? User.FindFirst(ClaimTypes.Name)?.Value;
+        return (role, name);
     }
 
     [HttpGet]
     [Authorize]
-    public async Task<ActionResult<IEnumerable<Solicitud>>> GetAllSolicitud()
+    public async Task<IActionResult> GetAllSolicitud([FromQuery] int? limit, [FromQuery] int? cursor)
     {
+        if (limit.HasValue || cursor.HasValue)
+        {
+            var lim = limit ?? 20;
+            var (items, nextCursor, hasMore) = await _service.GetPagedAsync(cursor, lim);
+            return Ok(new { items, nextCursor, hasMore });
+        }
         var solicitudes = await _service.GetAllAsync();
         return Ok(solicitudes);
     }
@@ -42,6 +59,10 @@ public class SolicitudController : ControllerBase
         try
         {
             var created = await _service.CreateAsync(solicitud);
+            
+            var (role, name) = GetActorInfo();
+            await _auditService.LogActionAsync("solicitud", "create", created.Id, role, null, name, $"Creada solicitud #{created.Id} para maldición #{created.MaldicionId}");
+            
             return CreatedAtAction(nameof(GetSolicitudById), new { id = created.Id }, created);
         }
         catch (ArgumentException ex)
@@ -63,6 +84,9 @@ public class SolicitudController : ControllerBase
             if (!updated)
                 return NotFound("La solicitud que quiere editar no existe");
 
+            var (role, name) = GetActorInfo();
+            await _auditService.LogActionAsync("solicitud", "update", id, role, null, name, $"Actualizada solicitud #{id}");
+
             return NoContent();
         }
         catch (ArgumentException ex)
@@ -78,6 +102,9 @@ public class SolicitudController : ControllerBase
         var deleted = await _service.DeleteAsync(id);
         if (!deleted)
             return NotFound("La solicitud que quiere eliminar no existe");
+
+        var (role, name) = GetActorInfo();
+        await _auditService.LogActionAsync("solicitud", "delete", id, role, null, name, $"Eliminada solicitud #{id}");
 
         return NoContent();
     }

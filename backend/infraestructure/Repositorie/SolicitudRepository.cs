@@ -18,6 +18,22 @@ public class SolicitudRepository : ISolicitudRepository
                 .ThenInclude(m => m.UbicacionDeAparicion)
             .ToListAsync();
 
+    public async Task<List<Solicitud>> GetPagedAsync(int? cursor, int limit)
+    {
+        var query = _context.Solicitud
+            .Include(s => s.Maldicion)
+                .ThenInclude(m => m.UbicacionDeAparicion)
+            .AsQueryable();
+
+        if (cursor.HasValue)
+            query = query.Where(s => s.Id > cursor.Value);
+
+        return await query
+            .OrderBy(s => s.Id)
+            .Take(limit + 1)
+            .ToListAsync();
+    }
+
     public async Task<Solicitud?> GetByIdAsync(int id)
         => await _context.Solicitud
             .Include(s => s.Maldicion)

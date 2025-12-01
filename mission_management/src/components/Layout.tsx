@@ -21,13 +21,16 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           <span className="font-[Cinzel] tracking-wide text-lg">Jujutsu Kaisen</span>
           <span className="jp-mark text-xl text-jjk-purple">呪術廻戦</span>
         </h1>
-        <nav className="flex flex-col gap-1">
+        <nav className="flex flex-col gap-1 overflow-y-auto flex-1">
           <NavLink to="/entities" className={({ isActive }) => `nav-link ${isActive ? 'nav-link--active' : ''}`}>{t('nav.panel')}</NavLink>
           <NavLink to="/sorcerers" className={({ isActive }) => `nav-link ${isActive ? 'nav-link--active' : ''}`}>{t('nav.sorcerers')}</NavLink>
           <NavLink to="/curses" className={({ isActive }) => `nav-link ${isActive ? 'nav-link--active' : ''}`}>{t('nav.curses')}</NavLink>
           <NavLink to="/missions" className={({ isActive }) => `nav-link ${isActive ? 'nav-link--active' : ''}`}>{t('nav.missions')}</NavLink>
           <NavLink to="/locations" className={({ isActive }) => `nav-link ${isActive ? 'nav-link--active' : ''}`}>{t('nav.locations')}</NavLink>
           <NavLink to="/techniques" className={({ isActive }) => `nav-link ${isActive ? 'nav-link--active' : ''}`}>{t('nav.techniques')}</NavLink>
+          <NavLink to="/resources" className={({ isActive }) => `nav-link ${isActive ? 'nav-link--active' : ''}`}>{t('nav.resources')}</NavLink>
+          <NavLink to="/requests" className={({ isActive }) => `nav-link ${isActive ? 'nav-link--active' : ''}`}>{t('nav.requests')}</NavLink>
+          <NavLink to="/support-staff" className={({ isActive }) => `nav-link ${isActive ? 'nav-link--active' : ''}`}>{t('nav.supportStaff')}</NavLink>
           {user?.role === 'admin' && (
             <NavLink to="/admin/users" className={({ isActive }) => `nav-link ${isActive ? 'nav-link--active' : ''}`}>Usuarios</NavLink>
           )}
