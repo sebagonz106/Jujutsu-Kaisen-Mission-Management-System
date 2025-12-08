@@ -49,6 +49,8 @@ export const es = {
   },
   nav: {
     panel: 'Panel',
+    home: 'Inicio',
+    entities: 'Entidades',
     sorcerers: 'Hechiceros',
     curses: 'Maldiciones',
     missions: 'Misiones',
@@ -61,6 +63,10 @@ export const es = {
     resourceUsages: 'Usos de Recursos',
     sorcerersInCharge: 'Hechiceros Encargados',
     masteredTechniques: 'Técnicas Dominadas',
+    queriesSection: 'Consultas',
+    auditSection: 'Auditoría',
+    recentActions: 'Acciones Recientes',
+    queryHistory: 'Historial de Consultas',
     logout: 'Cerrar sesión',
     userFallback: 'Usuario',
   },
@@ -188,6 +194,52 @@ export const es = {
       buttonRegistering: 'Registrando...',
       linkHasAccount: '¿Ya tienes cuenta?',
       linkLogin: 'Inicia sesión',
+    },
+    home: {
+      title: 'Inicio',
+      welcome: 'Bienvenido',
+      myRole: 'Mi rol',
+      actions: 'Acciones disponibles',
+      cards: {
+        entities: {
+          title: 'Gestión de Entidades',
+          desc: 'Ver y gestionar entidades del sistema',
+        },
+        queries: {
+          title: 'Consultas',
+          desc: 'Realizar consultas analíticas',
+        },
+        recentActions: {
+          title: 'Acciones Recientes',
+          desc: 'Ver historial de actividad',
+        },
+      },
+    },
+    queries: {
+      title: 'Consultas',
+      emptyTitle: 'Próximamente',
+      emptyDesc: 'Más consultas estarán disponibles pronto',
+      rf12: {
+        title: 'Maldiciones por Estado',
+        desc: 'Listado de maldiciones filtrado por estado actual',
+        paramLabel: 'Estado de la Maldición',
+        emptyTitle: 'No hay maldiciones con este estado',
+        emptyDesc: 'Intenta con otro filtro',
+        searchButton: 'Buscar',
+        searching: 'Buscando...',
+      },
+    },
+    recentActions: {
+      title: 'Acciones Recientes',
+      desc: 'Historial completo de acciones en el sistema',
+      exportPdf: 'Exportar PDF',
+      comingSoon: 'Próximamente',
+    },
+    queryHistory: {
+      title: 'Historial de Consultas',
+      desc: 'Registro de consultas realizadas',
+      emptyTitle: 'Sin consultas registradas',
+      emptyDesc: 'Esta funcionalidad estará disponible cuando se implementen más consultas',
     },
   },
   toast: {

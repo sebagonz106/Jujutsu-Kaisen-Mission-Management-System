@@ -1,0 +1,57 @@
+/**
+ * @fileoverview Queries index page with available queries grid.
+ *
+ * Displays a grid of available analytical queries with descriptions.
+ * Currently shows RF-12 (Curses by State) and placeholders for future queries (RF-13 to RF-19).
+ *
+ * @module pages/queries/QueriesIndexPage
+ */
+
+import { Link } from 'react-router-dom';
+import { t } from '../../i18n';
+
+/**
+ * QueriesIndexPage component.
+ *
+ * Features:
+ * - Grid layout with query cards
+ * - Active card for RF-12 (navigable)
+ * - Placeholder cards for upcoming queries (RF-13 to RF-19)
+ * - Responsive design
+ */
+export const QueriesIndexPage = () => {
+  return (
+    <div className="page-container">
+      <div className="page-header">
+        <h1 className="page-title">{t('pages.queries.title')}</h1>
+        <p className="text-slate-400 text-sm">Consultas analíticas disponibles</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* RF-12: Curses by State - Active */}
+        <Link
+          to="/queries/curses-by-state"
+          className="card-surface p-6 hover:border-slate-500 transition-all flex flex-col"
+        >
+          <div className="text-4xl mb-3">🔍</div>
+          <h3 className="text-xl font-semibold text-slate-100 mb-2">{t('pages.queries.rf12.title')}</h3>
+          <p className="text-slate-400 text-sm flex-1">{t('pages.queries.rf12.desc')}</p>
+          <div className="mt-4 text-jjk-purple text-sm font-medium">RF-12 →</div>
+        </Link>
+
+        {/* Placeholder cards for future queries */}
+        {[13, 14, 15, 16, 17, 18, 19].map((rf) => (
+          <div
+            key={rf}
+            className="card-surface p-6 opacity-50 cursor-not-allowed flex flex-col"
+          >
+            <div className="text-4xl mb-3 grayscale">📊</div>
+            <h3 className="text-xl font-semibold text-slate-400 mb-2">{t('pages.queries.emptyTitle')}</h3>
+            <p className="text-slate-500 text-sm flex-1">{t('pages.queries.emptyDesc')}</p>
+            <div className="mt-4 text-slate-600 text-sm font-medium">RF-{rf}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};

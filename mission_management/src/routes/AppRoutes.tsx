@@ -1,10 +1,14 @@
 import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
-import { AuditList } from '../components/AuditList';
 import { LoginPage } from '../pages/LoginPage.tsx';
 import { RegisterPage } from '../pages/RegisterPage.tsx';
 import { ProtectedRoute } from './ProtectedRoute.tsx';
 import { RoleGuard } from './RoleGuard.tsx';
 import AdminUsersPage from '../pages/admin/AdminUsersPage.tsx';
+import { HomePage } from '../pages/home/HomePage.tsx';
+import { RecentActionsPage } from '../pages/audit/RecentActionsPage.tsx';
+import { QueryHistoryPage } from '../pages/queries/QueryHistoryPage.tsx';
+import { QueriesIndexPage } from '../pages/queries/QueriesIndexPage.tsx';
+import { CursesByStatePage } from '../pages/queries/CursesByStatePage.tsx';
 import { useAuth } from '../hooks/useAuth';
 import { t } from '../i18n';
 
@@ -17,7 +21,7 @@ const EntityIndex = () => {
   const { user } = useAuth();
   return (
   <div className="space-y-4 fade-in">
-    <h2 className="page-title">Panel</h2>
+    <h2 className="page-title">Entidades</h2>
     <div className="card-surface p-4 overflow-x-auto">
       <nav className="flex gap-2 flex-wrap">
         <Link className="nav-link" to="/sorcerers">{t('nav.sorcerers')}</Link>
@@ -37,12 +41,6 @@ const EntityIndex = () => {
         )}
       </nav>
     </div>
-    <div className="space-y-2">
-      <h2 className="page-title">Acciones recientes</h2>
-      <div className="card-surface p-4">
-        <AuditList limit={20} />
-      </div>
-    </div>
   </div>
   );
 };
@@ -60,12 +58,44 @@ import { SorcerersInChargePage } from '../pages/sorcerers-in-charge/SorcerersInC
 import { MasteredTechniquesPage } from '../pages/mastered-techniques/MasteredTechniquesPage.tsx';
 import Layout from '../components/Layout.tsx';
 
+const QueriesIndexPlaceholder = () => (
+  <div className="page-container">
+    <h1 className="page-title">{t('pages.queries.title')}</h1>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <Link to="/queries/curses-by-state" className="card-surface p-6 hover:border-slate-500 transition-all">
+        <h3 className="text-xl font-semibold text-slate-100 mb-2">{t('pages.queries.rf12.title')}</h3>
+        <p className="text-slate-400 text-sm">{t('pages.queries.rf12.desc')}</p>
+      </Link>
+      <div className="card-surface p-6 opacity-50 cursor-not-allowed">
+        <h3 className="text-xl font-semibold text-slate-400 mb-2">{t('pages.queries.emptyTitle')}</h3>
+        <p className="text-slate-500 text-sm">{t('pages.queries.emptyDesc')}</p>
+      </div>
+    </div>
+  </div>
+);
+
+const CursesByStatePlaceholder = () => (
+  <div className="page-container">
+    <h1 className="page-title">{t('pages.queries.rf12.title')}</h1>
+    <p className="text-slate-400">Implementación en progreso...</p>
+  </div>
+);
+
 export const AppRoutes = () => (
   <BrowserRouter>
     <Routes>
-      <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <HomePage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/dashboard/sorcerer"
         element={
@@ -223,6 +253,46 @@ export const AppRoutes = () => (
           <ProtectedRoute>
             <Layout>
               <MasteredTechniquesPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/entities/recent-actions"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <RecentActionsPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/queries"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <QueriesIndexPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/queries/history"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <QueryHistoryPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/queries/curses-by-state"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <CursesByStatePage />
             </Layout>
           </ProtectedRoute>
         }

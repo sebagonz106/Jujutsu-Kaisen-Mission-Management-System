@@ -79,6 +79,12 @@ builder.Services.AddScoped<ITecnicaMalditaRepository, TecnicaMalditaRepository>(
 builder.Services.AddScoped<ITecnicaMalditaService, TecnicaMalditaService>();
 builder.Services.AddScoped<ITecnicaMalditaDominadaRepository, TecnicaMalditaDominadaRepository>();
 builder.Services.AddScoped<ITecnicaMalditaDominadaService, TecnicaMalditaDominadaService>();
+builder.Services.AddScoped<IMaldicionesEnEstadoRepository, MaldicionesEnEstadoRepository>();
+builder.Services.AddScoped<IMaldicionesEnEstadosService, MaldicionesEnEstadoService>();
+builder.Services.AddScoped<IMisionesEnRangoRepository, MisionesEnRangoRepository>();
+builder.Services.AddScoped<IMisionesEnRangoService, MisionesEnRangoService>();
+builder.Services.AddScoped<IEstadisticasHechiceroRepository, EstadisticasHechiceroRepository>();
+builder.Services.AddScoped<IEstadisticasHechiceroService, EstadisticasHechiceroService>();
 // Audit service
 builder.Services.AddScoped<IAuditRepository, AuditRepository>();
 builder.Services.AddScoped<IAuditService, AuditService>();
