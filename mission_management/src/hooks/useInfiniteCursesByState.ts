@@ -8,7 +8,7 @@
  */
 
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { api } from '../api/client';
+import { apiClient } from '../api/client';
 import { normalizePaged, type PagedResponse } from '../api/pagedApi';
 import type { Curse, CurseState } from '../types/curse';
 
@@ -50,7 +50,7 @@ export const useInfiniteCursesByState = (options: UseInfiniteCursesByStateOption
       params.set('limit', pageSize.toString());
       if (pageParam) params.set('cursor', String(pageParam));
       
-      const res = await api.get<unknown>(`/api/curses/by-state?${params}`);
+      const res = await apiClient.get<unknown>(`/api/curses/by-state?${params}`);
       return normalizePaged<Curse>(res.data, { limit: pageSize });
     },
     initialPageParam: undefined as string | number | undefined,

@@ -47,14 +47,14 @@ export const RecentActionsPage = () => {
   };
 
   return (
-    <div className="page-container">
-      <div className="page-header">
+    <div className="space-y-4">
+      <div className="flex items-start justify-between">
         <div>
           <h1 className="page-title">{t('pages.recentActions.title')}</h1>
           <p className="text-slate-400 text-sm mt-1">{t('pages.recentActions.desc')}</p>
         </div>
         <Button
-          variant="outline"
+          variant="secondary"
           disabled
           title={t('pages.recentActions.comingSoon')}
         >
@@ -107,7 +107,7 @@ export const RecentActionsPage = () => {
           {entries.length > 0 && query.hasNextPage && (
             <div className="flex justify-center pt-4">
               <Button
-                variant="outline"
+                variant="secondary"
                 onClick={loadMore}
                 disabled={!query.hasNextPage || query.isFetchingNextPage}
               >

@@ -9,22 +9,7 @@
 
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import { canMutate as canMutateByRole } from '../../utils/permissions';
 import { t } from '../../i18n';
-
-/**
- * Maps user role enum to Spanish display label.
- */
-const roleLabel = (role: 'sorcerer' | 'support' | 'admin'): string => {
-  switch (role) {
-    case 'admin':
-      return 'Administrador';
-    case 'support':
-      return 'Personal de Apoyo';
-    case 'sorcerer':
-      return 'Hechicero';
-  }
-};
 
 /**
  * HomePage component.
@@ -40,62 +25,27 @@ const roleLabel = (role: 'sorcerer' | 'support' | 'admin'): string => {
  */
 export const HomePage = () => {
   const { user } = useAuth();
-  const canMutate = canMutateByRole(user);
 
   return (
-    <div className="page-container">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-100 mb-2">
-          {t('pages.home.welcome')}, {user?.name ?? user?.email ?? t('nav.userFallback')}
-        </h1>
-        <p className="text-slate-400">
-          {t('pages.home.myRole')}: <span className="text-slate-200 font-medium">{roleLabel(user?.role ?? 'support')}</span>
-        </p>
-      </div>
+    <div className="space-y-4">
+      <h1 className="page-title">
+        {t('pages.home.welcome')}, {user?.name ?? user?.email ?? t('nav.userFallback')}
+      </h1>
 
-      <h2 className="text-xl font-semibold text-slate-200 mb-4">{t('pages.home.actions')}</h2>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* Entities Management Card */}
-        <Link
-          to="/entities"
-          className="min-h-48 p-6 border-2 border-slate-700 hover:border-slate-500 rounded-lg bg-slate-800/40 hover:bg-slate-800/60 transition-all flex flex-col"
-        >
-          <div className="text-6xl mb-4 text-center">📋</div>
-          <h3 className="text-2xl font-semibold text-slate-100 mb-2">{t('pages.home.cards.entities.title')}</h3>
-          <p className="text-slate-400 text-sm mb-6 flex-1">{t('pages.home.cards.entities.desc')}</p>
-          <div className="w-full py-2 px-4 bg-jjk-purple hover:bg-jjk-purple/80 rounded text-center text-slate-100 font-medium">
-            Ver Entidades
-          </div>
+        <Link to="/entities" className="card-surface p-6 hover:border-slate-500 transition-all flex flex-col min-h-48">
+          <div className="text-5xl mb-3 text-slate-400">📋</div>
+          <h3 className="text-xl font-semibold text-slate-100 mb-2">{t('pages.home.cards.entities.title')}</h3>
+          <p className="text-slate-400 text-sm flex-1">{t('pages.home.cards.entities.desc')}</p>
         </Link>
 
         {/* Queries Card */}
-        <Link
-          to="/queries"
-          className="min-h-48 p-6 border-2 border-slate-700 hover:border-slate-500 rounded-lg bg-slate-800/40 hover:bg-slate-800/60 transition-all flex flex-col"
-        >
-          <div className="text-6xl mb-4 text-center">🔍</div>
-          <h3 className="text-2xl font-semibold text-slate-100 mb-2">{t('pages.home.cards.queries.title')}</h3>
-          <p className="text-slate-400 text-sm mb-6 flex-1">{t('pages.home.cards.queries.desc')}</p>
-          <div className="w-full py-2 px-4 bg-jjk-purple hover:bg-jjk-purple/80 rounded text-center text-slate-100 font-medium">
-            Ver Consultas
-          </div>
+        <Link to="/queries" className="card-surface p-6 hover:border-slate-500 transition-all flex flex-col min-h-48">
+          <div className="text-5xl mb-3 text-slate-400">🔍</div>
+          <h3 className="text-xl font-semibold text-slate-100 mb-2">{t('pages.home.cards.queries.title')}</h3>
+          <p className="text-slate-400 text-sm flex-1">{t('pages.home.cards.queries.desc')}</p>
         </Link>
-
-        {/* Recent Actions Card - Only for users with mutation permissions */}
-        {canMutate && (
-          <Link
-            to="/entities/recent-actions"
-            className="min-h-48 p-6 border-2 border-slate-700 hover:border-slate-500 rounded-lg bg-slate-800/40 hover:bg-slate-800/60 transition-all flex flex-col"
-          >
-            <div className="text-6xl mb-4 text-center">📊</div>
-            <h3 className="text-2xl font-semibold text-slate-100 mb-2">{t('pages.home.cards.recentActions.title')}</h3>
-            <p className="text-slate-400 text-sm mb-6 flex-1">{t('pages.home.cards.recentActions.desc')}</p>
-            <div className="w-full py-2 px-4 bg-jjk-purple hover:bg-jjk-purple/80 rounded text-center text-slate-100 font-medium">
-              Ver Historial
-            </div>
-          </Link>
-        )}
       </div>
     </div>
   );

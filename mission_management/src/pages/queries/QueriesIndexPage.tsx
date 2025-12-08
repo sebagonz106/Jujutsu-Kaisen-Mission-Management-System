@@ -39,8 +39,30 @@ export const QueriesIndexPage = () => {
           <div className="mt-4 text-jjk-purple text-sm font-medium">RF-12 →</div>
         </Link>
 
+        {/* RF-13: Missions in Date Range - Active */}
+        <Link
+          to="/queries/missions-in-range"
+          className="card-surface p-6 hover:border-slate-500 transition-all flex flex-col"
+        >
+          <div className="text-4xl mb-3">📅</div>
+          <h3 className="text-xl font-semibold text-slate-100 mb-2">{t('pages.queries.rf13.title')}</h3>
+          <p className="text-slate-400 text-sm flex-1">{t('pages.queries.rf13.desc')}</p>
+          <div className="mt-4 text-jjk-purple text-sm font-medium">RF-13 →</div>
+        </Link>
+
+        {/* RF-14: Sorcerer Statistics - Active */}
+        <Link
+          to="/queries/sorcerer-stats"
+          className="card-surface p-6 hover:border-slate-500 transition-all flex flex-col"
+        >
+          <div className="text-4xl mb-3">📊</div>
+          <h3 className="text-xl font-semibold text-slate-100 mb-2">{t('pages.queries.rf14.title')}</h3>
+          <p className="text-slate-400 text-sm flex-1">{t('pages.queries.rf14.desc')}</p>
+          <div className="mt-4 text-jjk-purple text-sm font-medium">RF-14 →</div>
+        </Link>
+
         {/* Placeholder cards for future queries */}
-        {[13, 14, 15, 16, 17, 18, 19].map((rf) => (
+        {[15, 16, 17, 18, 19].map((rf) => (
           <div
             key={rf}
             className="card-surface p-6 opacity-50 cursor-not-allowed flex flex-col"

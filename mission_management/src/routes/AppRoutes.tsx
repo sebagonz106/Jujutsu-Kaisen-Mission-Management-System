@@ -9,6 +9,8 @@ import { RecentActionsPage } from '../pages/audit/RecentActionsPage.tsx';
 import { QueryHistoryPage } from '../pages/queries/QueryHistoryPage.tsx';
 import { QueriesIndexPage } from '../pages/queries/QueriesIndexPage.tsx';
 import { CursesByStatePage } from '../pages/queries/CursesByStatePage.tsx';
+import { MissionsInRangePage } from '../pages/queries/MissionsInRangePage.tsx';
+import { SorcererStatsPage } from '../pages/queries/SorcererStatsPage.tsx';
 import { useAuth } from '../hooks/useAuth';
 import { t } from '../i18n';
 
@@ -19,29 +21,40 @@ const AdminDashboard = () => <div className="p-4">Panel Administrador</div>;
 const Forbidden = () => <div className="p-4">403 - Acceso denegado</div>;
 const EntityIndex = () => {
   const { user } = useAuth();
+  
+  const entities = [
+    { to: '/sorcerers', label: t('nav.sorcerers'), icon: '⚔️' },
+    { to: '/curses', label: t('nav.curses'), icon: '👹' },
+    { to: '/missions', label: t('nav.missions'), icon: '🎯' },
+    { to: '/locations', label: t('nav.locations'), icon: '📍' },
+    { to: '/techniques', label: t('nav.techniques'), icon: '✨' },
+    { to: '/resources', label: t('nav.resources'), icon: '🛠️' },
+    { to: '/requests', label: t('nav.requests'), icon: '📝' },
+    { to: '/support-staff', label: t('nav.supportStaff'), icon: '👥' },
+    { to: '/transfers', label: t('nav.transfers'), icon: '🚚' },
+    { to: '/resource-usages', label: t('nav.resourceUsages'), icon: '📦' },
+    { to: '/sorcerers-in-charge', label: t('nav.sorcerersInCharge'), icon: '👤' },
+    { to: '/mastered-techniques', label: t('nav.masteredTechniques'), icon: '🎓' },
+  ];
+  
   return (
-  <div className="space-y-4 fade-in">
-    <h2 className="page-title">Entidades</h2>
-    <div className="card-surface p-4 overflow-x-auto">
-      <nav className="flex gap-2 flex-wrap">
-        <Link className="nav-link" to="/sorcerers">{t('nav.sorcerers')}</Link>
-        <Link className="nav-link" to="/curses">{t('nav.curses')}</Link>
-        <Link className="nav-link" to="/missions">{t('nav.missions')}</Link>
-        <Link className="nav-link" to="/locations">{t('nav.locations')}</Link>
-        <Link className="nav-link" to="/techniques">{t('nav.techniques')}</Link>
-        <Link className="nav-link" to="/resources">{t('nav.resources')}</Link>
-        <Link className="nav-link" to="/requests">{t('nav.requests')}</Link>
-        <Link className="nav-link" to="/support-staff">{t('nav.supportStaff')}</Link>
-        <Link className="nav-link" to="/transfers">{t('nav.transfers')}</Link>
-        <Link className="nav-link" to="/resource-usages">{t('nav.resourceUsages')}</Link>
-        <Link className="nav-link" to="/sorcerers-in-charge">{t('nav.sorcerersInCharge')}</Link>
-        <Link className="nav-link" to="/mastered-techniques">{t('nav.masteredTechniques')}</Link>
+    <div className="space-y-4">
+      <h1 className="page-title">Gestión de Entidades</h1>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {entities.map((entity) => (
+          <Link key={entity.to} to={entity.to} className="card-surface p-6 hover:border-slate-500 transition-all flex flex-col">
+            <div className="text-4xl mb-3">{entity.icon}</div>
+            <h3 className="text-lg font-semibold text-slate-100">{entity.label}</h3>
+          </Link>
+        ))}
         {user?.role === 'admin' && (
-          <Link className="nav-link" to="/admin/users">Administrar usuarios</Link>
+          <Link to="/admin/users" className="card-surface p-6 hover:border-slate-500 transition-all flex flex-col">
+            <div className="text-4xl mb-3">👤</div>
+            <h3 className="text-lg font-semibold text-slate-100">Administrar usuarios</h3>
+          </Link>
         )}
-      </nav>
+      </div>
     </div>
-  </div>
   );
 };
 import { SorcerersPage } from '../pages/sorcerers/SorcerersPage.tsx';
@@ -293,6 +306,26 @@ export const AppRoutes = () => (
           <ProtectedRoute>
             <Layout>
               <CursesByStatePage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/queries/missions-in-range"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <MissionsInRangePage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/queries/sorcerer-stats"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <SorcererStatsPage />
             </Layout>
           </ProtectedRoute>
         }

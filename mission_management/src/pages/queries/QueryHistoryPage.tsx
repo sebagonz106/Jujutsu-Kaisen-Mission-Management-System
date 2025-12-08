@@ -34,14 +34,14 @@ export const QueryHistoryPage = () => {
   }
 
   return (
-    <div className="page-container">
-      <div className="page-header">
+    <div className="space-y-4">
+      <div className="flex items-start justify-between">
         <div>
           <h1 className="page-title">{t('pages.queryHistory.title')}</h1>
           <p className="text-slate-400 text-sm mt-1">{t('pages.queryHistory.desc')}</p>
         </div>
         <Button
-          variant="outline"
+          variant="secondary"
           disabled
           title={t('pages.recentActions.comingSoon')}
         >

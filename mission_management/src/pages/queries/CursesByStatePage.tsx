@@ -53,7 +53,7 @@ export const CursesByStatePage = () => {
   const [sortKey, setSortKey] = useState<keyof Curse>('id');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
 
-  const { register, handleSubmit, control, formState: { errors } } = useForm<QueryFormValues>({
+  const { handleSubmit, control, formState: { errors } } = useForm<QueryFormValues>({
     resolver: zodResolver(querySchema),
   });
 
@@ -111,14 +111,14 @@ export const CursesByStatePage = () => {
   };
 
   return (
-    <div className="page-container">
-      <div className="page-header">
+    <div className="space-y-4">
+      <div className="flex items-start justify-between">
         <div>
           <h1 className="page-title">{t('pages.queries.rf12.title')}</h1>
           <p className="text-slate-400 text-sm mt-1">{t('pages.queries.rf12.desc')}</p>
         </div>
         <Button
-          variant="outline"
+          variant="secondary"
           disabled
           title={t('pages.recentActions.comingSoon')}
         >
@@ -127,7 +127,7 @@ export const CursesByStatePage = () => {
       </div>
 
       {/* Query Parameters Form */}
-      <form onSubmit={handleSubmit(onSubmit)} className="card-surface p-4 mb-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="card-surface p-4">
         <div className="flex gap-4 items-end">
           <div className="flex-1">
             <label className="block text-sm font-medium text-slate-300 mb-1">
@@ -137,14 +137,11 @@ export const CursesByStatePage = () => {
               name="state"
               control={control}
               render={({ field }) => (
-                <Select
-                  {...field}
-                  options={[
-                    { value: CURSE_STATE.activa, label: curseStateLabel(CURSE_STATE.activa) },
-                    { value: CURSE_STATE.en_proceso_de_exorcismo, label: curseStateLabel(CURSE_STATE.en_proceso_de_exorcismo) },
-                    { value: CURSE_STATE.exorcisada, label: curseStateLabel(CURSE_STATE.exorcisada) },
-                  ]}
-                />
+                <Select {...field}>
+                  <option value={CURSE_STATE.activa}>{curseStateLabel(CURSE_STATE.activa)}</option>
+                  <option value={CURSE_STATE.en_proceso_de_exorcismo}>{curseStateLabel(CURSE_STATE.en_proceso_de_exorcismo)}</option>
+                  <option value={CURSE_STATE.exorcisada}>{curseStateLabel(CURSE_STATE.exorcisada)}</option>
+                </Select>
               )}
             />
             {errors.state && <p className="text-red-400 text-sm mt-1">{errors.state.message}</p>}
@@ -180,27 +177,13 @@ export const CursesByStatePage = () => {
           <Table>
             <THead>
               <tr>
-                <SortHeader field="id" current={sortKey} dir={sortDir} onClick={toggleSort}>
-                  {t('ui.id')}
-                </SortHeader>
-                <SortHeader field="nombre" current={sortKey} dir={sortDir} onClick={toggleSort}>
-                  {t('form.curse.name')}
-                </SortHeader>
-                <SortHeader field="grado" current={sortKey} dir={sortDir} onClick={toggleSort}>
-                  {t('form.curse.grade')}
-                </SortHeader>
-                <SortHeader field="tipo" current={sortKey} dir={sortDir} onClick={toggleSort}>
-                  {t('form.curse.type')}
-                </SortHeader>
-                <SortHeader field="nivelPeligro" current={sortKey} dir={sortDir} onClick={toggleSort}>
-                  {t('form.curse.danger')}
-                </SortHeader>
-                <SortHeader field="ubicacionDeAparicion" current={sortKey} dir={sortDir} onClick={toggleSort}>
-                  {t('form.curse.location')}
-                </SortHeader>
-                <SortHeader field="fechaYHoraDeAparicion" current={sortKey} dir={sortDir} onClick={toggleSort}>
-                  Fecha Aparición
-                </SortHeader>
+                <TH><SortHeader label={t('ui.id')} active={sortKey==='id'} direction={sortDir} onClick={() => toggleSort('id')} /></TH>
+                <TH><SortHeader label={t('form.curse.name')} active={sortKey==='nombre'} direction={sortDir} onClick={() => toggleSort('nombre')} /></TH>
+                <TH><SortHeader label={t('form.curse.grade')} active={sortKey==='grado'} direction={sortDir} onClick={() => toggleSort('grado')} /></TH>
+                <TH><SortHeader label={t('form.curse.type')} active={sortKey==='tipo'} direction={sortDir} onClick={() => toggleSort('tipo')} /></TH>
+                <TH><SortHeader label={t('form.curse.danger')} active={sortKey==='nivelPeligro'} direction={sortDir} onClick={() => toggleSort('nivelPeligro')} /></TH>
+                <TH><SortHeader label={t('form.curse.location')} active={sortKey==='ubicacionDeAparicion'} direction={sortDir} onClick={() => toggleSort('ubicacionDeAparicion')} /></TH>
+                <TH><SortHeader label="Fecha Aparición" active={sortKey==='fechaYHoraDeAparicion'} direction={sortDir} onClick={() => toggleSort('fechaYHoraDeAparicion')} /></TH>
               </tr>
             </THead>
             <TBody>
@@ -221,7 +204,7 @@ export const CursesByStatePage = () => {
           {hasNextPage && (
             <div className="flex justify-center pt-4">
               <Button
-                variant="outline"
+                variant="secondary"
                 onClick={loadMore}
                 disabled={!hasNextPage || isFetchingNextPage}
               >
