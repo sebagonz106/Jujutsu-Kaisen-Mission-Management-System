@@ -70,6 +70,10 @@ namespace GestionDeMisiones.Service
             if (dbRole == null)
                 throw new ArgumentException("Rol no válido. Use observador/observer, hechicero/sorcerer, support, admin");
 
+            // Si el rol es hechicero, el rango es obligatorio
+            if (dbRole == "hechicero" && string.IsNullOrWhiteSpace(rank))
+                throw new ArgumentException("El rango es obligatorio para hechiceros. Use: aprendiz, medio, alto, especial");
+
             var hash = BCrypt.Net.BCrypt.HashPassword(password);
             var user = new Usuario { Nombre = name, Email = email, PasswordHash = hash, Rol = dbRole, Rango = rank };
             user = await _usersRepo.AddAsync(user);
@@ -84,7 +88,8 @@ namespace GestionDeMisiones.Service
             var name = user.FindFirstValue("name") ?? string.Empty;
             var email = user.FindFirstValue(JwtRegisteredClaimNames.Email) ?? string.Empty;
             var role = user.FindFirstValue(ClaimTypes.Role) ?? "user";
-            return new AuthUser { Id = Convert.ToInt32(id), Name = name, Email = email, Role = role };
+            var rank = user.FindFirstValue("rank"); // Recuperar rank del token
+            return new AuthUser { Id = Convert.ToInt32(id), Name = name, Email = email, Role = role, Rank = rank };
         }
 
         private string GenerateJwt(AuthUser user)
@@ -96,7 +101,7 @@ namespace GestionDeMisiones.Service
             var audience = jwtSection.GetValue<string>("Audience");
             var expiresMinutes = jwtSection.GetValue<int>("ExpiresMinutes");
 
-            var claims = new[]
+            var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
@@ -104,11 +109,19 @@ namespace GestionDeMisiones.Service
                 new Claim(ClaimTypes.Role, user.Role),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
+            
+            // Agregar rank si está disponible (para hechiceros)
+            if (!string.IsNullOrWhiteSpace(user.Rank))
+            {
+                claims.Add(new Claim("rank", user.Rank));
+            }
+            
+            var claimsArray = claims.ToArray();
 
             var token = new JwtSecurityToken(
                 issuer: issuer,
                 audience: audience,
-                claims: claims,
+                claims: claimsArray,
                 expires: DateTime.UtcNow.AddMinutes(expiresMinutes),
                 signingCredentials: creds);
 

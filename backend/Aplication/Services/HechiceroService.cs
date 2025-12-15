@@ -52,7 +52,7 @@ public class HechiceroService : IHechiceroService
         existing.Estado = hechicero.Estado;
         existing.Experiencia = hechicero.Experiencia;
         existing.Grado = hechicero.Grado;
-        existing.TecnicaPrincipal = hechicero.TecnicaPrincipal;
+        existing.TecnicaPrincipalId = hechicero.TecnicaPrincipalId;
 
         await _repo.UpdateAsync(existing);
         return true;

@@ -44,7 +44,7 @@ const getClassificationColor = (clasificacion: string | null) => {
  * Pattern: Infinite Table with Sorting
  */
 export const TechniqueEffectivenessPage = () => {
-  const [sortKey, setSortKey] = useState<keyof Query4Result>('hechiceroId');
+  const [sortKey, setSortKey] = useState<keyof Query4Result>('nombreHechicero');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [isExporting, setIsExporting] = useState(false);
 
@@ -172,9 +172,6 @@ export const TechniqueEffectivenessPage = () => {
               <Table>
                 <THead>
                   <tr>
-                    <TH onClick={() => toggleSort('hechiceroId')}>
-                      <SortHeader active={sortKey === 'hechiceroId'} direction={sortDir} label="ID Hechicero" onClick={() => {}} />
-                    </TH>
                     <TH onClick={() => toggleSort('nombreHechicero')}>
                       <SortHeader active={sortKey === 'nombreHechicero'} direction={sortDir} label="Nombre" onClick={() => {}} />
                     </TH>
@@ -195,9 +192,12 @@ export const TechniqueEffectivenessPage = () => {
                 <TBody>
                   {techniques.map((technique) => (
                     <tr key={technique.hechiceroId} className="border-b border-slate-700 hover:bg-slate-800/50">
-                      <TD>{technique.hechiceroId}</TD>
-                      <TD className="text-amber-400">{technique.nombreHechicero || 'N/A'}</TD>
-                      <TD>{technique.grado || 'N/A'}</TD>
+                      <TD className="px-3 py-2">
+                        <span className="bg-purple-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                          {technique.nombreHechicero ? technique.nombreHechicero.charAt(0).toUpperCase() + technique.nombreHechicero.slice(1) : 'N/A'}
+                        </span>
+                      </TD>
+                      <TD className="capitalize">{technique.grado ? technique.grado.charAt(0).toUpperCase() + technique.grado.slice(1) : 'N/A'}</TD>
                       <TD className="font-semibold text-purple-400">{technique.promedioEfectividad.toFixed(2)}%</TD>
                       <TD>
                         <span

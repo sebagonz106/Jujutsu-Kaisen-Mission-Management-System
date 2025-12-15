@@ -23,6 +23,8 @@ const ROLE_LABELS: Record<RoleType, string> = {
   admin: 'Administrador',
 };
 
+const SORCERER_RANKS = ['aprendiz', 'medio', 'alto', 'especial'] as const;
+
 export const AdminUsersPage: React.FC = () => {
   const { user } = useAuth();
   const [items, setItems] = useState<UsuarioDto[]>([]);
@@ -123,7 +125,10 @@ export const AdminUsersPage: React.FC = () => {
   };
 
   if (!user) return <Navigate to="/login" replace />;
-  if (user.role !== 'admin') return <Navigate to="/403" replace />;
+  // Permitir: admin, support, o hechiceros con rango alto/especial
+  const canAccess = user.role === 'admin' || user.role === 'support' || 
+    (user.role === 'sorcerer' && user.rank && ['alto', 'especial'].includes(user.rank));
+  if (!canAccess) return <Navigate to="/403" replace />;
 
   if (loading) {
     return (
@@ -188,19 +193,22 @@ export const AdminUsersPage: React.FC = () => {
               </tr>
             </THead>
             <TBody>
-              {filtered.map(u => (
+              {filtered.map(u => {
+                // Mapear "hechicero" a "sorcerer" para que funcione con RoleBadge
+                const normalizedRole = u.rol === 'hechicero' ? 'sorcerer' : u.rol;
+                return (
                 <tr key={u.id} className="border-b hover:bg-slate-800/40">
                   <TD>{u.id}</TD>
                   <TD>{u.nombre}</TD>
                   <TD>{u.email}</TD>
                   <TD>
-                    {ROLES.includes(u.rol as RoleType) ? (
-                      <RoleBadge role={u.rol as RoleType} />
+                    {ROLES.includes(normalizedRole as RoleType) ? (
+                      <RoleBadge role={normalizedRole as RoleType} />
                     ) : (
                       <span className="text-slate-400">{u.rol}</span>
                     )}
                   </TD>
-                  <TD>{u.rango ?? '-'}</TD>
+                  <TD>{u.rango ? u.rango.charAt(0).toUpperCase() + u.rango.slice(1) : '-'}</TD>
                   <TD>{new Date(u.creadoEn).toLocaleDateString()}</TD>
                   <TD>
                     <div className="flex gap-2">
@@ -213,7 +221,8 @@ export const AdminUsersPage: React.FC = () => {
                     </div>
                   </TD>
                 </tr>
-              ))}
+              );
+              })}
             </TBody>
           </Table>
         </div>
@@ -293,6 +302,14 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
     e.preventDefault();
     setSaving(true);
     setError(null);
+    
+    // Validar que si el rol es sorcerer, el rango es obligatorio
+    if (rol === 'sorcerer' && !rango.trim()) {
+      setError('El rango es obligatorio para hechiceros');
+      setSaving(false);
+      return;
+    }
+    
     try {
       if (isEdit && onSubmitUpdate) {
         await onSubmitUpdate({
@@ -306,8 +323,10 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
         await onSubmitCreate({ nombre, email, password, rol, rango: rango || null });
       }
       onClose();
-    } catch {
-      setError(isEdit ? 'No se pudo actualizar el usuario' : 'No se pudo crear el usuario');
+    } catch (err) {
+      // El error puede venir del servidor con información de validación
+      const errorMsg = err instanceof Error ? err.message : (isEdit ? 'No se pudo actualizar el usuario' : 'No se pudo crear el usuario');
+      setError(errorMsg);
     } finally {
       setSaving(false);
     }
@@ -359,19 +378,43 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
         <Select
           label="Rol"
           value={rol}
-          onChange={e => setRol(e.target.value as RoleType)}
+          onChange={e => {
+            const newRole = e.target.value as RoleType;
+            setRol(newRole);
+            // Limpiar rango si cambiar a un rol que no es hechicero
+            if (newRole !== 'sorcerer') {
+              setRango('');
+            }
+          }}
         >
           {ROLES.map(r => (
             <option key={r} value={r}>{ROLE_LABELS[r]}</option>
           ))}
         </Select>
         
-        <Input
-          label="Rango (opcional)"
-          placeholder="Ej: alto, especial..."
-          value={rango}
-          onChange={e => setRango(e.target.value)}
-        />
+        {rol === 'sorcerer' && (
+          <Select
+            label="Rango del Hechicero (obligatorio)"
+            value={rango}
+            onChange={e => setRango(e.target.value)}
+            required
+          >
+            <option value="">Selecciona un rango...</option>
+            {SORCERER_RANKS.map(rank => (
+              <option key={rank} value={rank}>{rank.charAt(0).toUpperCase() + rank.slice(1)}</option>
+            ))}
+          </Select>
+        )}
+        
+        {rol !== 'sorcerer' && (
+          <Input
+            label="Rango (opcional)"
+            placeholder="No aplicable para este rol"
+            value={rango}
+            onChange={e => setRango(e.target.value)}
+            disabled
+          />
+        )}
       </form>
     </Modal>
   );

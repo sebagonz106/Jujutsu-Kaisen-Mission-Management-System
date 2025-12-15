@@ -53,13 +53,13 @@ export const RecentActionsPage = () => {
           <h1 className="page-title">{t('pages.recentActions.title')}</h1>
           <p className="text-slate-400 text-sm mt-1">{t('pages.recentActions.desc')}</p>
         </div>
-        <Button
+        {/* <Button
           variant="secondary"
           disabled
           title={t('pages.recentActions.comingSoon')}
         >
           {t('pages.recentActions.exportPdf')}
-        </Button>
+        </Button> */}
       </div>
 
       {query.isLoading ? (

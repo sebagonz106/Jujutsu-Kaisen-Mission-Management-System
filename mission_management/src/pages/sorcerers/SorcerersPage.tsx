@@ -217,13 +217,13 @@ export const SorcerersPage = () => {
         footer={
           <div className="flex justify-end gap-2">
             <Button variant="ghost" onClick={() => setShowForm(false)}>{t('ui.cancel')}</Button>
-            <Button disabled={!canMutate || isSubmitting || create.isPending || update.isPending} type="submit" form="sorcerer-form">
+            <Button disabled={!canMutate || isSubmitting || create.isPending || update.isPending} onClick={onSubmit}>
               {editId ? t('ui.saveChanges') : t('ui.create')}
             </Button>
           </div>
         }
       >
-        <form id="sorcerer-form" onSubmit={onSubmit} className="space-y-3">
+        <form onSubmit={onSubmit} className="space-y-3">
           <Input label={t('form.labels.name')} placeholder={t('form.labels.name')} {...register('name')} />
           {errors.name && <p className="text-xs text-red-400">{errors.name.message}</p>}
           <Select label={t('form.labels.grade')} {...register('grado')}>

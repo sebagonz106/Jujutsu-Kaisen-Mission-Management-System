@@ -35,13 +35,19 @@ namespace GestionDeMisiones.Web.Controlers
         public async Task<ActionResult<UsuarioDto>> Create([FromBody] CreateUsuarioRequest req)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
+            var normalizedRole = NormalizeRole(req.Rol);
+            // Si el rol es hechicero, el rango es obligatorio
+            if (normalizedRole == "hechicero" && string.IsNullOrWhiteSpace(req.Rango))
+            {
+                return BadRequest("El rango es obligatorio para hechiceros. Use: aprendiz, medio, alto, especial");
+            }
             var hash = BCrypt.Net.BCrypt.HashPassword(req.Password);
             var newUser = new Usuario
             {
                 Nombre = req.Nombre,
                 Email = req.Email,
                 PasswordHash = hash,
-                Rol = NormalizeRole(req.Rol),
+                Rol = normalizedRole,
                 Rango = req.Rango
             };
             var created = await _repo.AddAsync(newUser);
@@ -62,7 +68,13 @@ namespace GestionDeMisiones.Web.Controlers
             }
             if (!string.IsNullOrWhiteSpace(req.Rol))
             {
-                existing.Rol = NormalizeRole(req.Rol!);
+                var newRole = NormalizeRole(req.Rol!);
+                // Si se intenta cambiar a hechicero, el rango es obligatorio
+                if (newRole == "hechicero" && string.IsNullOrWhiteSpace(req.Rango ?? existing.Rango))
+                {
+                    return BadRequest("El rango es obligatorio para hechiceros. Use: aprendiz, medio, alto, especial");
+                }
+                existing.Rol = newRole;
             }
             existing.Rango = req.Rango ?? existing.Rango;
             var updated = await _repo.UpdateAsync(existing);
@@ -109,7 +121,14 @@ namespace GestionDeMisiones.Web.Controlers
         public string Nombre { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
-        public string Rol { get; set; } = "observer";
+        /// <summary>
+        /// Rol del usuario: "hechicero"/"sorcerer", "support", o "admin"
+        /// Si es "hechicero", el Rango es obligatorio
+        /// </summary>
+        public string Rol { get; set; } = "observador";
+        /// <summary>
+        /// Rango del hechicero (OBLIGATORIO si Rol es "hechicero"): "aprendiz", "medio", "alto", "especial"
+        /// </summary>
         public string? Rango { get; set; }
     }
 

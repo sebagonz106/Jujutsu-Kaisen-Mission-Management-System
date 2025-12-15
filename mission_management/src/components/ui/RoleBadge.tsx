@@ -7,7 +7,7 @@ type RoleBadgeProps = {
 };
 
 const ROLE_STYLES: Record<Role, string> = {
-  sorcerer: 'bg-jjk-indigo text-white',
+  sorcerer: 'bg-jjk-purple text-white',
   support: 'bg-jjk-gold text-jjk-dark',
   admin: 'bg-red-600 text-white',
 };

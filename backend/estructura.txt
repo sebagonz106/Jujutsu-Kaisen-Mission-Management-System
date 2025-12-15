@@ -1,0 +1,527 @@
+.
+├── Aplication
+│   ├── IServices
+│   │   ├── IEstadisticaHechiceroService.cs
+│   │   ├── IHechiceroEnMisionService.cs
+│   │   ├── IHechiceroEncargadoService.cs
+│   │   ├── IHechiceroService.cs
+│   │   ├── IMaldicionService.cs
+│   │   ├── IMisionService.cs
+│   │   ├── IMisionesEnEstadoService.cs
+│   │   ├── IMisionesEnRangoService.cs
+│   │   ├── IPersonalDeApoyoService.cs
+│   │   ├── IQuery2Service.cs
+│   │   ├── IQuery4Service.cs
+│   │   ├── IQuery6Service.cs
+│   │   ├── IRankingHechiceroService.cs
+│   │   ├── IRecursoService.cs
+│   │   ├── ISolicitudService.cs
+│   │   ├── ISubordinacionService.cs
+│   │   ├── ITecnicaMalditaDominadaService.cs
+│   │   ├── ITecnicaMalditaService.cs
+│   │   ├── ITrasladoService.cs
+│   │   ├── IUbicacionService.cs
+│   │   └── IUsoDeRecursosService.cs
+│   └── Services
+│       ├── EstadisticaHechiceroService.cs
+│       ├── HechiceroEnMisionService.cs
+│       ├── HechiceroEncargadoService.cs
+│       ├── HechiceroService.cs
+│       ├── MaldicionService.cs
+│       ├── MaldicionesEnEstadoService.cs
+│       ├── MisionService.cs
+│       ├── MisionesEnRangoService.cs
+│       ├── PersonalDeApoyoService.cs
+│       ├── Query2Service.cs
+│       ├── Query4Service.cs
+│       ├── Query6Service.cs
+│       ├── RankingRankingHechiceroService.cs
+│       ├── RecursoService.cs
+│       ├── SolicitudService.cs
+│       ├── SubordinacionService.cs
+│       ├── TecnicaMalditaDominadaService.cs
+│       ├── TecnicaMalditaService.cs
+│       ├── TrasladoServices.cs
+│       ├── UbicacionService.cs
+│       └── UsoDeRecursosService.cs
+├── Core
+│   └── Modelos
+│       ├── EstadisticaHechicero.cs
+│       ├── Hechicero.cs
+│       ├── HechiceroEnMision.cs
+│       ├── HechiceroEncargado.cs
+│       ├── Maldicion.cs
+│       ├── MaldicionEnEstado.cs
+│       ├── Mision.cs
+│       ├── MisionEnRango.cs
+│       ├── PersonalDeApoyo.cs
+│       ├── Query2Result.cs
+│       ├── Query4Result.cs
+│       ├── Query6Result.cs
+│       ├── RankingHechicero.cs
+│       ├── Recurso.cs
+│       ├── Solicitud.cs
+│       ├── Subordinacion.cs
+│       ├── TecnicaMaldita.cs
+│       ├── TecnicaMalditaAplicada.cs
+│       ├── TecnicaMalditaDominada.cs
+│       ├── Traslado.cs
+│       ├── Ubicacion.cs
+│       └── UsoDeRecurso.cs
+├── Data
+│   └── AppDbContext.cs
+├── GestionDeMisiones.csproj
+├── GestionDeMisiones.http
+├── GestionDeMisiones.sln
+├── Migrations
+│   ├── 20251213214928_InitFix.Designer.cs
+│   ├── 20251213214928_InitFix.cs
+│   ├── 20251213231607_SubordinacionMigr.Designer.cs
+│   ├── 20251213231607_SubordinacionMigr.cs
+│   ├── 20251214002349_TrasladoSupervisado.Designer.cs
+│   ├── 20251214002349_TrasladoSupervisado.cs
+│   └── AppDbContextModelSnapshot.cs
+├── Program.cs
+├── Properties
+│   └── launchSettings.json
+├── Tests
+│   ├── GlobalUsings.cs
+│   ├── IntegrationTests
+│   ├── TestHelpers
+│   │   ├── TestDataFactory.cs
+│   │   └── TestDatabaseFactory.cs
+│   └── UnitTests
+│       ├── Controllers
+│       ├── Models
+│       ├── Repositories
+│       └── Services
+├── Web
+│   └── Controlers
+│       ├── EstadisticaHechiceroController.cs
+│       ├── HechiceroControler.cs
+│       ├── HechiceroEnMisionController.cs
+│       ├── HechiceroEncargadoController.cs
+│       ├── MaldicionController.cs
+│       ├── MaldicionesEnEstadoController.cs
+│       ├── MisionController.cs
+│       ├── MisionesEnRangoController.cs
+│       ├── PDF
+│       │   ├── EstadisticasHechiceroPDF.cs
+│       │   ├── MaldicionEnEstadoPDF.cs
+│       │   ├── MisionesEnRangoPdf.cs
+│       │   ├── Query2Pdf.cs
+│       │   ├── Query4PDF.cs
+│       │   ├── Query6PDF.cs
+│       │   └── RankingHechiceroPdf.cs
+│       ├── PersonalDeApoyoControllers.cs
+│       ├── Query2Controller.cs
+│       ├── Query4Controller.cs
+│       ├── Query6Controller.cs
+│       ├── RankingHechiceroController.cs
+│       ├── RecursoController.cs
+│       ├── SolicitudController.cs
+│       ├── SubordinacionController.cs
+│       ├── TecnicaMalditaController.cs
+│       ├── TecnicaMalditaDominadaController.cs
+│       ├── TrasladoController.cs
+│       ├── UbicacionControler.cs
+│       └── UsoDeRecursoController.cs
+├── appsettings.Devolopment.json
+├── appsettings.json
+├── bin
+│   └── Debug
+│       └── net9.0
+│           ├── Azure.Core.dll
+│           ├── Azure.Identity.dll
+│           ├── Castle.Core.dll
+│           ├── GestionDeMisiones
+│           ├── GestionDeMisiones.Tests
+│           │   └── obj
+│           ├── GestionDeMisiones.deps.json
+│           ├── GestionDeMisiones.dll
+│           ├── GestionDeMisiones.pdb
+│           ├── GestionDeMisiones.runtimeconfig.json
+│           ├── GestionDeMisiones.staticwebassets.endpoints.json
+│           ├── Humanizer.dll
+│           ├── LatoFont
+│           │   ├── Lato-Black.ttf
+│           │   ├── Lato-BlackItalic.ttf
+│           │   ├── Lato-Bold.ttf
+│           │   ├── Lato-BoldItalic.ttf
+│           │   ├── Lato-ExtraBold.ttf
+│           │   ├── Lato-ExtraBoldItalic.ttf
+│           │   ├── Lato-ExtraLight.ttf
+│           │   ├── Lato-ExtraLightItalic.ttf
+│           │   ├── Lato-Italic.ttf
+│           │   ├── Lato-Light.ttf
+│           │   ├── Lato-LightItalic.ttf
+│           │   ├── Lato-Medium.ttf
+│           │   ├── Lato-MediumItalic.ttf
+│           │   ├── Lato-Regular.ttf
+│           │   ├── Lato-SemiBold.ttf
+│           │   ├── Lato-SemiBoldItalic.ttf
+│           │   ├── Lato-Thin.ttf
+│           │   ├── Lato-ThinItalic.ttf
+│           │   └── OFL.txt
+│           ├── Microsoft.AspNetCore.OpenApi.dll
+│           ├── Microsoft.Bcl.AsyncInterfaces.dll
+│           ├── Microsoft.Build.Locator.dll
+│           ├── Microsoft.CodeAnalysis.CSharp.Workspaces.dll
+│           ├── Microsoft.CodeAnalysis.CSharp.dll
+│           ├── Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.dll
+│           ├── Microsoft.CodeAnalysis.Workspaces.MSBuild.dll
+│           ├── Microsoft.CodeAnalysis.Workspaces.dll
+│           ├── Microsoft.CodeAnalysis.dll
+│           ├── Microsoft.Data.SqlClient.dll
+│           ├── Microsoft.EntityFrameworkCore.Abstractions.dll
+│           ├── Microsoft.EntityFrameworkCore.Design.dll
+│           ├── Microsoft.EntityFrameworkCore.InMemory.dll
+│           ├── Microsoft.EntityFrameworkCore.Relational.dll
+│           ├── Microsoft.EntityFrameworkCore.SqlServer.dll
+│           ├── Microsoft.EntityFrameworkCore.dll
+│           ├── Microsoft.Extensions.Caching.Abstractions.dll
+│           ├── Microsoft.Extensions.Caching.Memory.dll
+│           ├── Microsoft.Extensions.Configuration.Abstractions.dll
+│           ├── Microsoft.Extensions.DependencyInjection.Abstractions.dll
+│           ├── Microsoft.Extensions.DependencyInjection.dll
+│           ├── Microsoft.Extensions.DependencyModel.dll
+│           ├── Microsoft.Extensions.Logging.Abstractions.dll
+│           ├── Microsoft.Extensions.Logging.dll
+│           ├── Microsoft.Extensions.Options.dll
+│           ├── Microsoft.Extensions.Primitives.dll
+│           ├── Microsoft.Identity.Client.Extensions.Msal.dll
+│           ├── Microsoft.Identity.Client.dll
+│           ├── Microsoft.IdentityModel.Abstractions.dll
+│           ├── Microsoft.IdentityModel.JsonWebTokens.dll
+│           ├── Microsoft.IdentityModel.Logging.dll
+│           ├── Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+│           ├── Microsoft.IdentityModel.Protocols.dll
+│           ├── Microsoft.IdentityModel.Tokens.dll
+│           ├── Microsoft.OpenApi.dll
+│           ├── Microsoft.SqlServer.Server.dll
+│           ├── Microsoft.TestPlatform.CommunicationUtilities.dll
+│           ├── Microsoft.TestPlatform.CoreUtilities.dll
+│           ├── Microsoft.TestPlatform.CrossPlatEngine.dll
+│           ├── Microsoft.TestPlatform.PlatformAbstractions.dll
+│           ├── Microsoft.TestPlatform.Utilities.dll
+│           ├── Microsoft.VisualStudio.CodeCoverage.Shim.dll
+│           ├── Microsoft.VisualStudio.TestPlatform.Common.dll
+│           ├── Microsoft.VisualStudio.TestPlatform.ObjectModel.dll
+│           ├── Microsoft.Win32.SystemEvents.dll
+│           ├── Mono.TextTemplating.dll
+│           ├── Moq.dll
+│           ├── Newtonsoft.Json.dll
+│           ├── QuestPDF.dll
+│           ├── Swashbuckle.AspNetCore.Swagger.dll
+│           ├── Swashbuckle.AspNetCore.SwaggerGen.dll
+│           ├── Swashbuckle.AspNetCore.SwaggerUI.dll
+│           ├── System.ClientModel.dll
+│           ├── System.CodeDom.dll
+│           ├── System.Composition.AttributedModel.dll
+│           ├── System.Composition.Convention.dll
+│           ├── System.Composition.Hosting.dll
+│           ├── System.Composition.Runtime.dll
+│           ├── System.Composition.TypedParts.dll
+│           ├── System.Configuration.ConfigurationManager.dll
+│           ├── System.Drawing.Common.dll
+│           ├── System.IdentityModel.Tokens.Jwt.dll
+│           ├── System.Memory.Data.dll
+│           ├── System.Runtime.Caching.dll
+│           ├── System.Security.Cryptography.ProtectedData.dll
+│           ├── System.Security.Permissions.dll
+│           ├── System.Windows.Extensions.dll
+│           ├── appsettings.Devolopment.json
+│           ├── appsettings.json
+│           ├── cs
+│           │   ├── Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+│           │   ├── Microsoft.CodeAnalysis.CSharp.resources.dll
+│           │   ├── Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
+│           │   ├── Microsoft.CodeAnalysis.Workspaces.resources.dll
+│           │   ├── Microsoft.CodeAnalysis.resources.dll
+│           │   ├── Microsoft.TestPlatform.CommunicationUtilities.resources.dll
+│           │   ├── Microsoft.TestPlatform.CoreUtilities.resources.dll
+│           │   ├── Microsoft.TestPlatform.CrossPlatEngine.resources.dll
+│           │   ├── Microsoft.VisualStudio.TestPlatform.Common.resources.dll
+│           │   └── Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
+│           ├── de
+│           │   ├── Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+│           │   ├── Microsoft.CodeAnalysis.CSharp.resources.dll
+│           │   ├── Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
+│           │   ├── Microsoft.CodeAnalysis.Workspaces.resources.dll
+│           │   ├── Microsoft.CodeAnalysis.resources.dll
+│           │   ├── Microsoft.TestPlatform.CommunicationUtilities.resources.dll
+│           │   ├── Microsoft.TestPlatform.CoreUtilities.resources.dll
+│           │   ├── Microsoft.TestPlatform.CrossPlatEngine.resources.dll
+│           │   ├── Microsoft.VisualStudio.TestPlatform.Common.resources.dll
+│           │   └── Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
+│           ├── es
+│           │   ├── Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+│           │   ├── Microsoft.CodeAnalysis.CSharp.resources.dll
+│           │   ├── Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
+│           │   ├── Microsoft.CodeAnalysis.Workspaces.resources.dll
+│           │   ├── Microsoft.CodeAnalysis.resources.dll
+│           │   ├── Microsoft.TestPlatform.CommunicationUtilities.resources.dll
+│           │   ├── Microsoft.TestPlatform.CoreUtilities.resources.dll
+│           │   ├── Microsoft.TestPlatform.CrossPlatEngine.resources.dll
+│           │   ├── Microsoft.VisualStudio.TestPlatform.Common.resources.dll
+│           │   └── Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
+│           ├── fr
+│           │   ├── Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+│           │   ├── Microsoft.CodeAnalysis.CSharp.resources.dll
+│           │   ├── Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
+│           │   ├── Microsoft.CodeAnalysis.Workspaces.resources.dll
+│           │   ├── Microsoft.CodeAnalysis.resources.dll
+│           │   ├── Microsoft.TestPlatform.CommunicationUtilities.resources.dll
+│           │   ├── Microsoft.TestPlatform.CoreUtilities.resources.dll
+│           │   ├── Microsoft.TestPlatform.CrossPlatEngine.resources.dll
+│           │   ├── Microsoft.VisualStudio.TestPlatform.Common.resources.dll
+│           │   └── Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
+│           ├── it
+│           │   ├── Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+│           │   ├── Microsoft.CodeAnalysis.CSharp.resources.dll
+│           │   ├── Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
+│           │   ├── Microsoft.CodeAnalysis.Workspaces.resources.dll
+│           │   ├── Microsoft.CodeAnalysis.resources.dll
+│           │   ├── Microsoft.TestPlatform.CommunicationUtilities.resources.dll
+│           │   ├── Microsoft.TestPlatform.CoreUtilities.resources.dll
+│           │   ├── Microsoft.TestPlatform.CrossPlatEngine.resources.dll
+│           │   ├── Microsoft.VisualStudio.TestPlatform.Common.resources.dll
+│           │   └── Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
+│           ├── ja
+│           │   ├── Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+│           │   ├── Microsoft.CodeAnalysis.CSharp.resources.dll
+│           │   ├── Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
+│           │   ├── Microsoft.CodeAnalysis.Workspaces.resources.dll
+│           │   ├── Microsoft.CodeAnalysis.resources.dll
+│           │   ├── Microsoft.TestPlatform.CommunicationUtilities.resources.dll
+│           │   ├── Microsoft.TestPlatform.CoreUtilities.resources.dll
+│           │   ├── Microsoft.TestPlatform.CrossPlatEngine.resources.dll
+│           │   ├── Microsoft.VisualStudio.TestPlatform.Common.resources.dll
+│           │   └── Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
+│           ├── ko
+│           │   ├── Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+│           │   ├── Microsoft.CodeAnalysis.CSharp.resources.dll
+│           │   ├── Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
+│           │   ├── Microsoft.CodeAnalysis.Workspaces.resources.dll
+│           │   ├── Microsoft.CodeAnalysis.resources.dll
+│           │   ├── Microsoft.TestPlatform.CommunicationUtilities.resources.dll
+│           │   ├── Microsoft.TestPlatform.CoreUtilities.resources.dll
+│           │   ├── Microsoft.TestPlatform.CrossPlatEngine.resources.dll
+│           │   ├── Microsoft.VisualStudio.TestPlatform.Common.resources.dll
+│           │   └── Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
+│           ├── pl
+│           │   ├── Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+│           │   ├── Microsoft.CodeAnalysis.CSharp.resources.dll
+│           │   ├── Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
+│           │   ├── Microsoft.CodeAnalysis.Workspaces.resources.dll
+│           │   ├── Microsoft.CodeAnalysis.resources.dll
+│           │   ├── Microsoft.TestPlatform.CommunicationUtilities.resources.dll
+│           │   ├── Microsoft.TestPlatform.CoreUtilities.resources.dll
+│           │   ├── Microsoft.TestPlatform.CrossPlatEngine.resources.dll
+│           │   ├── Microsoft.VisualStudio.TestPlatform.Common.resources.dll
+│           │   └── Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
+│           ├── pt-BR
+│           │   ├── Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+│           │   ├── Microsoft.CodeAnalysis.CSharp.resources.dll
+│           │   ├── Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
+│           │   ├── Microsoft.CodeAnalysis.Workspaces.resources.dll
+│           │   ├── Microsoft.CodeAnalysis.resources.dll
+│           │   ├── Microsoft.TestPlatform.CommunicationUtilities.resources.dll
+│           │   ├── Microsoft.TestPlatform.CoreUtilities.resources.dll
+│           │   ├── Microsoft.TestPlatform.CrossPlatEngine.resources.dll
+│           │   ├── Microsoft.VisualStudio.TestPlatform.Common.resources.dll
+│           │   └── Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
+│           ├── ru
+│           │   ├── Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+│           │   ├── Microsoft.CodeAnalysis.CSharp.resources.dll
+│           │   ├── Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
+│           │   ├── Microsoft.CodeAnalysis.Workspaces.resources.dll
+│           │   ├── Microsoft.CodeAnalysis.resources.dll
+│           │   ├── Microsoft.TestPlatform.CommunicationUtilities.resources.dll
+│           │   ├── Microsoft.TestPlatform.CoreUtilities.resources.dll
+│           │   ├── Microsoft.TestPlatform.CrossPlatEngine.resources.dll
+│           │   ├── Microsoft.VisualStudio.TestPlatform.Common.resources.dll
+│           │   └── Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
+│           ├── runtimes
+│           │   ├── linux-arm64
+│           │   │   └── native
+│           │   │       ├── libQuestPdfSkia.so
+│           │   │       └── libqpdf.so
+│           │   ├── linux-musl-x64
+│           │   │   └── native
+│           │   │       ├── libQuestPdfSkia.so
+│           │   │       └── libqpdf.so
+│           │   ├── linux-x64
+│           │   │   └── native
+│           │   │       ├── libQuestPdfSkia.so
+│           │   │       └── libqpdf.so
+│           │   ├── osx-arm64
+│           │   │   └── native
+│           │   │       ├── libQuestPdfSkia.dylib
+│           │   │       └── libqpdf.dylib
+│           │   ├── osx-x64
+│           │   │   └── native
+│           │   │       ├── libQuestPdfSkia.dylib
+│           │   │       └── libqpdf.dylib
+│           │   ├── unix
+│           │   │   └── lib
+│           │   │       └── net6.0
+│           │   │           ├── Microsoft.Data.SqlClient.dll
+│           │   │           └── System.Drawing.Common.dll
+│           │   ├── win
+│           │   │   └── lib
+│           │   │       └── net6.0
+│           │   │           ├── Microsoft.Data.SqlClient.dll
+│           │   │           ├── Microsoft.Win32.SystemEvents.dll
+│           │   │           ├── System.Drawing.Common.dll
+│           │   │           ├── System.Runtime.Caching.dll
+│           │   │           ├── System.Security.Cryptography.ProtectedData.dll
+│           │   │           └── System.Windows.Extensions.dll
+│           │   ├── win-arm
+│           │   │   └── native
+│           │   │       └── Microsoft.Data.SqlClient.SNI.dll
+│           │   ├── win-arm64
+│           │   │   └── native
+│           │   │       └── Microsoft.Data.SqlClient.SNI.dll
+│           │   ├── win-x64
+│           │   │   └── native
+│           │   │       ├── Microsoft.Data.SqlClient.SNI.dll
+│           │   │       ├── QuestPdfSkia.dll
+│           │   │       ├── libgcc_s_seh-1.dll
+│           │   │       ├── libstdc++-6.dll
+│           │   │       ├── libwinpthread-1.dll
+│           │   │       ├── qpdf.dll
+│           │   │       └── zlib1.dll
+│           │   └── win-x86
+│           │       └── native
+│           │           ├── Microsoft.Data.SqlClient.SNI.dll
+│           │           ├── QuestPdfSkia.dll
+│           │           ├── libgcc_s_dw2-1.dll
+│           │           ├── libstdc++-6.dll
+│           │           ├── libwinpthread-1.dll
+│           │           ├── qpdf.dll
+│           │           └── zlib1.dll
+│           ├── testhost.dll
+│           ├── tr
+│           │   ├── Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+│           │   ├── Microsoft.CodeAnalysis.CSharp.resources.dll
+│           │   ├── Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
+│           │   ├── Microsoft.CodeAnalysis.Workspaces.resources.dll
+│           │   ├── Microsoft.CodeAnalysis.resources.dll
+│           │   ├── Microsoft.TestPlatform.CommunicationUtilities.resources.dll
+│           │   ├── Microsoft.TestPlatform.CoreUtilities.resources.dll
+│           │   ├── Microsoft.TestPlatform.CrossPlatEngine.resources.dll
+│           │   ├── Microsoft.VisualStudio.TestPlatform.Common.resources.dll
+│           │   └── Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
+│           ├── xunit.abstractions.dll
+│           ├── xunit.assert.dll
+│           ├── xunit.core.dll
+│           ├── xunit.execution.dotnet.dll
+│           ├── xunit.runner.reporters.netcoreapp10.dll
+│           ├── xunit.runner.utility.netcoreapp10.dll
+│           ├── xunit.runner.visualstudio.testadapter.dll
+│           ├── zh-Hans
+│           │   ├── Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+│           │   ├── Microsoft.CodeAnalysis.CSharp.resources.dll
+│           │   ├── Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
+│           │   ├── Microsoft.CodeAnalysis.Workspaces.resources.dll
+│           │   ├── Microsoft.CodeAnalysis.resources.dll
+│           │   ├── Microsoft.TestPlatform.CommunicationUtilities.resources.dll
+│           │   ├── Microsoft.TestPlatform.CoreUtilities.resources.dll
+│           │   ├── Microsoft.TestPlatform.CrossPlatEngine.resources.dll
+│           │   ├── Microsoft.VisualStudio.TestPlatform.Common.resources.dll
+│           │   └── Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
+│           └── zh-Hant
+│               ├── Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+│               ├── Microsoft.CodeAnalysis.CSharp.resources.dll
+│               ├── Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
+│               ├── Microsoft.CodeAnalysis.Workspaces.resources.dll
+│               ├── Microsoft.CodeAnalysis.resources.dll
+│               ├── Microsoft.TestPlatform.CommunicationUtilities.resources.dll
+│               ├── Microsoft.TestPlatform.CoreUtilities.resources.dll
+│               ├── Microsoft.TestPlatform.CrossPlatEngine.resources.dll
+│               ├── Microsoft.VisualStudio.TestPlatform.Common.resources.dll
+│               └── Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
+├── estructura.txt
+├── infraestructure
+│   ├── IRepository
+│   │   ├── IEstadisticasHechiceroRepository.cs
+│   │   ├── IHechiceroEnMisionRepository.cs
+│   │   ├── IHechiceroEncargadoRepository.cs
+│   │   ├── IHechiceroRepository.cs
+│   │   ├── IMaldicionRepository.cs
+│   │   ├── IMaldicionesEnEstado.cs
+│   │   ├── IMisionRepository.cs
+│   │   ├── IMisionesEnRangoRepository.cs
+│   │   ├── IPersonalDeApoyoRepository.cs
+│   │   ├── IQuery2Repository.cs
+│   │   ├── IQuery4Repository.cs
+│   │   ├── IQuery6Repository.cs
+│   │   ├── IRankingHechiceroRepository.cs
+│   │   ├── IRecursoRepository.cs
+│   │   ├── ISolicitudRepository.cs
+│   │   ├── ISubordinacionRepository.cs
+│   │   ├── ITecnicaMalditaDominadaRepository.cs
+│   │   ├── ITecnicaMalditaRepository.cs
+│   │   ├── ITrasladoRepository.cs
+│   │   ├── IUbicacionRepository.cs
+│   │   └── IUsoDeRecursoRepository.cs
+│   └── Repositorie
+│       ├── EstadisticasHechiceroRepository.cs
+│       ├── HechiceroEnMisionRepository.cs
+│       ├── HechiceroEncargadoRepository.cs
+│       ├── HechiceroRepository.cs
+│       ├── MaldicionRepository.cs
+│       ├── MaldicionesEnEstado.cs
+│       ├── MisionRepository.cs
+│       ├── MisionesEnRangoRepository.cs
+│       ├── PersonalDeApoyoRepository.cs
+│       ├── Query2Repository.cs
+│       ├── Query4Repository.cs
+│       ├── Query6Repository.cs
+│       ├── RankingHechiceroRepository.cs
+│       ├── RecursoRepository.cs
+│       ├── SolicitudRepository.cs
+│       ├── SubordinacionRepository.cs
+│       ├── TecnicaMalditaDominadaRepository.cs
+│       ├── TecnicaMalditaRepository.cs
+│       ├── TrasladoRepository.cs
+│       ├── UbicacionRepository.cs
+│       └── UsoDeRecursoRepository.cs
+└── obj
+    ├── Debug
+    │   └── net9.0
+    │       ├── GestionD.5C096C7B.Up2Date
+    │       ├── GestionDeMisiones.AssemblyInfo.cs
+    │       ├── GestionDeMisiones.AssemblyInfoInputs.cache
+    │       ├── GestionDeMisiones.GeneratedMSBuildEditorConfig.editorconfig
+    │       ├── GestionDeMisiones.GlobalUsings.g.cs
+    │       ├── GestionDeMisiones.MvcApplicationPartsAssemblyInfo.cache
+    │       ├── GestionDeMisiones.MvcApplicationPartsAssemblyInfo.cs
+    │       ├── GestionDeMisiones.assets.cache
+    │       ├── GestionDeMisiones.csproj.AssemblyReference.cache
+    │       ├── GestionDeMisiones.csproj.CoreCompileInputs.cache
+    │       ├── GestionDeMisiones.csproj.FileListAbsolute.txt
+    │       ├── GestionDeMisiones.dll
+    │       ├── GestionDeMisiones.genruntimeconfig.cache
+    │       ├── GestionDeMisiones.pdb
+    │       ├── GestionDeMisiones.sourcelink.json
+    │       ├── apphost
+    │       ├── ref
+    │       │   └── GestionDeMisiones.dll
+    │       ├── refint
+    │       │   └── GestionDeMisiones.dll
+    │       ├── staticwebassets
+    │       │   ├── msbuild.build.GestionDeMisiones.props
+    │       │   ├── msbuild.buildMultiTargeting.GestionDeMisiones.props
+    │       │   └── msbuild.buildTransitive.GestionDeMisiones.props
+    │       ├── staticwebassets.build.endpoints.json
+    │       └── staticwebassets.build.json
+    ├── GestionDeMisiones.csproj.EntityFrameworkCore.targets
+    ├── GestionDeMisiones.csproj.nuget.dgspec.json
+    ├── GestionDeMisiones.csproj.nuget.g.props
+    ├── GestionDeMisiones.csproj.nuget.g.targets
+    ├── project.assets.json
+    └── project.nuget.cache
+
+73 directories, 452 files
