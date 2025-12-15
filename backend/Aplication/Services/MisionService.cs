@@ -58,14 +58,9 @@ public class MisionService : IMisionService
         if (ubicacionExistente == null)
             throw new ArgumentException("La ubicación especificada no existe");
 
-        // Validación de fechas
-        if (mision.FechaYHoraDeFin.HasValue && 
-            mision.FechaYHoraDeFin <= mision.FechaYHoraDeInicio)
-            throw new ArgumentException("La fecha de fin debe ser posterior a la de inicio");
-
         // Actualizar solo campos permitidos
         existing.FechaYHoraDeInicio = mision.FechaYHoraDeInicio;
-        existing.FechaYHoraDeFin = mision.FechaYHoraDeFin;
+        existing.SetFechaFin(mision.FechaYHoraDeFin); // Usa SetFechaFin para validar
         existing.UbicacionId = mision.UbicacionId;
         existing.Estado = mision.Estado;
         existing.EventosOcurridos = mision.EventosOcurridos;

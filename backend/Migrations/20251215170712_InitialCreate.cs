@@ -6,11 +6,31 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace GestionDeMisiones.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialRestart : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "AuditEntries",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Entity = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Action = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    EntityId = table.Column<int>(type: "int", nullable: false),
+                    ActorRole = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    ActorRank = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    ActorName = table.Column<string>(type: "nvarchar(120)", maxLength: 120, nullable: true),
+                    Summary = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AuditEntries", x => x.Id);
+                });
+
             migrationBuilder.CreateTable(
                 name: "PersonalDeApoyo",
                 columns: table => new
@@ -30,8 +50,10 @@ namespace GestionDeMisiones.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    Nombre = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     TipoRecurso = table.Column<int>(type: "int", nullable: false),
-                    Descripcion = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Descripcion = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CantidadDisponible = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -105,7 +127,7 @@ namespace GestionDeMisiones.Migrations
                         column: x => x.TecnicaPrincipalId,
                         principalTable: "TecnicasMalditas",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -159,6 +181,36 @@ namespace GestionDeMisiones.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Subordinaciones",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    MaestroId = table.Column<int>(type: "int", nullable: false),
+                    DiscipuloId = table.Column<int>(type: "int", nullable: false),
+                    FechaInicio = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    FechaFin = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    TipoRelacion = table.Column<int>(type: "int", nullable: false),
+                    Activa = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Subordinaciones", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Subordinaciones_Hechiceros_DiscipuloId",
+                        column: x => x.DiscipuloId,
+                        principalTable: "Hechiceros",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Subordinaciones_Hechiceros_MaestroId",
+                        column: x => x.MaestroId,
+                        principalTable: "Hechiceros",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "TecnicasMalditasDominadas",
                 columns: table => new
                 {
@@ -182,7 +234,7 @@ namespace GestionDeMisiones.Migrations
                         column: x => x.TecnicaMalditaId,
                         principalTable: "TecnicasMalditas",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -304,6 +356,7 @@ namespace GestionDeMisiones.Migrations
                     RecursoId = table.Column<int>(type: "int", nullable: false),
                     FechaInicio = table.Column<DateTime>(type: "datetime2", nullable: false),
                     FechaFin = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Cantidad = table.Column<int>(type: "int", nullable: false),
                     Observaciones = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
@@ -354,6 +407,30 @@ namespace GestionDeMisiones.Migrations
                         principalTable: "Solicitud",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PersonalDeApoyoTraslado",
+                columns: table => new
+                {
+                    SupervisoresId = table.Column<int>(type: "int", nullable: false),
+                    TrasladosSupervisadosId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PersonalDeApoyoTraslado", x => new { x.SupervisoresId, x.TrasladosSupervisadosId });
+                    table.ForeignKey(
+                        name: "FK_PersonalDeApoyoTraslado_PersonalDeApoyo_SupervisoresId",
+                        column: x => x.SupervisoresId,
+                        principalTable: "PersonalDeApoyo",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_PersonalDeApoyoTraslado_Traslados_TrasladosSupervisadosId",
+                        column: x => x.TrasladosSupervisadosId,
+                        principalTable: "Traslados",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -421,9 +498,24 @@ namespace GestionDeMisiones.Migrations
                 column: "UbicacionId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_PersonalDeApoyoTraslado_TrasladosSupervisadosId",
+                table: "PersonalDeApoyoTraslado",
+                column: "TrasladosSupervisadosId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Solicitud_MaldicionId",
                 table: "Solicitud",
                 column: "MaldicionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Subordinaciones_DiscipuloId",
+                table: "Subordinaciones",
+                column: "DiscipuloId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Subordinaciones_MaestroId",
+                table: "Subordinaciones",
+                column: "MaestroId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_TecnicaMalditaAplicada_MisionId",
@@ -486,13 +578,19 @@ namespace GestionDeMisiones.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "AuditEntries");
+
+            migrationBuilder.DropTable(
                 name: "HechiceroEncargado");
 
             migrationBuilder.DropTable(
                 name: "HechiceroEnMision");
 
             migrationBuilder.DropTable(
-                name: "PersonalDeApoyo");
+                name: "PersonalDeApoyoTraslado");
+
+            migrationBuilder.DropTable(
+                name: "Subordinaciones");
 
             migrationBuilder.DropTable(
                 name: "TecnicaMalditaAplicada");
@@ -511,6 +609,9 @@ namespace GestionDeMisiones.Migrations
 
             migrationBuilder.DropTable(
                 name: "Solicitud");
+
+            migrationBuilder.DropTable(
+                name: "PersonalDeApoyo");
 
             migrationBuilder.DropTable(
                 name: "Hechiceros");

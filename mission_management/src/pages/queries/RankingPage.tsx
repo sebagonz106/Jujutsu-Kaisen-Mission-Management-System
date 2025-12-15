@@ -258,9 +258,6 @@ export const RankingPage = () => {
                   <Table>
                     <THead>
                       <tr>
-                        <TH onClick={() => toggleSort('hechiceroId')}>
-                          <SortHeader active={sortKey === 'hechiceroId'} direction={sortDir} label={t('pages.queries.sorcererRanking.sorcererId')} onClick={() => {}} />
-                        </TH>
                         <TH onClick={() => toggleSort('nombreHechicero')}>
                           <SortHeader active={sortKey === 'nombreHechicero'} direction={sortDir} label={t('pages.queries.sorcererRanking.name')} onClick={() => {}} />
                         </TH>
@@ -278,10 +275,9 @@ export const RankingPage = () => {
                     <TBody>
                       {sorcerers.map((sorcerer, idx) => (
                         <tr key={`${nivel}-${sorcerer.hechiceroId}`} className="border-b border-slate-700 hover:bg-slate-800/50">
-                          <TD className="font-medium">
-                            {idx + 1}. {sorcerer.hechiceroId}
+                          <TD className="font-medium text-amber-400">
+                            {idx + 1}. {sorcerer.nombreHechicero}
                           </TD>
-                          <TD className="text-amber-400">{sorcerer.nombreHechicero}</TD>
                           <TD className="text-center">{sorcerer.totalMisiones}</TD>
                           <TD className="text-center">
                             <span className="text-green-400 font-semibold">

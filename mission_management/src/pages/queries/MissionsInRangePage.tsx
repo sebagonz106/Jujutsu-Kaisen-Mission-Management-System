@@ -227,9 +227,8 @@ export const MissionsInRangePage = () => {
           <Table>
             <THead>
               <tr>
-                <TH><SortHeader label={t('ui.id')} active={sortKey==='misionId'} direction={sortDir} onClick={() => toggleSort('misionId')} /></TH>
-                <TH><SortHeader label="Ubicación" active={sortKey==='ubicacion'} direction={sortDir} onClick={() => toggleSort('ubicacion')} /></TH>
                 <TH><SortHeader label="Maldición" active={sortKey==='maldicion'} direction={sortDir} onClick={() => toggleSort('maldicion')} /></TH>
+                <TH><SortHeader label="Ubicación" active={sortKey==='ubicacion'} direction={sortDir} onClick={() => toggleSort('ubicacion')} /></TH>
                 <TH>Hechiceros</TH>
                 <TH>Técnicas</TH>
                 <TH><SortHeader label="Fecha Inicio" active={sortKey==='fechaInicio'} direction={sortDir} onClick={() => toggleSort('fechaInicio')} /></TH>
@@ -237,11 +236,10 @@ export const MissionsInRangePage = () => {
               </tr>
             </THead>
             <TBody>
-              {missions.map((m) => (
-                <tr key={m.misionId}>
-                  <TD>{m.misionId}</TD>
+              {missions.map((m, idx) => (
+                <tr key={`${m.misionId}-${idx}`}>
+                  <TD className="font-medium text-amber-400">{m.maldicion || '-'}</TD>
                   <TD>{m.ubicacion}</TD>
-                  <TD>{m.maldicion}</TD>
                   <TD>
                     <div className="flex flex-wrap gap-1">
                       {m.hechiceros.map((h, idx) => (

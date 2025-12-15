@@ -58,7 +58,7 @@ public class RankingHechiceroRepository : IRankingHechiceroRepository
                  .Take(3)
                  .Select(x => new RankingHechicero
                  {
-                     NivelMision = g.Key.ToString(),
+                     NivelMision = GetNivelUrgenciaString(g.Key),
                      HechiceroId = x.HechiceroId,
                      NombreHechicero = x.HechiceroNombre,
                      TotalMisiones = x.Total,
@@ -69,5 +69,16 @@ public class RankingHechiceroRepository : IRankingHechiceroRepository
             .ToList();
 
         return resultado;
+    }
+
+    private string GetNivelUrgenciaString(Mision.ENivelUrgencia nivel)
+    {
+        return nivel switch
+        {
+            Mision.ENivelUrgencia.Planificada => "Planificada",
+            Mision.ENivelUrgencia.Urgente => "Urgente",
+            Mision.ENivelUrgencia.EmergenciaCritica => "Emergencia Crítica",
+            _ => nivel.ToString()
+        };
     }
 }

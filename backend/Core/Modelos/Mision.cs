@@ -12,16 +12,18 @@ public class Mision
     [DataType(DataType.DateTime)]
     public DateTime FechaYHoraDeInicio { get; set; } = DateTime.Now;
 
-    private DateTime? _fechaFin;
     [DataType(DataType.DateTime)]
-    public DateTime? FechaYHoraDeFin
+    public DateTime? FechaYHoraDeFin { get; set; }
+
+    /// <summary>
+    /// Establece la fecha de fin validando que sea posterior a la de inicio.
+    /// Usar este método en lugar de asignar directamente a FechaYHoraDeFin para validación.
+    /// </summary>
+    public void SetFechaFin(DateTime? fecha)
     {
-        get => _fechaFin;
-        set
-        {
-            if (value == null || value.Value > FechaYHoraDeInicio) _fechaFin = value;
-            else throw new ArgumentException("La fecha de fin debe ser posterior a la de inicio");
-        }
+        if (fecha != null && fecha.Value <= FechaYHoraDeInicio)
+            throw new ArgumentException("La fecha de fin debe ser posterior a la de inicio");
+        FechaYHoraDeFin = fecha;
     }
 
     [Required]

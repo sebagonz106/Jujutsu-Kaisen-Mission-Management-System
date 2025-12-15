@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GestionDeMisiones.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251215093909_AddSubordinaciones")]
-    partial class AddSubordinaciones
+    [Migration("20251215170712_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -573,7 +573,7 @@ namespace GestionDeMisiones.Migrations
                     b.HasOne("GestionDeMisiones.Models.TecnicaMaldita", "TecnicaPrincipal")
                         .WithMany()
                         .HasForeignKey("TecnicaPrincipalId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("TecnicaPrincipal");
@@ -707,7 +707,7 @@ namespace GestionDeMisiones.Migrations
                     b.HasOne("GestionDeMisiones.Models.TecnicaMaldita", "TecnicaMaldita")
                         .WithMany("TecnicasMalditasDominadas")
                         .HasForeignKey("TecnicaMalditaId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Hechicero");

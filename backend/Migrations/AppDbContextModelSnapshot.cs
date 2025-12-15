@@ -570,7 +570,7 @@ namespace GestionDeMisiones.Migrations
                     b.HasOne("GestionDeMisiones.Models.TecnicaMaldita", "TecnicaPrincipal")
                         .WithMany()
                         .HasForeignKey("TecnicaPrincipalId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("TecnicaPrincipal");
@@ -704,7 +704,7 @@ namespace GestionDeMisiones.Migrations
                     b.HasOne("GestionDeMisiones.Models.TecnicaMaldita", "TecnicaMaldita")
                         .WithMany("TecnicasMalditasDominadas")
                         .HasForeignKey("TecnicaMalditaId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Hechicero");

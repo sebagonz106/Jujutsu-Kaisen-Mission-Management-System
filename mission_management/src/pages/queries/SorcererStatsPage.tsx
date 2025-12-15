@@ -172,9 +172,6 @@ export const SorcererStatsPage = () => {
             <Table>
               <THead>
                 <tr>
-                  <TH onClick={() => toggleSort('hechiceroId')}>
-                    <SortHeader active={sortKey === 'hechiceroId'} direction={sortDir} label="ID" onClick={() => {}} />
-                  </TH>
                   <TH onClick={() => toggleSort('nombre')}>
                     <SortHeader active={sortKey === 'nombre'} direction={sortDir} label={t('common.name')} onClick={() => {}} />
                   </TH>
@@ -195,7 +192,6 @@ export const SorcererStatsPage = () => {
               <TBody>
                 {stats.map((s) => (
                   <tr key={s.hechiceroId} className="border-b border-slate-700 hover:bg-slate-800/50">
-                    <TD className="font-mono text-slate-400">{s.hechiceroId}</TD>
                     <TD className="font-medium text-amber-400">{s.nombre}</TD>
                     <TD>
                       <span className={`px-2 py-1 rounded text-xs font-medium ${

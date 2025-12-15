@@ -57,7 +57,7 @@ namespace GestionDeMisiones.Tests.TestHelpers
             {
                 try
                 {
-                    mision.FechaYHoraDeFin = fechaFin.Value;
+                    mision.SetFechaFin(fechaFin.Value);
                 }
                 catch (ArgumentException)
                 {

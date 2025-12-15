@@ -250,9 +250,6 @@ export const SorcererMissionsPage = () => {
               <Table>
                 <THead>
                   <tr>
-                    <TH onClick={() => toggleSort('misionId')}>
-                      <SortHeader active={sortKey === 'misionId'} direction={sortDir} label="Misión ID" onClick={() => {}} />
-                    </TH>
                     <TH onClick={() => toggleSort('fechaMision')}>
                       <SortHeader active={sortKey === 'fechaMision'} direction={sortDir} label="Fecha" onClick={() => {}} />
                     </TH>
@@ -264,8 +261,7 @@ export const SorcererMissionsPage = () => {
                 <TBody>
                   {missions.map((mission) => (
                     <tr key={`${mission.misionId}-${mission.fechaMision}`} className="border-b border-slate-700 hover:bg-slate-800/50">
-                      <TD>{mission.misionId}</TD>
-                      <TD>{new Date(mission.fechaMision).toLocaleDateString()}</TD>
+                      <TD className="font-medium">{new Date(mission.fechaMision).toLocaleDateString()}</TD>
                       <TD>
                         <span
                           className={`px-2 py-1 rounded text-xs font-medium ${

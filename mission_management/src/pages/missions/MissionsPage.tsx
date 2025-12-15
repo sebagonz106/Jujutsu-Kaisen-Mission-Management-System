@@ -58,15 +58,27 @@ const urgenciaLabel: Record<Mission['urgency'], string> = {
 };
 
 /**
+ * Helper to format Date to datetime-local input format (YYYY-MM-DDTHH:mm)
+ */
+const toDateTimeLocal = (date: Date | string): string => {
+  const d = typeof date === 'string' ? new Date(date) : date;
+  return d.toISOString().slice(0, 16);
+};
+
+/**
  * Zod schema for mission form validation.
  *
  * Conditional rules:
  * - `urgency` is required only when state is 'pending'
  * - `events` and `collateralDamage` are required only when state is 'success', 'failure', or 'canceled'
+ * - `startAt` is required and cannot be in the future
+ * - `endAt` is required only when state is 'success', 'failure', or 'canceled' and must be after startAt
  */
 const schema = z
   .object({
-  locationId: z.coerce.number().int().positive(t('form.validation.locationRequired')),
+    startAt: z.string().min(1, t('form.validation.startDateRequired')),
+    endAt: z.string().optional(),
+    locationId: z.coerce.number().int().positive(t('form.validation.locationRequired')),
     state: z.union([
       z.literal(MISSION_STATE.pending),
       z.literal(MISSION_STATE.in_progress),
@@ -90,12 +102,45 @@ const schema = z
     const isPending = val.state === MISSION_STATE.pending;
     const isFinished = [MISSION_STATE.success, MISSION_STATE.failure, MISSION_STATE.canceled].includes(val.state as typeof MISSION_STATE.success | typeof MISSION_STATE.failure | typeof MISSION_STATE.canceled);
 
+    // Validate startAt is not in the future
+    if (val.startAt) {
+      const startDate = new Date(val.startAt);
+      if (startDate > new Date()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['startAt'],
+          message: t('form.validation.startDateNotFuture'),
+        });
+      }
+    }
+
+    // Enforce endAt for finished missions and validate it's after startAt
+    if (isFinished) {
+      if (!val.endAt || val.endAt.trim() === '') {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['endAt'],
+          message: t('form.validation.endDateRequiredFinished'),
+        });
+      } else if (val.startAt) {
+        const startDate = new Date(val.startAt);
+        const endDate = new Date(val.endAt);
+        if (endDate <= startDate) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['endAt'],
+            message: t('form.validation.endDateAfterStart'),
+          });
+        }
+      }
+    }
+
     // Enforce urgency for pending missions
     if (isPending && !val.urgency) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['urgency'],
-  message: t('form.validation.urgencyRequiredPending'),
+        message: t('form.validation.urgencyRequiredPending'),
       });
     }
 
@@ -105,14 +150,14 @@ const schema = z
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ['events'],
-    message: t('form.validation.eventsRequiredFinished'),
+          message: t('form.validation.eventsRequiredFinished'),
         });
       }
       if (!val.collateralDamage || val.collateralDamage.trim() === '') {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ['collateralDamage'],
-    message: t('form.validation.collateralRequiredFinished'),
+          message: t('form.validation.collateralRequiredFinished'),
         });
       }
     }
@@ -148,6 +193,8 @@ export const MissionsPage = () => {
   const { register, handleSubmit, reset, watch, control, formState: { errors, isSubmitting } } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
+      startAt: toDateTimeLocal(new Date()),
+      endAt: '',
       locationId: undefined as unknown as number,
       state: MISSION_STATE.pending,
       urgency: MISSION_URGENCY.planned,
@@ -188,7 +235,17 @@ export const MissionsPage = () => {
    */
   const openCreate = () => {
     setEditId(null);
-    reset({ locationId: undefined as unknown as number, state: MISSION_STATE.pending, urgency: MISSION_URGENCY.planned, events: '', collateralDamage: '', sorcererIds: [], curseIds: [] });
+    reset({ 
+      startAt: toDateTimeLocal(new Date()),
+      endAt: '',
+      locationId: undefined as unknown as number, 
+      state: MISSION_STATE.pending, 
+      urgency: MISSION_URGENCY.planned, 
+      events: '', 
+      collateralDamage: '', 
+      sorcererIds: [], 
+      curseIds: [] 
+    });
     setShowForm(true);
   };
 
@@ -198,7 +255,10 @@ export const MissionsPage = () => {
    */
   const startEdit = (m: Mission) => {
     setEditId(m.id);
+    const isFinishedMission = [MISSION_STATE.success, MISSION_STATE.failure, MISSION_STATE.canceled].includes(m.state as typeof MISSION_STATE.success);
     reset({
+      startAt: m.startAt ? toDateTimeLocal(m.startAt) : toDateTimeLocal(new Date()),
+      endAt: m.endAt ? toDateTimeLocal(m.endAt) : (isFinishedMission ? toDateTimeLocal(new Date()) : ''),
       locationId: m.locationId,
       state: m.state,
       urgency: m.urgency,
@@ -218,14 +278,14 @@ export const MissionsPage = () => {
     try {
       const effectiveUrgency = values.urgency ?? MISSION_URGENCY.planned; // backend requires a value
       
-      // Determine if mission is being completed/canceled - assign endAt automatically
+      // Determine if mission is being completed/canceled
       const isBeingCompleted = [MISSION_STATE.success, MISSION_STATE.failure, MISSION_STATE.canceled].includes(
         values.state as typeof MISSION_STATE.success | typeof MISSION_STATE.failure | typeof MISSION_STATE.canceled
       );
       
       const payload: Omit<Mission, 'id'> = {
-        startAt: new Date().toISOString(),
-        endAt: isBeingCompleted ? new Date().toISOString() : undefined,
+        startAt: new Date(values.startAt).toISOString(),
+        endAt: isBeingCompleted && values.endAt ? new Date(values.endAt).toISOString() : undefined,
         locationId: values.locationId,
         state: values.state,
         events: values.events || '',
@@ -324,6 +384,8 @@ export const MissionsPage = () => {
                 <TH><SortHeader label={t('form.labels.state')} active={sortKey==='state'} direction={sortDir} onClick={() => toggleSort('state')} /></TH>
                 <TH><SortHeader label={t('form.labels.urgency')} active={sortKey==='urgency'} direction={sortDir} onClick={() => toggleSort('urgency')} /></TH>
                 <TH><SortHeader label={t('form.labels.ubicacion')} active={sortKey==='locationId'} direction={sortDir} onClick={() => toggleSort('locationId')} /></TH>
+                <TH><SortHeader label={t('form.labels.startDate')} active={sortKey==='startAt'} direction={sortDir} onClick={() => toggleSort('startAt')} /></TH>
+                <TH><SortHeader label={t('form.labels.endDate')} active={sortKey==='endAt'} direction={sortDir} onClick={() => toggleSort('endAt')} /></TH>
                 {canMutate && <TH>{t('ui.actions')}</TH>}
               </tr>
             </THead>
@@ -333,6 +395,8 @@ export const MissionsPage = () => {
                   <TD>{estadoLabel[m.state]}</TD>
                   <TD>{urgenciaLabel[m.urgency]}</TD>
                   <TD>{locationNameById.get(m.locationId) ?? m.locationId}</TD>
+                  <TD>{m.startAt ? new Date(m.startAt).toLocaleString() : '-'}</TD>
+                  <TD>{m.endAt ? new Date(m.endAt).toLocaleString() : '-'}</TD>
                   {canMutate && (
                     <TD className="flex gap-2">
                       <Button size="sm" variant="secondary" onClick={() => startEdit(m)}>{t('ui.edit')}</Button>
@@ -371,6 +435,14 @@ export const MissionsPage = () => {
         }
       >
         <form id="mission-form" onSubmit={onSubmit} className="space-y-3">
+          {/* Fecha de inicio - siempre visible */}
+          <Input 
+            label={t('form.labels.startDate')} 
+            type="datetime-local" 
+            {...register('startAt')} 
+          />
+          {errors.startAt && <p className="text-xs text-red-400">{errors.startAt.message}</p>}
+          
           <Select label={t('form.mission.location')} {...register('locationId', { valueAsNumber: true })}>
             <option value="">{t('ui.selectPlaceholder')}</option>
             {locationOptions.map((opt) => (
@@ -398,6 +470,14 @@ export const MissionsPage = () => {
           {/* Campos solo para misiones finalizadas */}
           {isFinished && (
             <>
+              {/* Fecha de fin - solo visible para misiones finalizadas */}
+              <Input 
+                label={t('form.labels.endDate')} 
+                type="datetime-local" 
+                {...register('endAt')} 
+              />
+              {errors.endAt && <p className="text-xs text-red-400">{errors.endAt.message}</p>}
+              
               <Input label={t('form.mission.events')} placeholder={t('form.mission.events')} {...register('events')} />
               {errors.events && <p className="text-xs text-red-400">{errors.events.message}</p>}
               <Input label={t('form.mission.collateralDamage')} placeholder={t('form.mission.collateralDamage')} {...register('collateralDamage')} />

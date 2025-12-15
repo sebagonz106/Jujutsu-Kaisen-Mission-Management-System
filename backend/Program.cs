@@ -73,6 +73,8 @@ builder.Services.AddScoped<IUsoDeRecursoRepository, UsoDeRecursoRepository>();
 builder.Services.AddScoped<IUsoDeRecursoService, UsoDeRecursoService>();
 builder.Services.AddScoped<IMisionRepository, MisionRepository>();
 builder.Services.AddScoped<IMisionService, MisionService>();
+builder.Services.AddScoped<IHechiceroEnMisionRepository, HechiceroEnMisionRepository>();
+builder.Services.AddScoped<IHechiceroEnMisionService, HechiceroEnMisionService>();
 builder.Services.AddScoped<IPersonalDeApoyoRepository, PersonalDeApoyoRepository>();
 builder.Services.AddScoped<IPersonalDeApoyoService, PersonalDeApoyoService>();
 builder.Services.AddScoped<IRecursoRepository, RecursoRepository>();
@@ -163,17 +165,34 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// Seed admin user (development only) - runs after app build but before run if scope available
+// Seed database - runs after app build but before run
 using (var scope = app.Services.CreateScope())
 {
     try
     {
-        var repo = scope.ServiceProvider.GetRequiredService<IUsuarioRepository>();
-        await GestionDeMisiones.Data.Seed.AuthSeeder.SeedAdminAsync(repo);
+        // Check if --seed argument is provided to populate entire database
+        var shouldSeedAll = args.Contains("--seed");
+        
+        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        
+        if (shouldSeedAll)
+        {
+            Console.WriteLine("=== Iniciando población completa de la base de datos ===");
+            await GestionDeMisiones.Data.Seed.DatabaseSeeder.SeedAllAsync(context);
+            Console.WriteLine("=== Población completada exitosamente ===");
+            return; // Exit after seeding
+        }
+        else
+        {
+            // Solo seed admin user para desarrollo normal
+            var repo = scope.ServiceProvider.GetRequiredService<IUsuarioRepository>();
+            await GestionDeMisiones.Data.Seed.AuthSeeder.SeedAdminAsync(repo);
+        }
     }
     catch (Exception ex)
     {
         Console.WriteLine($"[Seed] Error: {ex.Message}");
+        Console.WriteLine($"[Seed] Stack Trace: {ex.StackTrace}");
     }
 }
 

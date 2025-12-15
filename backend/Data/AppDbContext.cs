@@ -86,12 +86,21 @@ namespace GestionDeMisiones.Data
             modelBuilder.Entity<TecnicaMalditaDominada>()
                 .HasOne(tmd => tmd.Hechicero)
                 .WithMany(h => h.TecnicasMalditasDominadas)
-                .HasForeignKey(tmd => tmd.HechiceroId);
+                .HasForeignKey(tmd => tmd.HechiceroId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<TecnicaMalditaDominada>()
                 .HasOne(tmd => tmd.TecnicaMaldita)
                 .WithMany(tm => tm.TecnicasMalditasDominadas)
-                .HasForeignKey(tmd => tmd.TecnicaMalditaId);
+                .HasForeignKey(tmd => tmd.TecnicaMalditaId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Hechicero -> TecnicaPrincipal: usar Restrict para evitar ciclo de cascadas
+            modelBuilder.Entity<Hechicero>()
+                .HasOne(h => h.TecnicaPrincipal)
+                .WithMany()
+                .HasForeignKey(h => h.TecnicaPrincipalId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // Subordinacion: evitar cascade delete múltiple hacia Hechiceros
             modelBuilder.Entity<Subordinacion>()

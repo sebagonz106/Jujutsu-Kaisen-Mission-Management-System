@@ -25,7 +25,7 @@ public class MisionTests
 
         // Act & Assert - Parte 1: Fecha válida (posterior)
         // Verificar que se puede establecer una fecha de fin válida
-        mision.FechaYHoraDeFin = fechaFinValida;
+        mision.SetFechaFin(fechaFinValida);
         mision.Estado = Mision.EEstadoMision.CompletadaConExito;
 
         Assert.Equal(fechaFinValida, mision.FechaYHoraDeFin);
@@ -50,7 +50,7 @@ public class MisionTests
         // Verificar que establecer una fecha anterior lanza excepción
         var exception = Assert.Throws<ArgumentException>(() =>
         {
-            mision.FechaYHoraDeFin = fechaFinInvalida;
+            mision.SetFechaFin(fechaFinInvalida);
         });
 
         // Validar el mensaje de error específico
@@ -62,7 +62,7 @@ public class MisionTests
         
         var exception2 = Assert.Throws<ArgumentException>(() =>
         {
-            mision.FechaYHoraDeFin = fechaFinIgual;
+            mision.SetFechaFin(fechaFinIgual);
         });
 
         Assert.Contains("posterior", exception2.Message, StringComparison.OrdinalIgnoreCase);
@@ -90,7 +90,7 @@ public class MisionTests
         Assert.Equal(Mision.EEstadoMision.EnProgreso, mision.Estado);
 
         // EnProgreso -> CompletadaConExito (con fecha de fin válida)
-        mision.FechaYHoraDeFin = DateTime.Now.AddDays(2);
+        mision.SetFechaFin(DateTime.Now.AddDays(2));
         mision.Estado = Mision.EEstadoMision.CompletadaConExito;
         Assert.Equal(Mision.EEstadoMision.CompletadaConExito, mision.Estado);
         Assert.NotNull(mision.FechaYHoraDeFin);

@@ -2,7 +2,7 @@ using Moq;
 using GestionDeMisiones.Models;
 using GestionDeMisiones.IRepository;
 using GestionDeMisiones.IService;
-using GestionDeMisiones.Service;
+using GestionDeMisiones.Services;
 
 namespace GestionDeMisiones.Tests.UnitTests.Services;
 

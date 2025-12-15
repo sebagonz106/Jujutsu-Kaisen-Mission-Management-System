@@ -76,28 +76,28 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
   return (
     <div ref={rootRef} className="relative">
       <label className="block space-y-1">
-        {label ? <span className="text-sm text-slate-200">{label}</span> : null}
+        {label ? <span className="text-sm text-slate-700">{label}</span> : null}
         <button
           type="button"
           className={`w-full border rounded px-3 py-2 text-left flex gap-2 flex-wrap items-center transition-colors
-            bg-[#14171c] text-slate-200 border-[#1e2229] hover:bg-slate-800/40 focus:outline-none focus:ring-2 focus:ring-indigo-500/40
+            bg-[#f5f5f5] text-black border-slate-300 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/40
             ${disabled ? 'opacity-60 cursor-not-allowed' : ''}`}
           onClick={() => !disabled && setOpen(!open)}
           aria-haspopup="listbox"
           aria-expanded={open}
         >
           {selected.length === 0 ? (
-            <span className="text-slate-400">{placeholder}</span>
+            <span className="text-slate-500">{placeholder}</span>
           ) : (
             <div className="flex gap-1 flex-wrap">
               {chips.map(c => (
                 <span key={c.value} className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs
-                  bg-[#1e2229] text-slate-200 border border-indigo-500/30">
+                  bg-indigo-500 text-white border border-indigo-600">
                   {c.label}
                   <button
                     type="button"
                     aria-label={`Remove ${c.label}`}
-                    className="text-slate-400 hover:text-slate-200"
+                    className="text-white hover:text-slate-100"
                     onClick={(e) => { e.stopPropagation(); toggleValue(c.value); }}
                   >×</button>
                 </span>
@@ -111,11 +111,11 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
       </label>
 
       {open && !disabled && (
-        <div className="absolute z-20 mt-1 w-full rounded border border-[#1e2229] bg-[#14171c] text-slate-200 shadow-lg ring-1 ring-indigo-500/30 max-h-60 overflow-auto">
+        <div className="absolute z-20 mt-1 w-full rounded border border-slate-300 bg-white text-black shadow-lg ring-1 ring-indigo-500/30 max-h-60 overflow-auto">
           <div className="p-2">
             <input
               type="text"
-              className="w-full border border-[#1e2229] rounded px-2 py-1 bg-[#0d0f12] text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+              className="w-full border border-slate-300 rounded px-2 py-1 bg-slate-50 text-black placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
               placeholder="Buscar..."
               value={query}
               onChange={e => setQuery(e.target.value)}
@@ -124,7 +124,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
           <ul role="listbox" className="py-1">
             {filtered.map(o => (
               <li key={o.value}>
-                <label className="flex items-center gap-2 px-3 py-1 hover:bg-slate-800/40 cursor-pointer">
+                <label className="flex items-center gap-2 px-3 py-1 hover:bg-slate-100 cursor-pointer">
                   <input
                     type="checkbox"
                     className="accent-indigo-500"
