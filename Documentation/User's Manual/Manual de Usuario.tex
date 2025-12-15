@@ -25,6 +25,25 @@
 \setlength{\parskip}{0.6em}
 \setlength{\parindent}{0pt}
 
+% Configuración de hipervínculos en azul
+\hypersetup{
+	colorlinks=true,
+	linkcolor=black,
+	urlcolor=blue,
+	citecolor=black
+}
+
+% Configuración de verbatim con fondo gris
+\usepackage{fancyvrb}
+\definecolor{lightgray}{gray}{0.92}
+\lstset{
+	backgroundcolor=\color{lightgray},
+	basicstyle=\ttfamily\small,
+	breaklines=true,
+	frame=single,
+	rulecolor=\color{gray}
+}
+
 \newcommand{\nodo}[1]{\fbox{\parbox{3cm}{\centering #1}}}
 \newcommand{\flecha}{\par\bigskip\centering $\downarrow$\par\bigskip}
 
@@ -90,11 +109,320 @@ Curso: 2025-2026
 \end{titlepage}
 
 \begin{abstract}
-	
+El presente documento constituye el manual de usuario del Sistema de Gestión de Misiones de Jujutsu Kaisen, una aplicación web diseñada para la administración integral de operaciones relacionadas con hechiceros, maldiciones y misiones de exorcismo. Este manual proporciona las instrucciones necesarias para instalar, configurar y utilizar todas las funcionalidades del sistema de manera efectiva.
 \end{abstract}
 
 \tableofcontents
 \newpage
+
+% ===== 1. INTRODUCCIÓN =====
+\section{Introducción}
+
+El \textbf{Jujutsu Kaisen Mission Management System} (Sistema de Gestión de Misiones de Jujutsu Kaisen) es una aplicación web diseñada para gestionar de forma centralizada todas las operaciones relacionadas con la organización de hechiceros, el seguimiento de maldiciones y la coordinación de misiones de exorcismo. El nombre hace referencia al universo de la obra Jujutsu Kaisen, donde los hechiceros se organizan para combatir maldiciones mediante técnicas especiales. El sistema traduce estos conceptos a una herramienta práctica de gestión que facilita el control de personal, recursos y operaciones.
+
+El Sistema de Gestión de Misiones de Jujutsu Kaisen tiene como propósito principal proporcionar una plataforma integral para la administración de las operaciones de una organización de hechiceros. Los objetivos específicos del proyecto son:
+
+\begin{itemize}
+	\item Centralizar la información de los hechiceros, permitiendo registrar sus datos personales, grado, clan de pertenencia, técnicas dominadas y ubicación actual.
+	\item Facilitar la asignación eficiente de personal a las distintas misiones según sus capacidades.
+	\item Seguir las maldiciones, manteniendo un catálogo actualizado con información sobre su clasificación, nivel de amenaza y estado actual (activa, sellada o exorcizada)
+	\item Evaluar las amenazas y asignar los recursos adecuados para cada situación.
+\end{itemize}
+
+La gestión de misiones constituye el núcleo del sistema. Permite crear, asignar y dar seguimiento a las misiones de exorcismo, registrando los hechiceros participantes, las maldiciones involucradas, los recursos utilizados y los resultados obtenidos. Adicionalmente, se proporcionan herramientas analíticas mediante consultas especializadas que permiten obtener estadísticas sobre la efectividad de los hechiceros, el rendimiento de las técnicas y otros indicadores relevantes para la toma de decisiones.
+
+% ===== 2. REQUERIMIENTOS TÉCNICOS =====
+\section{Requerimientos Técnicos}
+
+Para ejecutar el Sistema de Gestión de Misiones se requiere una computadora o servidor con las siguientes características mínimas:
+
+\begin{itemize}
+	\item \textbf{Procesador}: CPU de al menos 2 núcleos con velocidad de 2.0 GHz o superior. Para rendimiento óptimo, especialmente al ejecutar tanto servidor como cliente en la misma máquina, se recomienda contar con 4 núcleos.
+	
+	\item \textbf{Memoria RAM}: Mínimo 4 GB, aunque se recomienda 8 GB para garantizar funcionamiento fluido cuando se ejecutan ambos componentes simultáneamente junto con el sistema gestor de base de datos.
+	
+	\item \textbf{Espacio en Disco}: Aproximadamente 2 GB para la instalación del software y sus dependencias, más espacio adicional para el almacenamiento de datos según el volumen de información a gestionar.
+	
+	\item \textbf{Conexión a Red}: Necesaria para la comunicación entre cliente web y servidor. En entorno de desarrollo local, ambos componentes pueden ejecutarse en la misma máquina utilizando localhost.
+	
+	\item \textbf{Sistema Operativo}: Windows 10 o superior, macOS 10.15 o superior, o cualquier distribución de Linux con soporte para las herramientas de desarrollo requeridas.
+\end{itemize}
+
+% ===== 3. REQUERIMIENTOS DE SOFTWARE =====
+\section{Requerimientos de Software}
+
+El sistema requiere la instalación previa de varios componentes de software para su correcto funcionamiento:
+
+\begin{itemize}
+	\item \textbf{.NET Runtime 9.0}: Entorno de ejecución necesario para el servidor. Se puede descargar desde \url{https://dotnet.microsoft.com/download/dotnet/9.0}. La instalación incluye tanto el SDK para desarrollo como el runtime para ejecución.
+	
+	\item \textbf{Node.js 20 o Superior}: Requerido para el cliente web. Se puede obtener desde \url{https://nodejs.org/}. La instalación incluye npm, el gestor de paquetes necesario para instalar las dependencias del proyecto.
+	
+	\item \textbf{SQL Server}: Sistema gestor de base de datos utilizado. Se puede emplear SQL Server Express (gratuito) o SQL Server LocalDB para entornos de desarrollo. Disponible en \url{https://www.microsoft.com/sql-server/sql-server-downloads}.
+	
+	\item \textbf{Navegador Web Moderno}: Necesario para acceder a la aplicación. Se recomienda Google Chrome, Mozilla Firefox, Microsoft Edge o Safari en sus versiones más recientes, ya que el sistema utiliza características modernas de JavaScript y CSS.
+	
+	\item \textbf{Visual Studio Code o Visual Studio} (Opcional): Recomendado para desarrollo, aunque no es estrictamente necesario para la ejecución del sistema.
+\end{itemize}
+
+% ===== 4. FORMA DE INSTALAR LA APLICACIÓN =====
+\section{Forma de Instalar la Aplicación}
+
+La instalación del sistema se realiza en dos partes: el servidor (backend) y el cliente web (frontend). A continuación se describen los pasos para cada componente.
+
+\subsection{Instalación del Servidor}
+
+Primero debe descargarse o clonarse el repositorio del proyecto. Si se utiliza Git, el comando es:
+
+\begin{lstlisting}[language=bash]
+git clone https://github.com/sebagonz106/
+    Jujutsu-Kaisen-Mission-Management-System.git
+\end{lstlisting}
+
+Una vez obtenido el código, se debe navegar a la carpeta del servidor:
+
+\begin{lstlisting}[language=bash]
+cd Jujutsu-Kaisen-Mission-Management-System/backend
+\end{lstlisting}
+
+Antes de ejecutar el servidor, es necesario configurar la conexión a la base de datos. Abra el archivo \texttt{appsettings.json} y modifique la cadena de conexión según su configuración de SQL Server:
+
+\begin{lstlisting}
+"ConnectionStrings": {
+  "DefaultConnection": "Server=(localdb)\\MSSQLLocalDB;
+      Database=JJKMissions;Trusted_Connection=True;"
+}
+\end{lstlisting}
+
+Para crear la base de datos y aplicar las migraciones, ejecute:
+
+\begin{lstlisting}[language=bash]
+dotnet ef database update
+\end{lstlisting}
+
+Finalmente, inicie el servidor con:
+
+\begin{lstlisting}[language=bash]
+dotnet run
+\end{lstlisting}
+
+El servidor estará disponible en \texttt{https://localhost:5001}.
+
+\subsection{Instalación del Cliente Web}
+
+En una nueva terminal, navegue a la carpeta del cliente:
+
+\begin{lstlisting}[language=bash]
+cd Jujutsu-Kaisen-Mission-Management-System/mission_management
+\end{lstlisting}
+
+Instale las dependencias del proyecto:
+
+\begin{lstlisting}[language=bash]
+npm install
+\end{lstlisting}
+
+Inicie el servidor de desarrollo:
+
+\begin{lstlisting}[language=bash]
+npm run dev
+\end{lstlisting}
+
+El cliente web estará disponible en \texttt{http://localhost:5173}. Abra esta dirección en su navegador para acceder al sistema.
+
+% ===== 5. OPCIONES DEL SISTEMA =====
+\section{Opciones del Sistema}
+
+Esta sección describe las principales funcionalidades del sistema y cómo utilizarlas. La interfaz está organizada en un panel lateral de navegación que permite acceder a todas las secciones.
+
+\subsection{Inicio de Sesión}
+
+Al acceder al sistema por primera vez, se presenta la pantalla de inicio de sesión. En esta pantalla debe ingresar su nombre de usuario y contraseña para acceder a las funcionalidades del sistema.
+
+El sistema cuenta con tres tipos de usuarios: administradores con acceso completo, hechiceros de alto rango y usuarios de soporte que pueden gestionar información, y hechiceros de menor grado con permisos de lectura.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.5\textwidth]{login.png}
+\caption{Pantalla de inicio de sesión}
+\label{fig:login}
+\end{figure}
+
+\subsection{Pantalla de Inicio}
+
+Una vez autenticado, el sistema muestra la pantalla de inicio que proporciona un resumen general y accesos rápidos a las secciones principales. El panel lateral izquierdo contiene el menú de navegación organizado en dos secciones: Entidades y Consultas.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{home.png}
+\caption{Pantalla de inicio del sistema}
+\label{fig:home}
+\end{figure}
+
+\subsection{Gestión de Hechiceros}
+
+La sección de Hechiceros permite administrar el registro de todos los hechiceros de la organización. Al acceder, se presenta una tabla con el listado completo que incluye nombre, grado y estado actual.
+
+Para agregar un nuevo hechicero, utilice el botón ubicado en la parte superior de la pantalla. Se abrirá un formulario donde deberá completar los datos requeridos: nombre completo, grado (desde Grado estudiane hasta especial), años de experiencia y otros campos.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{sorcerers.png}
+\caption{Listado de hechiceros}
+\label{fig:sorcerers-list}
+\end{figure}
+
+Para modificar la información de un hechicero existente, seleccione el botón Editar en la fila correspondiente. El formulario se abrirá con los datos actuales precargados para su modificación.
+
+La eliminación de registros requiere confirmación para prevenir borrados accidentales. Al seleccionar Eliminar, el sistema solicitará que confirme la operación antes de proceder.
+
+\subsection{Gestión de Maldiciones}
+
+El módulo de Maldiciones mantiene el catálogo de todas las maldiciones registradas. La información incluye nombre, clasificación, grado de amenaza (desde Grado 1 hasta Grado Especial) y estado actual.
+
+
+\subsection{Gestión de Misiones}
+
+Las Misiones constituyen el elemento central del sistema. Cada misión registra la información necesaria para coordinar una operación de exorcismo: fecha, ubicación, nivel de emergencia, hechiceros asignados, maldiciones involucradas y resultado.
+
+Al crear una nueva misión, el formulario permite seleccionar la ubicación de un listado predefinido, asignar el nivel de emergencia y registrar observaciones adicionales.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.5\textwidth]{mission.png}
+\caption{Formulario de registro de misión}
+\label{fig:mission-form}
+\end{figure}
+
+\subsection{Gestión de Ubicaciones}
+
+El módulo de Ubicaciones permite administrar los lugares donde se desarrollan las operaciones. Cada ubicación registra su nombre y se utiliza para registrar el lugar donde ocurren las misiones.
+
+\subsection{Gestión de Técnicas Malditas}
+
+Las Técnicas Malditas representan las habilidades especiales que pueden dominar los hechiceros. El sistema registra el nombre de la técnica, su tipo y su efectividad promedio.
+
+\subsection{Técnicas Dominadas}
+
+Esta sección relaciona las técnicas con los hechiceros que las dominan. Permite registrar qué técnicas conoce cada hechicero y su nivel de dominio en cada una, expresado en porcentaje.
+
+\subsection{Gestión de Recursos}
+
+El módulo de Recursos administra el inventario de equipamiento y suministros disponibles. Cada recurso registra su tipo, descripción y cantidad disponible.
+
+\subsection{Uso de Recursos}
+
+Esta sección registra la asignación de recursos a misiones específicas. Permite llevar un control del consumo y disponibilidad del inventario.
+
+\subsection{Personal de Apoyo}
+
+El Personal de Apoyo comprende los asistentes y colaboradores que participan en las misiones sin ser hechiceros. El sistema registra su nombre y disponibilidad.
+
+\subsection{Traslados}
+
+El módulo de Traslados gestiona los movimientos de personal entre ubicaciones. Registra el hechicero trasladado, el origen, el destino, la fecha y el motivo del traslado.
+
+\subsection{Hechiceros Encargados}
+
+Esta sección administra las asignaciones de hechiceros como responsables de misiones específicas. Un hechicero encargado supervisa la operación y coordina al equipo asignado.
+
+\subsection{Acciones Recientes}
+
+Esta sección, disponible para usuarios con permisos de gestión, muestra un registro cronológico de todas las operaciones realizadas en el sistema: creaciones, modificaciones y eliminaciones de registros.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{audit.png}
+\caption{Registro de acciones recientes}
+\label{fig:recent-actions}
+\end{figure}
+
+\subsection{Administración de Usuarios}
+
+Los usuarios con rol de administrador tienen acceso a la gestión de cuentas de usuario. Esta sección permite crear nuevos usuarios, modificar sus datos y roles, y desactivar cuentas cuando sea necesario.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{users.png}
+\caption{Administración de usuarios}
+\label{fig:admin-users}
+\end{figure}
+
+% ===== 6. SALIDAS DEL SISTEMA =====
+\section{Salidas del Sistema}
+
+El sistema proporciona diversas consultas analíticas que generan reportes con información agregada. Todas las consultas pueden exportarse a formato PDF para su distribución o archivo.
+
+\subsection{Maldiciones por Estado}
+
+Esta consulta permite filtrar las maldiciones según su estado actual: activas, selladas o exorcizadas. Es útil para obtener un panorama rápido de las amenazas vigentes o el historial de maldiciones tratadas.
+
+Al seleccionar un estado del desplegable y ejecutar la búsqueda, el sistema presenta una tabla con todas las maldiciones que cumplen el criterio, incluyendo su nombre, grado y datos adicionales.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{curse_state.png}
+\caption{Consulta de maldiciones por estado}
+\label{fig:query-curses-state}
+\end{figure}
+
+\subsection{Misiones en Rango de Fechas}
+
+Esta consulta permite obtener las misiones realizadas dentro de un período específico. El usuario selecciona la fecha de inicio y la fecha de fin del rango deseado.
+
+Los resultados incluyen todas las misiones que ocurrieron total o parcialmente dentro del período seleccionado, con información sobre ubicación, nivel de emergencia, técnicas utilizadas y resultado.
+
+\subsection{Estadísticas de Hechicero}
+
+Esta consulta avanzada compara la efectividad de hechiceros de diferentes grados en misiones de alta complejidad. Específicamente, analiza el desempeño de hechiceros de grado Medio y Alto en misiones de emergencia crítica que involucraron maldiciones de grado Especial.
+
+Los resultados muestran el nombre del hechicero, su grado, el total de misiones que cumplen los criterios, las misiones exitosas y el porcentaje de efectividad calculado.
+
+\subsection{Misiones de Hechicero}
+
+Esta consulta permite visualizar el historial de misiones en las que ha participado un hechicero específico. El usuario selecciona el hechicero de un listado desplegable con búsqueda.
+
+Los resultados muestran todas las misiones asociadas con sus fechas, ubicaciones y resultados, permitiendo evaluar la trayectoria y experiencia del hechicero seleccionado.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{sorcerer_missions.png}
+\caption{Historial de misiones por hechicero}
+\label{fig:query-sorcerer-missions}
+\end{figure}
+
+\subsection{Efectividad de Técnicas}
+
+Esta consulta analiza el rendimiento de las técnicas malditas utilizadas en misiones. Presenta estadísticas sobre cuáles técnicas han demostrado mayor efectividad en diferentes tipos de situaciones.
+
+Los resultados incluyen el nombre de la técnica asociado a cada hechicero que la domina, el porcentaje de efectividad global y la calificación de la efectividad.
+
+\subsection{Relaciones Maestro-Discípulo}
+
+Esta consulta visualiza las relaciones jerárquicas de enseñanza entre hechiceros. Permite identificar qué hechiceros han sido mentores de otros y trazar las líneas de transmisión de conocimiento.
+
+Los resultados se presentan en formato de listado expandible, donde cada maestro muestra sus discípulos asociados con el grado de cada uno y con posibilidad de filtrar por nombre.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{disciple.png}
+\caption{Relaciones maestro-discípulo}
+\label{fig:query-master-disciples}
+\end{figure}
+
+\subsection{Ranking de Hechiceros}
+
+Esta consulta genera un ranking de los hechiceros con mejor desempeño, filtrado por ubicación. Permite identificar a los hechiceros más efectivos en cada zona de operación.
+
+El usuario selecciona una ubicación y el sistema presenta los hechiceros ordenados por su tasa de éxito en misiones, incluyendo el total de misiones realizadas y el número de éxitos.
+
+\subsection{Exportación a PDF}
+
+Todas las consultas del sistema incluyen la opción de exportar los resultados a formato PDF. El botón de exportación se encuentra en la parte superior de cada pantalla de consulta, junto a los controles de filtrado.
+
+Al presionar el botón PDF, el sistema genera un documento con el membrete del sistema, la fecha de generación, los parámetros de la consulta y los datos resultantes presentados en formato tabular.
+
+Los archivos PDF se descargan automáticamente al dispositivo del usuario con un nombre descriptivo que incluye el tipo de consulta y la fecha. Estos documentos pueden imprimirse o compartirse según las necesidades de la organización.
 
 % ===== REFERENCIAS =====
 \begin{thebibliography}{9}
@@ -104,8 +432,11 @@ García H, L. \& Montes de Oca R, M. (2005). \textit{Sistemas de Bases de Datos:
 \bibitem{pressman2010}
 Pressman S. R. (2010). \textit{Ingeniería del Software. Un enfoque práctico} (Séptima edición). McGraw-Hill Interamericana Editores, México, D. F.
 
-\bibitem{fowler2002}
-Fowler, M. (2002). \textit{Patterns of Enterprise Application Architecture}. Addison-Wesley.
+\bibitem{react}
+Meta Platforms, Inc. (2025). \textit{React Documentation}. Disponible en: \url{https://react.dev/}
+
+\bibitem{dotnet}
+Microsoft Corporation. (2025). \textit{.NET Documentation}. Disponible en: \url{https://docs.microsoft.com/dotnet/}
 \end{thebibliography}
 
 \end{document}
