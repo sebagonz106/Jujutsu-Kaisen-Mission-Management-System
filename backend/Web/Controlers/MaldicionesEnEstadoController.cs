@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using GestionDeMisiones.IService;
+using QuestPDF.Fluent;
+using GestionDeMisiones.Web;
 using GestionDeMisiones.Models;
 
 [ApiController]
@@ -20,5 +22,20 @@ public class MaldicionConsultaController : ControllerBase
         var result = await _service.ConsultarPorEstadoAsync(estado);
         return Ok(result);
     }
+
+    [HttpGet("{estado}/pdf")]
+public async Task<IActionResult> GetReportePdf(Maldicion.EEstadoActual estado)
+{
+    var maldiciones = await _service.ConsultarPorEstadoAsync(estado);
+
+    var document = new MaldicionesEnEstadoDocument(maldiciones);
+
+    var stream = new MemoryStream();
+    document.GeneratePdf(stream);
+    stream.Position = 0; // importante reiniciar la posición
+
+    return File(stream, "application/pdf", $"maldiciones-{estado}.pdf");
+}
+
 }
 
