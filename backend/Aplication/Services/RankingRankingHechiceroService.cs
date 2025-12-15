@@ -15,5 +15,10 @@ public class RankingHechiceroService : IRankingHechiceroService
 
     public Task<IEnumerable<RankingHechicero>> GetTopHechicerosPorNivelYUbicacion(int ubicacionId)
         => _repository.GetTopHechicerosPorNivelYUbicacion(ubicacionId);
+
+    public async Task<IEnumerable<RankingHechicero>> GetTopHechicerosPorNivelYUbicacionAsync(int ubicacionId)
+    {
+        return await _repository.GetTopHechicerosPorNivelYUbicacionAsync(ubicacionId);
+    }
 }
 

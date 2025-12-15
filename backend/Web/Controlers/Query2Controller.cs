@@ -16,10 +16,19 @@ public class Query2Controller : ControllerBase
     }
 
     [HttpGet("hechicero/{hechiceroId}")]
-    public async Task<ActionResult<IEnumerable<Query2Result>>> GetMisionesPorHechicero(int hechiceroId)
+    public async Task<ActionResult<IEnumerable<Query2Result>>> GetMisionesPorHechicero(
+        int hechiceroId,
+        [FromQuery] int? limit,
+        [FromQuery] int? cursor)
     {
         try
         {
+            if (limit.HasValue || cursor.HasValue)
+            {
+                var lim = limit ?? 20;
+                var (items, nextCursor, hasMore) = await _service.GetMisionesPorHechiceroPagedAsync(hechiceroId, cursor, lim);
+                return Ok(new { items, nextCursor, hasMore });
+            }
             var result = await _service.GetMisionesPorHechiceroAsync(hechiceroId);
             return Ok(result);
         }

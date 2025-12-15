@@ -16,8 +16,16 @@ public class Query4Controller : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Query4Result>>> GetEfectividadTecnicas()
+    public async Task<ActionResult<IEnumerable<Query4Result>>> GetEfectividadTecnicas(
+        [FromQuery] int? limit,
+        [FromQuery] int? cursor)
     {
+        if (limit.HasValue || cursor.HasValue)
+        {
+            var lim = limit ?? 20;
+            var (items, nextCursor, hasMore) = await _service.GetEfectividadTecnicasPagedAsync(cursor, lim);
+            return Ok(new { items, nextCursor, hasMore });
+        }
         var result = await _service.GetEfectividadTecnicasAsync();
         return Ok(result);
     }

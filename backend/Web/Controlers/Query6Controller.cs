@@ -15,8 +15,16 @@ public class Query6Controller : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Query6Result>>> GetRelacionHechiceroDiscipulos()
+    public async Task<ActionResult<IEnumerable<Query6Result>>> GetRelacionHechiceroDiscipulos(
+        [FromQuery] int? limit,
+        [FromQuery] int? cursor)
     {
+        if (limit.HasValue || cursor.HasValue)
+        {
+            var lim = limit ?? 20;
+            var (items, nextCursor, hasMore) = await _service.GetRelacionHechiceroDiscipulosPagedAsync(cursor, lim);
+            return Ok(new { items, nextCursor, hasMore });
+        }
         var result = await _service.GetRelacionHechiceroDiscipulosAsync();
         return Ok(result);
     }

@@ -10,8 +10,16 @@ public class TrasladoController : ControllerBase
     public TrasladoController(ITrasladoService service) => _service = service;
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Traslado>>> GetAllTransport()
+    public async Task<ActionResult<IEnumerable<Traslado>>> GetAllTransport(
+        [FromQuery] int? limit,
+        [FromQuery] int? cursor)
     {
+        if (limit.HasValue || cursor.HasValue)
+        {
+            var lim = limit ?? 20;
+            var (items, nextCursor, hasMore) = await _service.GetPagedAsync(cursor, lim);
+            return Ok(new { items, nextCursor, hasMore });
+        }
         var list = await _service.GetAllAsync();
         return Ok(list);
     }

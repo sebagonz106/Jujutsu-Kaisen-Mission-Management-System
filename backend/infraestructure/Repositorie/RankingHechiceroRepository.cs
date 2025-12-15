@@ -14,6 +14,16 @@ public class RankingHechiceroRepository : IRankingHechiceroRepository
 
     public async Task<IEnumerable<RankingHechicero>> GetTopHechicerosPorNivelYUbicacion(int ubicacionId)
     {
+        return await BuildRankingAsync(ubicacionId);
+    }
+
+    public async Task<List<RankingHechicero>> GetTopHechicerosPorNivelYUbicacionAsync(int ubicacionId)
+    {
+        return await BuildRankingAsync(ubicacionId);
+    }
+
+    private async Task<List<RankingHechicero>> BuildRankingAsync(int ubicacionId)
+    {
         var query =
             from hm in _context.HechiceroEnMision
             join m in _context.Misiones on hm.MisionId equals m.Id

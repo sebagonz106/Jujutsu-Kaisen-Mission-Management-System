@@ -17,8 +17,16 @@ public class EstadisticasHechiceroController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetComparacion()
+    public async Task<IActionResult> GetComparacion(
+        [FromQuery] int? limit,
+        [FromQuery] int? cursor)
     {
+        if (limit.HasValue || cursor.HasValue)
+        {
+            var lim = limit ?? 20;
+            var (items, nextCursor, hasMore) = await _service.GetEfectividadMediosVsAltosPagedAsync(cursor, lim);
+            return Ok(new { items, nextCursor, hasMore });
+        }
         var datos = await _service.GetEfectividadMediosVsAltos();
         return Ok(datos);
     }

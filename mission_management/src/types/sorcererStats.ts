@@ -1,5 +1,5 @@
 /**
- * @fileoverview Type definitions for sorcerer statistics query results (RF-14).
+ * @fileoverview Type definitions for sorcerer statistics query results.
  *
  * Defines the structure returned by the sorcerer statistics query.
  *
@@ -7,7 +7,7 @@
  */
 
 /**
- * Represents statistical data for a sorcerer.
+ * Represents statistical data for a sorcerer (EstadisticaHechicero from backend).
  */
 export interface SorcererStats {
   /** Sorcerer identifier. */
@@ -28,3 +28,8 @@ export interface SorcererStats {
   /** Success rate percentage (0-100). */
   porcentajeEfectividad: number;
 }
+
+/**
+ * Alias for EstadisticaHechicero for consistency with backend naming.
+ */
+export type EstadisticaHechicero = SorcererStats;

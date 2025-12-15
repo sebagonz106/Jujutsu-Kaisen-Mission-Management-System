@@ -16,6 +16,24 @@ public class EstadisticasHechiceroRepository : IEstadisticasHechiceroRepository
 
     public async Task<IEnumerable<EstadisticaHechicero>> GetEfectividadMediosVsAltos()
     {
+        return await BuildQuery().ToListAsync();
+    }
+
+    public async Task<List<EstadisticaHechicero>> GetEfectividadMediosVsAltosPagedAsync(int? cursor, int limit)
+    {
+        var query = BuildQuery();
+        
+        if (cursor.HasValue)
+            query = query.Where(e => e.HechiceroId > cursor.Value);
+        
+        return await query
+            .OrderBy(e => e.HechiceroId)
+            .Take(limit + 1)
+            .ToListAsync();
+    }
+
+    private IQueryable<EstadisticaHechicero> BuildQuery()
+    {
         // 1. Obtener misiones de emergencia crítica
         var misionesCriticas =
             from m in _context.Misiones
@@ -54,7 +72,7 @@ public class EstadisticasHechiceroRepository : IEstadisticasHechiceroRepository
             };
 
         // 5. Agrupar por hechicero y calcular porcentajes
-        var estadisticas = await participaciones
+        return participaciones
             .GroupBy(p => new { p.HechiceroId, p.HechiceroNombre, p.Grado })
             .Select(g => new EstadisticaHechicero
             {
@@ -64,9 +82,6 @@ public class EstadisticasHechiceroRepository : IEstadisticasHechiceroRepository
                 MisionesTotales = g.Count(),
                 MisionesExitosas = g.Count(x => x.Exito),
                 PorcentajeEfectividad = g.Count(x => x.Exito) * 100.0 / g.Count()
-            })
-            .ToListAsync();
-
-        return estadisticas;
+            });
     }
 }

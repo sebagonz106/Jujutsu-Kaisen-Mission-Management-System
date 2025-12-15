@@ -17,4 +17,18 @@ public class Query4Service : IQuery4Service
     {
         return await _repository.GetEfectividadTecnicasAsync();
     }
+
+    public async Task<(IEnumerable<Query4Result> items, int? nextCursor, bool hasMore)> GetEfectividadTecnicasPagedAsync(
+        int? cursor, int limit)
+    {
+        var items = await _repository.GetEfectividadTecnicasPagedAsync(cursor, limit);
+        var hasMore = items.Count > limit;
+        
+        if (hasMore)
+            items = items.Take(limit).ToList();
+        
+        var nextCursor = hasMore ? items.LastOrDefault()?.HechiceroId : null;
+        
+        return (items, nextCursor, hasMore);
+    }
 }

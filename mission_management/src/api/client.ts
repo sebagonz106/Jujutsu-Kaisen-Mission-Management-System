@@ -36,7 +36,16 @@ const routeMap: Record<string, string> = {
   '/requests': '/Solicitud',
   '/resource-usages': '/UsoDeRecurso',
   '/sorcerers-in-charge': '/HechiceroEncargado',
-  '/audit': '/Audit', // si existe equivalente
+  '/audit': '/Audit',
+  // Query endpoints
+  '/curse-queries': '/MaldicionConsulta',
+  '/mission-range-queries': '/MisionesEnRango',
+  '/sorcerer-stats': '/EstadisticasHechicero',
+  '/subordinations': '/Subordinacion',
+  '/sorcerer-missions': '/Query2',
+  '/technique-effectiveness': '/Query4',
+  '/master-disciples': '/Query6',
+  '/sorcerer-ranking': '/RankingHechiceros',
 };
 
 /**

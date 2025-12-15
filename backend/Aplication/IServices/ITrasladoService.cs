@@ -5,6 +5,7 @@ namespace GestionDeMisiones.IService;
 public interface ITrasladoService
 {
     Task<IEnumerable<Traslado>> GetAllAsync();
+    Task<(IEnumerable<Traslado> items, int? nextCursor, bool hasMore)> GetPagedAsync(int? cursor, int limit);
     Task<Traslado> GetByIdAsync(int id);
     Task<Traslado> CreateAsync(Traslado traslado);
     Task<bool> UpdateAsync(int id, Traslado traslado);

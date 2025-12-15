@@ -17,4 +17,18 @@ public class Query6Service : IQuery6Service
     {
         return await _repository.GetRelacionHechiceroDiscipulosAsync();
     }
+
+    public async Task<(IEnumerable<Query6Result> items, int? nextCursor, bool hasMore)> GetRelacionHechiceroDiscipulosPagedAsync(
+        int? cursor, int limit)
+    {
+        var items = await _repository.GetRelacionHechiceroDiscipulosPagedAsync(cursor, limit);
+        var hasMore = items.Count > limit;
+        
+        if (hasMore)
+            items = items.Take(limit).ToList();
+        
+        var nextCursor = hasMore ? items.LastOrDefault()?.HechiceroId : null;
+        
+        return (items, nextCursor, hasMore);
+    }
 }

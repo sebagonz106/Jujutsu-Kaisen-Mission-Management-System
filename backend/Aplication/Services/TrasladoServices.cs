@@ -25,6 +25,19 @@ public class TrasladoService : ITrasladoService
     public async Task<IEnumerable<Traslado>> GetAllAsync()
         => await _repo.GetAllAsync();
 
+    public async Task<(IEnumerable<Traslado> items, int? nextCursor, bool hasMore)> GetPagedAsync(int? cursor, int limit)
+    {
+        var items = await _repo.GetPagedAsync(cursor, limit);
+        var hasMore = items.Count > limit;
+        
+        if (hasMore)
+            items = items.Take(limit).ToList();
+        
+        var nextCursor = hasMore ? items.LastOrDefault()?.Id : null;
+        
+        return (items, nextCursor, hasMore);
+    }
+
     public async Task<Traslado> GetByIdAsync(int id)
         => await _repo.GetByIdAsync(id);
 

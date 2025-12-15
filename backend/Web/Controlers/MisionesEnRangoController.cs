@@ -16,8 +16,18 @@ public class MisionesEnRangoController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> Get([FromQuery] DateTime desde, [FromQuery] DateTime hasta)
+    public async Task<IActionResult> Get(
+        [FromQuery] DateTime desde, 
+        [FromQuery] DateTime hasta,
+        [FromQuery] int? limit,
+        [FromQuery] int? cursor)
     {
+        if (limit.HasValue || cursor.HasValue)
+        {
+            var lim = limit ?? 20;
+            var (items, nextCursor, hasMore) = await _service.GetMisionesCompletadasPorRangoPagedAsync(desde, hasta, cursor, lim);
+            return Ok(new { items, nextCursor, hasMore });
+        }
         var result = await _service.GetMisionesCompletadasPorRango(desde, hasta);
         return Ok(result);
     }

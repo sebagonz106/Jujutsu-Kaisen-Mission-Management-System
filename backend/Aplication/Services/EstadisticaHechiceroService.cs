@@ -18,4 +18,18 @@ public class EstadisticasHechiceroService : IEstadisticasHechiceroService
 
     public Task<IEnumerable<EstadisticaHechicero>> GetEfectividadMediosVsAltos()
         => _repo.GetEfectividadMediosVsAltos();
+
+    public async Task<(IEnumerable<EstadisticaHechicero> items, int? nextCursor, bool hasMore)> GetEfectividadMediosVsAltosPagedAsync(
+        int? cursor, int limit)
+    {
+        var items = await _repo.GetEfectividadMediosVsAltosPagedAsync(cursor, limit);
+        var hasMore = items.Count > limit;
+        
+        if (hasMore)
+            items = items.Take(limit).ToList();
+        
+        var nextCursor = hasMore ? items.LastOrDefault()?.HechiceroId : null;
+        
+        return (items, nextCursor, hasMore);
+    }
 }

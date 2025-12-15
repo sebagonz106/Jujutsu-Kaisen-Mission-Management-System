@@ -17,8 +17,17 @@ public class MaldicionConsultaController : ControllerBase
     }
 
     [HttpGet("{estado}")]
-    public async Task<ActionResult<IEnumerable<MaldicionEnEstado>>>GetPorEstado(Maldicion.EEstadoActual estado)
+    public async Task<ActionResult<IEnumerable<MaldicionEnEstado>>>GetPorEstado(
+        Maldicion.EEstadoActual estado,
+        [FromQuery] int? limit,
+        [FromQuery] int? cursor)
     {
+        if (limit.HasValue || cursor.HasValue)
+        {
+            var lim = limit ?? 20;
+            var (items, nextCursor, hasMore) = await _service.ConsultarPorEstadoPagedAsync(estado, cursor, lim);
+            return Ok(new { items, nextCursor, hasMore });
+        }
         var result = await _service.ConsultarPorEstadoAsync(estado);
         return Ok(result);
     }

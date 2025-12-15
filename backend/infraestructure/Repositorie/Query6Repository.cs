@@ -17,6 +17,26 @@ public class Query6Repository : IQuery6Repository
     public async Task<IEnumerable<Query6Result>> GetRelacionHechiceroDiscipulosAsync()
     {
         var hechiceros = await _context.Hechiceros.ToListAsync();
+        return await BuildResultsForHechiceros(hechiceros);
+    }
+
+    public async Task<List<Query6Result>> GetRelacionHechiceroDiscipulosPagedAsync(int? cursor, int limit)
+    {
+        var query = _context.Hechiceros.AsQueryable();
+        
+        if (cursor.HasValue)
+            query = query.Where(h => h.Id > cursor.Value);
+        
+        var hechiceros = await query
+            .OrderBy(h => h.Id)
+            .Take(limit + 1)
+            .ToListAsync();
+        
+        return await BuildResultsForHechiceros(hechiceros);
+    }
+
+    private async Task<List<Query6Result>> BuildResultsForHechiceros(List<Hechicero> hechiceros)
+    {
         var resultados = new List<Query6Result>();
 
         foreach (var hechicero in hechiceros)
@@ -61,6 +81,6 @@ public class Query6Repository : IQuery6Repository
             });
         }
 
-        return resultados.OrderByDescending(r => r.PorcentajeExito).ToList();
+        return resultados;
     }
 }

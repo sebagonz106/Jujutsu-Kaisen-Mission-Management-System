@@ -16,7 +16,30 @@ public class Query4Repository : IQuery4Repository
 
     public async Task<IEnumerable<Query4Result>> GetEfectividadTecnicasAsync()
     {
-        var query = _context.TecnicasMalditasDominadas
+        var resultados = await BuildQuery().ToListAsync();
+        ApplyClasificacion(resultados);
+        return resultados.OrderByDescending(r => r.PromedioEfectividad).ToList();
+    }
+
+    public async Task<List<Query4Result>> GetEfectividadTecnicasPagedAsync(int? cursor, int limit)
+    {
+        var query = BuildQuery();
+        
+        if (cursor.HasValue)
+            query = query.Where(r => r.HechiceroId > cursor.Value);
+        
+        var resultados = await query
+            .OrderBy(r => r.HechiceroId)
+            .Take(limit + 1)
+            .ToListAsync();
+        
+        ApplyClasificacion(resultados);
+        return resultados;
+    }
+
+    private IQueryable<Query4Result> BuildQuery()
+    {
+        return _context.TecnicasMalditasDominadas
             .Include(tmd => tmd.Hechicero)
             .Include(tmd => tmd.TecnicaMaldita)
             .Where(tmd => tmd.TecnicaMaldita != null)
@@ -34,9 +57,10 @@ public class Query4Repository : IQuery4Repository
                 CantidadTecnicas = g.Count(),
                 PromedioEfectividad = g.Average(tmd => tmd.TecnicaMaldita.EfectividadProm)
             });
+    }
 
-        var resultados = await query.ToListAsync();
-
+    private void ApplyClasificacion(List<Query4Result> resultados)
+    {
         foreach (var resultado in resultados)
         {
             resultado.Clasificacion = resultado.PromedioEfectividad switch
@@ -46,7 +70,5 @@ public class Query4Repository : IQuery4Repository
                 _ => "Baja"
             };
         }
-
-        return resultados.OrderByDescending(r => r.PromedioEfectividad).ToList();
     }
 }

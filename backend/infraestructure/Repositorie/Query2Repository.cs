@@ -16,16 +16,35 @@ public class Query2Repository : IQuery2Repository
 
     public async Task<IEnumerable<Query2Result>> GetMisionesPorHechiceroAsync(int hechiceroId)
     {
-        return await _context.HechiceroEnMision
+        return await BuildQuery(hechiceroId)
+            .OrderByDescending(m => m.FechaMision)
+            .ToListAsync();
+    }
+
+    public async Task<List<Query2Result>> GetMisionesPorHechiceroPagedAsync(int hechiceroId, int? cursor, int limit)
+    {
+        var query = BuildQuery(hechiceroId);
+        
+        if (cursor.HasValue)
+            query = query.Where(m => m.MisionId > cursor.Value);
+        
+        return await query
+            .OrderBy(m => m.MisionId)
+            .Take(limit + 1)
+            .ToListAsync();
+    }
+
+    private IQueryable<Query2Result> BuildQuery(int hechiceroId)
+    {
+        return _context.HechiceroEnMision
             .Where(hm => hm.HechiceroId == hechiceroId)
             .Include(hm => hm.Mision)
             .Select(hm => new Query2Result
             {
+                MisionId = hm.MisionId,
                 FechaMision = hm.Mision.FechaYHoraDeInicio,
                 Resultado = hm.Mision.Estado == Mision.EEstadoMision.CompletadaConExito ? "Éxito" : 
                            hm.Mision.Estado == Mision.EEstadoMision.CompletadaConFracaso ? "Fracaso" : "En proceso"
-            })
-            .OrderByDescending(m => m.FechaMision)
-            .ToListAsync();
+            });
     }
 }

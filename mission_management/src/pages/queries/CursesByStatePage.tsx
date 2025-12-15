@@ -1,15 +1,16 @@
 /**
- * @fileoverview RF-12 Query: Curses by State page.
+ * @fileoverview Query page: Curses by State (Maldiciones por Estado).
  *
- * Implements the first analytical query requirement (RF-12): filtering curses by their current state.
- * Features parameter selection, paginated results with client-side sorting, and export capabilities.
+ * Implements the analytical query for filtering curses by their current state.
+ * Features parameter selection, sortable results table, and PDF export.
  *
  * @module pages/queries/CursesByStatePage
  */
 
 import { useMemo, useState } from 'react';
-import { useInfiniteCursesByState } from '../../hooks/useInfiniteCursesByState';
-import type { Curse, CurseState } from '../../types/curse';
+import { useCursesByState } from '../../hooks/useCursesByState';
+import type { CurseByState } from '../../types/curseByState';
+import type { CurseState } from '../../types/curse';
 import { CURSE_STATE } from '../../types/curse';
 import { Button } from '../../components/ui/Button';
 import { Select } from '../../components/ui/Select';
@@ -20,11 +21,10 @@ import { z } from 'zod';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { t } from '../../i18n';
-import { curseStateLabel, curseGradeLabel, curseTypeLabel, curseDangerLabel } from '../../utils/enumLabels';
+import { apiClient } from '../../api/client';
+import { toast } from 'sonner';
 
-/**
- * Zod schema for query parameters validation.
- */
+/** Zod schema for query parameters validation. */
 const querySchema = z.object({
   state: z.union([
     z.literal(CURSE_STATE.activa),
@@ -35,64 +35,58 @@ const querySchema = z.object({
 
 type QueryFormValues = z.infer<typeof querySchema>;
 
+/** Labels for curse states in Spanish. */
+const curseStateLabel = (state: CurseState): string => {
+  const labels: Record<CurseState, string> = {
+    activa: 'Activa',
+    en_proceso_de_exorcismo: 'En Exorcismo',
+    exorcisada: 'Exorcisada',
+  };
+  return labels[state] ?? state;
+};
+
 /**
  * CursesByStatePage component.
  *
  * Features:
- * - State selection dropdown using Zod validation
- * - Paginated results with infinite scrolling
- * - Client-side sorting by any column
- * - Read-only table (no CRUD operations)
- * - Export PDF button (disabled, coming soon)
+ * - State selection dropdown
+ * - Results table with client-side sorting
+ * - PDF export functionality
  * - Empty state when no results
- *
- * Pattern follows SorcerersPage structure for consistency.
  */
 export const CursesByStatePage = () => {
   const [selectedState, setSelectedState] = useState<CurseState | null>(null);
-  const [sortKey, setSortKey] = useState<keyof Curse>('id');
+  const [sortKey, setSortKey] = useState<keyof CurseByState>('nombreMaldicion');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+  const [isExporting, setIsExporting] = useState(false);
 
   const { handleSubmit, control, formState: { errors } } = useForm<QueryFormValues>({
     resolver: zodResolver(querySchema),
   });
 
-  // Only fetch if state is selected
-  const { query } = useInfiniteCursesByState({
+  // Fetch curses when state is selected
+  const { query } = useCursesByState({
     state: selectedState ?? CURSE_STATE.activa,
-    pageSize: 20,
+    enabled: selectedState !== null,
   });
 
   const shouldFetch = selectedState !== null;
   const data = shouldFetch ? query.data : undefined;
   const isLoading = shouldFetch ? query.isLoading : false;
   const isError = shouldFetch ? query.isError : false;
-  const hasNextPage = shouldFetch ? query.hasNextPage : false;
-  const isFetchingNextPage = shouldFetch ? query.isFetchingNextPage : false;
 
-  // Flatten and sort data client-side
+  // Sort data client-side
   const curses = useMemo(() => {
-    const flat = (data?.pages ?? []).flatMap((p) => p.items);
-    return [...flat].sort((a, b) => {
-      const aVal = a[sortKey];
-      const bVal = b[sortKey];
-      if (aVal == null && bVal == null) return 0;
-      if (aVal == null) return 1;
-      if (bVal == null) return -1;
-
-      let cmp = 0;
-      if (typeof aVal === 'string' && typeof bVal === 'string') {
-        cmp = aVal.localeCompare(bVal);
-      } else if (typeof aVal === 'number' && typeof bVal === 'number') {
-        cmp = aVal - bVal;
-      } else {
-        cmp = String(aVal).localeCompare(String(bVal));
-      }
+    if (!data) return [];
+    return [...data].sort((a, b) => {
+      const aVal = a[sortKey] ?? '';
+      const bVal = b[sortKey] ?? '';
+      const cmp = String(aVal).localeCompare(String(bVal));
       return sortDir === 'asc' ? cmp : -cmp;
     });
   }, [data, sortKey, sortDir]);
 
-  const toggleSort = (key: keyof Curse) => {
+  const toggleSort = (key: keyof CurseByState) => {
     if (sortKey === key) {
       setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
     } else {
@@ -101,13 +95,35 @@ export const CursesByStatePage = () => {
     }
   };
 
-  const loadMore = async () => {
-    if (!hasNextPage || isFetchingNextPage) return;
-    await query.fetchNextPage();
-  };
-
   const onSubmit = (values: QueryFormValues) => {
     setSelectedState(values.state);
+  };
+
+  /** Export results to PDF */
+  const handleExportPdf = async () => {
+    if (!selectedState) return;
+    
+    setIsExporting(true);
+    try {
+      const response = await apiClient.get(`/curse-queries/${selectedState}/pdf`, {
+        responseType: 'blob',
+      });
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `maldiciones-${selectedState}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+      toast.success('PDF exportado correctamente');
+    } catch {
+      toast.error('Error al exportar PDF');
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   return (
@@ -119,10 +135,10 @@ export const CursesByStatePage = () => {
         </div>
         <Button
           variant="secondary"
-          disabled
-          title={t('pages.recentActions.comingSoon')}
+          onClick={handleExportPdf}
+          disabled={!data || data.length === 0 || isExporting}
         >
-          {t('pages.recentActions.exportPdf')}
+          {isExporting ? 'Exportando...' : t('pages.recentActions.exportPdf')}
         </Button>
       </div>
 
@@ -138,6 +154,7 @@ export const CursesByStatePage = () => {
               control={control}
               render={({ field }) => (
                 <Select {...field}>
+                  <option value="">Seleccionar estado...</option>
                   <option value={CURSE_STATE.activa}>{curseStateLabel(CURSE_STATE.activa)}</option>
                   <option value={CURSE_STATE.en_proceso_de_exorcismo}>{curseStateLabel(CURSE_STATE.en_proceso_de_exorcismo)}</option>
                   <option value={CURSE_STATE.exorcisada}>{curseStateLabel(CURSE_STATE.exorcisada)}</option>
@@ -173,46 +190,26 @@ export const CursesByStatePage = () => {
           description={t('pages.queries.rf12.emptyDesc')}
         />
       ) : (
-        <>
-          <Table>
-            <THead>
-              <tr>
-                <TH><SortHeader label={t('ui.id')} active={sortKey==='id'} direction={sortDir} onClick={() => toggleSort('id')} /></TH>
-                <TH><SortHeader label={t('form.curse.name')} active={sortKey==='nombre'} direction={sortDir} onClick={() => toggleSort('nombre')} /></TH>
-                <TH><SortHeader label={t('form.curse.grade')} active={sortKey==='grado'} direction={sortDir} onClick={() => toggleSort('grado')} /></TH>
-                <TH><SortHeader label={t('form.curse.type')} active={sortKey==='tipo'} direction={sortDir} onClick={() => toggleSort('tipo')} /></TH>
-                <TH><SortHeader label={t('form.curse.danger')} active={sortKey==='nivelPeligro'} direction={sortDir} onClick={() => toggleSort('nivelPeligro')} /></TH>
-                <TH><SortHeader label={t('form.curse.location')} active={sortKey==='ubicacionDeAparicion'} direction={sortDir} onClick={() => toggleSort('ubicacionDeAparicion')} /></TH>
-                <TH><SortHeader label="Fecha Aparición" active={sortKey==='fechaYHoraDeAparicion'} direction={sortDir} onClick={() => toggleSort('fechaYHoraDeAparicion')} /></TH>
+        <Table>
+          <THead>
+            <tr>
+              <TH><SortHeader label="Nombre" active={sortKey==='nombreMaldicion'} direction={sortDir} onClick={() => toggleSort('nombreMaldicion')} /></TH>
+              <TH><SortHeader label="Ubicación" active={sortKey==='ubicacion'} direction={sortDir} onClick={() => toggleSort('ubicacion')} /></TH>
+              <TH><SortHeader label="Grado" active={sortKey==='grado'} direction={sortDir} onClick={() => toggleSort('grado')} /></TH>
+              <TH><SortHeader label="Hechicero Asignado" active={sortKey==='nombreHechicero'} direction={sortDir} onClick={() => toggleSort('nombreHechicero')} /></TH>
+            </tr>
+          </THead>
+          <TBody>
+            {curses.map((c, idx) => (
+              <tr key={`${c.nombreMaldicion}-${idx}`}>
+                <TD>{c.nombreMaldicion}</TD>
+                <TD>{c.ubicacion}</TD>
+                <TD>{c.grado}</TD>
+                <TD>{c.nombreHechicero || '-'}</TD>
               </tr>
-            </THead>
-            <TBody>
-              {curses.map((c) => (
-                <tr key={c.id}>
-                  <TD>{c.id}</TD>
-                  <TD>{c.nombre}</TD>
-                  <TD>{curseGradeLabel(c.grado)}</TD>
-                  <TD>{curseTypeLabel(c.tipo)}</TD>
-                  <TD>{curseDangerLabel(c.nivelPeligro)}</TD>
-                  <TD>{c.ubicacionDeAparicion}</TD>
-                  <TD className="tabular-nums">{new Date(c.fechaYHoraDeAparicion).toLocaleString()}</TD>
-                </tr>
-              ))}
-            </TBody>
-          </Table>
-
-          {hasNextPage && (
-            <div className="flex justify-center pt-4">
-              <Button
-                variant="secondary"
-                onClick={loadMore}
-                disabled={!hasNextPage || isFetchingNextPage}
-              >
-                {isFetchingNextPage ? t('ui.loadingMore') : t('ui.loadMore')}
-              </Button>
-            </div>
-          )}
-        </>
+            ))}
+          </TBody>
+        </Table>
       )}
     </div>
   );

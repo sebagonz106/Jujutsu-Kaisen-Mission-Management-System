@@ -14,6 +14,19 @@ public class TrasladoRepository : ITrasladoRepository
     public async Task<IEnumerable<Traslado>> GetAllAsync()
         => await _context.Traslados.ToListAsync();
 
+    public async Task<List<Traslado>> GetPagedAsync(int? cursor, int limit)
+    {
+        var query = _context.Traslados.AsQueryable();
+        
+        if (cursor.HasValue)
+            query = query.Where(t => t.Id > cursor.Value);
+        
+        return await query
+            .OrderBy(t => t.Id)
+            .Take(limit + 1)
+            .ToListAsync();
+    }
+
     public async Task<Traslado> GetByIdAsync(int id)
         => await _context.Traslados.FirstOrDefaultAsync(t => t.Id == id);
 

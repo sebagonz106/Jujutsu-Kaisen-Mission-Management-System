@@ -20,7 +20,7 @@ public class RankingHechicerosController : ControllerBase
     [HttpGet("top-por-nivel")]
     public async Task<IActionResult> GetRankingPorNivel([FromQuery] int ubicacionId)
     {
-        var resultado = await _service.GetTopHechicerosPorNivelYUbicacion(ubicacionId);
+        var resultado = await _service.GetTopHechicerosPorNivelYUbicacionAsync(ubicacionId);
         return Ok(resultado);
     }
 

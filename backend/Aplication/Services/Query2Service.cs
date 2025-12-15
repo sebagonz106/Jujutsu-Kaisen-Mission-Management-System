@@ -25,4 +25,24 @@ public class Query2Service : IQuery2Service
 
         return await _repository.GetMisionesPorHechiceroAsync(hechiceroId);
     }
+
+    public async Task<(IEnumerable<Query2Result> items, int? nextCursor, bool hasMore)> GetMisionesPorHechiceroPagedAsync(
+        int hechiceroId, int? cursor, int limit)
+    {
+        var hechicero = await _hechiceroRepository.GetByIdAsync(hechiceroId);
+        if (hechicero == null)
+        {
+            throw new KeyNotFoundException($"Hechicero con ID {hechiceroId} no encontrado.");
+        }
+
+        var items = await _repository.GetMisionesPorHechiceroPagedAsync(hechiceroId, cursor, limit);
+        var hasMore = items.Count > limit;
+        
+        if (hasMore)
+            items = items.Take(limit).ToList();
+        
+        var nextCursor = hasMore ? items.LastOrDefault()?.MisionId : null;
+        
+        return (items, nextCursor, hasMore);
+    }
 }
