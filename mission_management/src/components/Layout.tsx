@@ -82,6 +82,10 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <NavLink to="/queries/curses-by-state" className={({ isActive }) => `nav-link text-sm ${isActive ? 'nav-link--active' : ''}`}>{t('pages.queries.rf12.title')}</NavLink>
                 <NavLink to="/queries/missions-in-range" className={({ isActive }) => `nav-link text-sm ${isActive ? 'nav-link--active' : ''}`}>{t('pages.queries.rf13.title')}</NavLink>
                 <NavLink to="/queries/sorcerer-stats" className={({ isActive }) => `nav-link text-sm ${isActive ? 'nav-link--active' : ''}`}>{t('pages.queries.rf14.title')}</NavLink>
+                <NavLink to="/queries/sorcerer-missions" className={({ isActive }) => `nav-link text-sm ${isActive ? 'nav-link--active' : ''}`}>{t('pages.queries.sorcererMissions.title')}</NavLink>
+                <NavLink to="/queries/technique-effectiveness" className={({ isActive }) => `nav-link text-sm ${isActive ? 'nav-link--active' : ''}`}>{t('pages.queries.techniqueEffectiveness.title')}</NavLink>
+                <NavLink to="/queries/master-disciples" className={({ isActive }) => `nav-link text-sm ${isActive ? 'nav-link--active' : ''}`}>{t('pages.queries.masterDisciples.title')}</NavLink>
+                <NavLink to="/queries/ranking" className={({ isActive }) => `nav-link text-sm ${isActive ? 'nav-link--active' : ''}`}>{t('pages.queries.sorcererRanking.title')}</NavLink>
                 {canMutate && (
                   <NavLink to="/queries/history" className={({ isActive }) => `nav-link text-sm ${isActive ? 'nav-link--active' : ''}`}>{t('nav.queryHistory')}</NavLink>
                 )}

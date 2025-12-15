@@ -9,11 +9,12 @@
 
 import { useMemo, useState } from 'react';
 import { useMasterDisciples } from '../../hooks/useMasterDisciples';
-import type { Query6Result } from '../../types/query6Result';
+import { type Query6Result } from '../../types/query6Result';
 import { Button } from '../../components/ui/Button';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { t } from '../../i18n';
+import { apiClient } from '../../api/client';
 
 /**
  * MasterDisciplesPage component (Query6).
@@ -84,10 +85,20 @@ export const MasterDisciplesPage = () => {
 
     setIsExporting(true);
     try {
-      // TODO: Implement PDF export
-      console.log('Exporting PDF with masters and disciples:', masters);
-      // const pdf = generateMasterDisciplesPdf(masters);
-      // download(pdf);
+      const response = await apiClient.get('/queries/master-disciples/pdf', {
+        responseType: 'blob',
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'maestros-discipulos.pdf');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
     } finally {
       setIsExporting(false);
     }
@@ -100,8 +111,8 @@ export const MasterDisciplesPage = () => {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="page-title">{t('pages.queries.query6.title')}</h1>
-          <p className="text-slate-400 text-sm mt-1">{t('pages.queries.query6.desc')}</p>
+          <h1 className="page-title">{t('pages.queries.masterDisciples.title')}</h1>
+          <p className="text-slate-400 text-sm mt-1">{t('pages.queries.masterDisciples.desc')}</p>
         </div>
       </div>
 
@@ -110,7 +121,7 @@ export const MasterDisciplesPage = () => {
         {/* Toolbar */}
         <div className="flex items-center justify-between">
           <div className="text-sm text-slate-600">
-            {isLoading ? t('common.loading') : `${masters.length} ${t('pages.queries.query6.mastersFound')}`}
+            {isLoading ? t('common.loading') : `${masters.length} ${t('pages.queries.masterDisciples.mastersFound')}`}
           </div>
           <Button
             onClick={handleExportPdf}
@@ -147,7 +158,7 @@ export const MasterDisciplesPage = () => {
                       onClick={() => toggleSort('hechiceroId')}
                     >
                       <div className="flex items-center gap-2">
-                        <span>{t('pages.queries.query6.masterId')}</span>
+                        <span>{t('pages.queries.masterDisciples.masterId')}</span>
                         {sortKey === 'hechiceroId' && (
                           <span className="text-slate-600">{sortDir === 'asc' ? '↑' : '↓'}</span>
                         )}
@@ -158,7 +169,7 @@ export const MasterDisciplesPage = () => {
                       onClick={() => toggleSort('nombreHechicero')}
                     >
                       <div className="flex items-center gap-2">
-                        <span>{t('pages.queries.query6.name')}</span>
+                        <span>{t('pages.queries.masterDisciples.name')}</span>
                         {sortKey === 'nombreHechicero' && (
                           <span className="text-slate-600">{sortDir === 'asc' ? '↑' : '↓'}</span>
                         )}
@@ -169,14 +180,14 @@ export const MasterDisciplesPage = () => {
                       onClick={() => toggleSort('grado')}
                     >
                       <div className="flex items-center gap-2">
-                        <span>{t('pages.queries.query6.grade')}</span>
+                        <span>{t('pages.queries.masterDisciples.grade')}</span>
                         {sortKey === 'grado' && (
                           <span className="text-slate-600">{sortDir === 'asc' ? '↑' : '↓'}</span>
                         )}
                       </div>
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase">
-                      {t('pages.queries.query6.disciples')}
+                      {t('pages.queries.masterDisciples.disciples')}
                     </th>
                   </tr>
                 </thead>
@@ -208,7 +219,7 @@ export const MasterDisciplesPage = () => {
                           {master.grado || 'N/A'}
                         </td>
                         <td className="px-4 py-3 text-sm text-slate-600">
-                          {master.discipulos.length} {t('pages.queries.query6.disciples')}
+                          {master.discipulos.length} {t('pages.queries.masterDisciples.disciples')}
                         </td>
                       </tr>
 
@@ -231,11 +242,11 @@ export const MasterDisciplesPage = () => {
                                   </div>
                                   <div className="flex gap-4 text-xs text-slate-600">
                                     <span>
-                                      <strong>{t('pages.queries.query6.grade')}:</strong>{' '}
+                                      <strong>{t('pages.queries.masterDisciples.grade')}:</strong>{' '}
                                       {discipulo.gradoDiscipulo || 'N/A'}
                                     </span>
                                     <span>
-                                      <strong>{t('pages.queries.query6.relation')}:</strong>{' '}
+                                      <strong>{t('pages.queries.masterDisciples.relation')}:</strong>{' '}
                                       {discipulo.tipoRelacion || 'N/A'}
                                     </span>
                                   </div>

@@ -18,6 +18,7 @@ import { z } from 'zod';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { t } from '../../i18n';
+import { apiClient } from '../../api/client';
 
 /**
  * Zod schema for query parameters validation.
@@ -43,6 +44,7 @@ type QueryFormValues = z.infer<typeof querySchema>;
  */
 export const SorcererStatsPage = () => {
   const [selectedSorcererId, setSelectedSorcererId] = useState<number | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
 
   const { handleSubmit, control, formState: { errors } } = useForm<QueryFormValues>({
     resolver: zodResolver(querySchema),
@@ -67,6 +69,31 @@ export const SorcererStatsPage = () => {
     }
   }, [sorcerersQuery]);
 
+  const handleExportPdf = async () => {
+    if (!selectedSorcererId || !stats) return;
+
+    setIsExporting(true);
+    try {
+      const response = await apiClient.get('/queries/sorcerer-stats/pdf', {
+        params: { sorcererId: selectedSorcererId },
+        responseType: 'blob',
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `estadisticas-hechicero-${selectedSorcererId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   const onSubmit = (values: QueryFormValues) => {
     setSelectedSorcererId(values.sorcererId);
   };
@@ -80,10 +107,10 @@ export const SorcererStatsPage = () => {
         </div>
         <Button
           variant="secondary"
-          disabled
-          title={t('pages.recentActions.comingSoon')}
+          onClick={handleExportPdf}
+          disabled={isExporting || !selectedSorcererId || !stats}
         >
-          {t('pages.recentActions.exportPdf')}
+          {isExporting ? t('pages.queries.exporting') : t('pages.queries.exportPdf')}
         </Button>
       </div>
 

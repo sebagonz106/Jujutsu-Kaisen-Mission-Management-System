@@ -20,6 +20,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { t } from '../../i18n';
+import { apiClient } from '../../api/client';
 
 /**
  * Zod schema for query parameters validation.
@@ -113,12 +114,25 @@ export const SorcererMissionsPage = () => {
   };
 
   const handleExportPdf = async () => {
-    if (missions.length === 0) return;
+    if (!selectedSorcererId || missions.length === 0) return;
 
     setIsExporting(true);
     try {
-      // TODO: Implement PDF export
-      console.log('Exporting PDF with missions:', missions);
+      const response = await apiClient.get('/queries/sorcerer-missions/pdf', {
+        params: { sorcererId: selectedSorcererId },
+        responseType: 'blob',
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `misiones-hechicero-${selectedSorcererId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
     } finally {
       setIsExporting(false);
     }
@@ -132,8 +146,8 @@ export const SorcererMissionsPage = () => {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="page-title">{t('pages.queries.query2.title')}</h1>
-          <p className="text-slate-400 text-sm mt-1">{t('pages.queries.query2.description')}</p>
+          <h1 className="page-title">{t('pages.queries.sorcererMissions.title')}</h1>
+          <p className="text-slate-400 text-sm mt-1">{t('pages.queries.sorcererMissions.description')}</p>
         </div>
       </div>
 
@@ -142,11 +156,11 @@ export const SorcererMissionsPage = () => {
         {/* Search Input */}
         <div>
           <label className="block text-sm font-medium mb-2 text-slate-700">
-            {t('pages.queries.query2.searchPlaceholder')}
+            {t('pages.queries.sorcererMissions.searchPlaceholder')}
           </label>
           <Input
             type="text"
-            placeholder={t('pages.queries.query2.searchPlaceholder')}
+            placeholder={t('pages.queries.sorcererMissions.searchPlaceholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full"
@@ -160,7 +174,7 @@ export const SorcererMissionsPage = () => {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
           <div>
             <label className="block text-sm font-medium mb-2 text-slate-700">
-              {t('pages.queries.query2.selectLabel')}
+              {t('pages.queries.sorcererMissions.selectLabel')}
             </label>
             <select
               value={selectedSorcererId?.toString() || ''}

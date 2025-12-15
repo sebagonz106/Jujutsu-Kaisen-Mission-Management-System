@@ -19,6 +19,7 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { t } from '../../i18n';
+import { apiClient } from '../../api/client';
 
 /**
  * Zod schema for query parameters validation.
@@ -104,6 +105,36 @@ export const MissionsInRangePage = () => {
     }
   };
 
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExportPdf = async () => {
+    if (!dateRange || missions.length === 0) return;
+
+    setIsExporting(true);
+    try {
+      const response = await apiClient.get('/queries/missions-in-range/pdf', {
+        params: {
+          startDate: dateRange.startDate,
+          endDate: dateRange.endDate,
+        },
+        responseType: 'blob',
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `misiones-en-rango-${dateRange.startDate}-${dateRange.endDate}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   const loadMore = async () => {
     if (!hasNextPage || isFetchingNextPage) return;
     await query.fetchNextPage();
@@ -122,10 +153,10 @@ export const MissionsInRangePage = () => {
         </div>
         <Button
           variant="secondary"
-          disabled
-          title={t('pages.recentActions.comingSoon')}
+          onClick={handleExportPdf}
+          disabled={isExporting || !dateRange || missions.length === 0}
         >
-          {t('pages.recentActions.exportPdf')}
+          {isExporting ? t('pages.queries.exporting') : t('pages.queries.exportPdf')}
         </Button>
       </div>
 

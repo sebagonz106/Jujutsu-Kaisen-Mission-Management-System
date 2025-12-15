@@ -42,10 +42,14 @@ const routeMap: Record<string, string> = {
   '/mission-range-queries': '/MisionesEnRango',
   '/sorcerer-stats': '/EstadisticasHechicero',
   '/subordinations': '/Subordinacion',
-  '/sorcerer-missions': '/Query2',
-  '/technique-effectiveness': '/Query4',
-  '/master-disciples': '/Query6',
+  '/sorcerer-missions': '/MisionesPorHechicero',
+  '/technique-effectiveness': '/EfectividadTecnicas',
+  '/master-disciples': '/MaestrosDiscipulos',
   '/sorcerer-ranking': '/RankingHechiceros',
+  '/queries/sorcerer-missions': '/MisionesPorHechicero',
+  '/queries/technique-effectiveness': '/EfectividadTecnicas',
+  '/queries/master-disciples': '/MaestrosDiscipulos',
+  '/queries/ranking-sorcerers': '/RankingHechiceros',
 };
 
 /**

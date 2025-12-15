@@ -19,6 +19,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { t } from '../../i18n';
+import { apiClient } from '../../api/client';
 
 /**
  * Zod schema for query parameters validation.
@@ -124,14 +125,25 @@ export const RankingPage = () => {
   };
 
   const handleExportPdf = async () => {
-    if (ranking.length === 0) return;
+    if (!selectedLocationId || ranking.length === 0) return;
 
     setIsExporting(true);
     try {
-      // TODO: Implement PDF export
-      console.log('Exporting PDF with ranking:', ranking);
-      // const pdf = generateRankingPdf(ranking);
-      // download(pdf);
+      const response = await apiClient.get('/queries/ranking-sorcerers/pdf', {
+        params: { locationId: selectedLocationId },
+        responseType: 'blob',
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `ranking-ubicacion-${selectedLocationId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
     } finally {
       setIsExporting(false);
     }
@@ -145,8 +157,8 @@ export const RankingPage = () => {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="page-title">{t('pages.queries.ranking.title')}</h1>
-          <p className="text-slate-400 text-sm mt-1">{t('pages.queries.ranking.desc')}</p>
+          <h1 className="page-title">{t('pages.queries.sorcererRanking.title')}</h1>
+          <p className="text-slate-400 text-sm mt-1">{t('pages.queries.sorcererRanking.desc')}</p>
         </div>
       </div>
 
@@ -155,7 +167,7 @@ export const RankingPage = () => {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
           <div>
             <label className="block text-sm font-medium mb-2 text-slate-700">
-              {t('pages.queries.ranking.selectLocation')}
+              {t('pages.queries.sorcererRanking.selectLocation')}
             </label>
             <select
               value={selectedLocationId?.toString() || ''}
@@ -165,7 +177,7 @@ export const RankingPage = () => {
               }}
               className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
-              <option value="">-- {t('pages.queries.ranking.selectPlaceholder')} --</option>
+              <option value="">-- {t('pages.queries.sorcererRanking.selectPlaceholder')} --</option>
               {locations.map((loc) => (
                 <option key={loc.id} value={loc.id}>
                   {loc.nombre}
@@ -182,7 +194,7 @@ export const RankingPage = () => {
           {/* Toolbar */}
           <div className="flex items-center justify-between">
             <div className="text-sm text-slate-600">
-              {isLoading ? t('common.loading') : `${ranking.length} ${t('pages.queries.ranking.sorcerersFound')}`}
+              {isLoading ? t('common.loading') : `${ranking.length} ${t('pages.queries.sorcererRanking.sorcerersFound')}`}
             </div>
             <Button
               onClick={handleExportPdf}
@@ -215,7 +227,7 @@ export const RankingPage = () => {
                   {/* Level Header */}
                   <div className={`px-6 py-3 ${getLevelColor(nivel)}`}>
                     <h3 className="font-semibold text-sm">
-                      {t('pages.queries.ranking.level')}: {nivel}
+                      {t('pages.queries.sorcererRanking.level')}: {nivel}
                     </h3>
                   </div>
 
@@ -224,19 +236,19 @@ export const RankingPage = () => {
                     <THead>
                       <tr>
                         <TH onClick={() => toggleSort('hechiceroId')}>
-                          <SortHeader active={sortKey === 'hechiceroId'} direction={sortDir} label={t('pages.queries.ranking.sorcererId')} onClick={() => {}} />
+                          <SortHeader active={sortKey === 'hechiceroId'} direction={sortDir} label={t('pages.queries.sorcererRanking.sorcererId')} onClick={() => {}} />
                         </TH>
                         <TH onClick={() => toggleSort('nombreHechicero')}>
-                          <SortHeader active={sortKey === 'nombreHechicero'} direction={sortDir} label={t('pages.queries.ranking.name')} onClick={() => {}} />
+                          <SortHeader active={sortKey === 'nombreHechicero'} direction={sortDir} label={t('pages.queries.sorcererRanking.name')} onClick={() => {}} />
                         </TH>
                         <TH onClick={() => toggleSort('totalMisiones')}>
-                          <SortHeader active={sortKey === 'totalMisiones'} direction={sortDir} label={t('pages.queries.ranking.totalMissions')} onClick={() => {}} />
+                          <SortHeader active={sortKey === 'totalMisiones'} direction={sortDir} label={t('pages.queries.sorcererRanking.totalMissions')} onClick={() => {}} />
                         </TH>
                         <TH onClick={() => toggleSort('misionesExitosas')}>
-                          <SortHeader active={sortKey === 'misionesExitosas'} direction={sortDir} label={t('pages.queries.ranking.successfulMissions')} onClick={() => {}} />
+                          <SortHeader active={sortKey === 'misionesExitosas'} direction={sortDir} label={t('pages.queries.sorcererRanking.successfulMissions')} onClick={() => {}} />
                         </TH>
                         <TH onClick={() => toggleSort('porcentajeExito')}>
-                          <SortHeader active={sortKey === 'porcentajeExito'} direction={sortDir} label={t('pages.queries.ranking.successRate')} onClick={() => {}} />
+                          <SortHeader active={sortKey === 'porcentajeExito'} direction={sortDir} label={t('pages.queries.sorcererRanking.successRate')} onClick={() => {}} />
                         </TH>
                       </tr>
                     </THead>

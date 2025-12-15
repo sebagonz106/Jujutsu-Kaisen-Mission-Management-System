@@ -61,8 +61,52 @@ export const QueriesIndexPage = () => {
           <div className="mt-4 text-jjk-purple text-sm font-medium">RF-14 →</div>
         </Link>
 
+        {/* Query2: Missions by Sorcerer - Active */}
+        <Link
+          to="/queries/sorcerer-missions"
+          className="card-surface p-6 hover:border-slate-500 transition-all flex flex-col"
+        >
+          <div className="text-4xl mb-3">🎯</div>
+          <h3 className="text-xl font-semibold text-slate-100 mb-2">{t('pages.queries.sorcererMissions.title')}</h3>
+          <p className="text-slate-400 text-sm flex-1">{t('pages.queries.sorcererMissions.desc')}</p>
+          <div className="mt-4 text-jjk-purple text-sm font-medium">RF-15 →</div>
+        </Link>
+
+        {/* Query4: Technique Effectiveness - Active */}
+        <Link
+          to="/queries/technique-effectiveness"
+          className="card-surface p-6 hover:border-slate-500 transition-all flex flex-col"
+        >
+          <div className="text-4xl mb-3">⚡</div>
+          <h3 className="text-xl font-semibold text-slate-100 mb-2">{t('pages.queries.techniqueEffectiveness.title')}</h3>
+          <p className="text-slate-400 text-sm flex-1">{t('pages.queries.techniqueEffectiveness.desc')}</p>
+          <div className="mt-4 text-jjk-purple text-sm font-medium">RF-16 →</div>
+        </Link>
+
+        {/* Query6: Master-Disciples - Active */}
+        <Link
+          to="/queries/master-disciples"
+          className="card-surface p-6 hover:border-slate-500 transition-all flex flex-col"
+        >
+          <div className="text-4xl mb-3">👥</div>
+          <h3 className="text-xl font-semibold text-slate-100 mb-2">{t('pages.queries.masterDisciples.title')}</h3>
+          <p className="text-slate-400 text-sm flex-1">{t('pages.queries.masterDisciples.desc')}</p>
+          <div className="mt-4 text-jjk-purple text-sm font-medium">RF-17 →</div>
+        </Link>
+
+        {/* Ranking: Sorcerer Ranking - Active */}
+        <Link
+          to="/queries/ranking"
+          className="card-surface p-6 hover:border-slate-500 transition-all flex flex-col"
+        >
+          <div className="text-4xl mb-3">🏆</div>
+          <h3 className="text-xl font-semibold text-slate-100 mb-2">{t('pages.queries.sorcererRanking.title')}</h3>
+          <p className="text-slate-400 text-sm flex-1">{t('pages.queries.sorcererRanking.desc')}</p>
+          <div className="mt-4 text-jjk-purple text-sm font-medium">RF-18 →</div>
+        </Link>
+
         {/* Placeholder cards for future queries */}
-        {[15, 16, 17, 18, 19].map((rf) => (
+        {[19].map((rf) => (
           <div
             key={rf}
             className="card-surface p-6 opacity-50 cursor-not-allowed flex flex-col"

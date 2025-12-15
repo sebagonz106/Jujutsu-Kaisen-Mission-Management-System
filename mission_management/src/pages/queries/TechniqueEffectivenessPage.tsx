@@ -16,6 +16,7 @@ import { EmptyState } from '../../components/ui/EmptyState';
 import { Table, THead, TBody, TH, TD, SortHeader } from '../../components/ui/Table';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { t } from '../../i18n';
+import { apiClient } from '../../api/client';
 
 /**
  * Get color for effectiveness classification.
@@ -86,10 +87,20 @@ export const TechniqueEffectivenessPage = () => {
 
     setIsExporting(true);
     try {
-      // TODO: Implement PDF export
-      console.log('Exporting PDF with techniques:', techniques);
-      // const pdf = generateTechniquesPdf(techniques);
-      // download(pdf);
+      const response = await apiClient.get('/queries/technique-effectiveness/pdf', {
+        responseType: 'blob',
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'efectividad-tecnicas.pdf');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
     } finally {
       setIsExporting(false);
     }
@@ -102,8 +113,8 @@ export const TechniqueEffectivenessPage = () => {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="page-title">{t('pages.queries.query4.title')}</h1>
-          <p className="text-slate-400 text-sm mt-1">{t('pages.queries.query4.description')}</p>
+          <h1 className="page-title">{t('pages.queries.techniqueEffectiveness.title')}</h1>
+          <p className="text-slate-400 text-sm mt-1">{t('pages.queries.techniqueEffectiveness.description')}</p>
         </div>
       </div>
 
