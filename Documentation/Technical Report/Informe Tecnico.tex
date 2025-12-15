@@ -127,7 +127,7 @@ Representa a los hechiceros del sistema, quienes ejecutan las misiones de exorci
 \endhead
 id & int (PK) & Identificador único generado automáticamente \\
 \hline
-Name & string & Nombre del hechicero (requerido) \\
+Nombre & string & Nombre del hechicero (requerido) \\
 \hline
 Grado & EGrados (enum) & Grado del hechicero: estudiante, aprendiz, medio, alto, especial \\
 \hline
@@ -312,7 +312,7 @@ Representa al personal auxiliar que asiste en las misiones.
 \hline
 id & int (PK) & Identificador único \\
 \hline
-Name & string & Nombre del personal \\
+Nombre & string & Nombre del personal \\
 \hline
 \end{longtable}
 
@@ -539,7 +539,7 @@ El sistema implementa una arquitectura de cinco (seis si se considera la capa de
 \label{fig:arquitectura}
 \end{figure}
 
-La capa de Núcleo (Core) contiene las entidades del dominio, enumeraciones y reglas de negocio fundamentales. Esta capa no tiene dependencias externas y define los contratos que las demás capas deben cumplir.
+La capa de Núcleo (Core) contiene las entidades del dominio, enumeraciones y reglas de negocio fundamentales. Esta capa no tiene dependencias externas y define los contratos que el resto de capas deben cumplir.
 
 La capa de Infraestructura implementa el acceso a datos mediante el patrón Repository. Contiene el DbContext de Entity Framework Core, las configuraciones de mapeo objeto-relacional y las implementaciones concretas de los repositorios. La clase AppDbContext centraliza la configuración de las entidades y sus relaciones.
 
@@ -585,11 +585,11 @@ El Modelo Entidad-Relación Extendido (MERX) constituye el núcleo del diseño c
 
 La implementación del sistema siguió una metodología de desarrollo iterativo organizado en fases que garantizan trazabilidad entre requisitos y componentes implementados.
 
-La fase de Planificación estableció el alcance del proyecto, identificó los actores del sistema y definió los requisitos funcionales de alto nivel. Durante esta fase se elaboró el documento de visión y se priorizaron las funcionalidades según el valor de negocio.
+La fase de Planificación estableció el alcance del proyecto, identificó los actores del sistema y definió los requisitos funcionales de alto nivel. Durante esta fase se elaboró el documento de visión y se priorizaron las funcionalidades según su valor de negocio.
 
 La fase de Elaboración profundizó en el análisis de requisitos, produciendo los casos de uso detallados y el modelo conceptual del dominio mediante MERX. Se identificaron los requisitos no funcionales relacionados con seguridad, rendimiento y usabilidad.
 
-La fase de Desarrollo implementó los requisitos siguiendo la arquitectura de cinco capas definida. El desarrollo procede por iteraciones, donde cada iteración entrega funcionalidad completa y probada. Se aplicaron principios SOLID y se mantuvieron pruebas automatizadas.
+La fase de Desarrollo implementó los requisitos siguiendo la arquitectura de cinco capas definida. El desarrollo se organizó por iteraciones, donde cada iteración entregaba funcionalidad completa y probada. Se aplicaron principios SOLID y se mantuvieron pruebas automatizadas.
 
 La fase de Prueba verificó que la implementación cumple los requisitos especificados. Se realizaron pruebas unitarias de los servicios, pruebas de integración de la API y pruebas de aceptación de la interfaz de usuario.
 

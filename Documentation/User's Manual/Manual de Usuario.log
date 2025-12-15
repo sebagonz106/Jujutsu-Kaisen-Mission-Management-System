@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.9.12)  15 DEC 2025 09:54
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.9.12)  15 DEC 2025 10:53
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1068,11 +1068,11 @@ Package rerunfilecheck Info: File `"Manual de Usuario".out' has not changed.
 (rerunfilecheck)             Checksum: 6560889C5CCB80BE7268A3A57F2D8559;5220.
  ) 
 Here is how much of TeX's memory you used:
- 29229 strings out of 473190
- 523707 string characters out of 5719979
- 1172407 words of memory out of 5000000
- 51877 multiletter control sequences out of 15000+600000
- 567858 words of font info for 109 fonts, out of 8000000 for 9000
+ 29225 strings out of 473190
+ 523658 string characters out of 5719979
+ 1172273 words of memory out of 5000000
+ 51875 multiletter control sequences out of 15000+600000
+ 567809 words of font info for 108 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  84i,8n,87p,1016b,1220s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <c:/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb><c:/tex
@@ -1082,7 +1082,7 @@ t/fonts/type1/public/amsfonts/cm/cmr12.pfb><c:/texlive/2025/texmf-dist/fonts/ty
 pe1/public/amsfonts/cm/cmti12.pfb><c:/texlive/2025/texmf-dist/fonts/type1/publi
 c/amsfonts/cm/cmtt10.pfb><c:/texlive/2025/texmf-dist/fonts/type1/public/amsfont
 s/cm/cmtt12.pfb>
-Output written on "Manual de Usuario.pdf" (13 pages, 3903094 bytes).
+Output written on "Manual de Usuario.pdf" (13 pages, 3903078 bytes).
 PDF statistics:
  342 PDF objects out of 1000 (max. 8388607)
  289 compressed objects within 3 object streams
