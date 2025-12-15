@@ -118,21 +118,40 @@ export const SorcererMissionsPage = () => {
 
     setIsExporting(true);
     try {
+      console.log('🔵 [PDF] Iniciando descarga de misiones...');
+      console.log('🔵 [PDF] Sorcerer ID:', selectedSorcererId);
+      console.log('🔵 [PDF] Petición a: /queries/sorcerer-missions/pdf');
+      
       const response = await apiClient.get('/queries/sorcerer-missions/pdf', {
         params: { sorcererId: selectedSorcererId },
         responseType: 'blob',
       });
 
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `misiones-hechicero-${selectedSorcererId}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
+      console.log('🟢 [PDF] Respuesta recibida:', {
+        status: response.status,
+        headers: response.headers,
+        dataType: typeof response.data,
+        dataSize: response.data?.size,
+      });
+
+      if (response.status === 200 && response.data && response.data.size > 0) {
+        const url = window.URL.createObjectURL(response.data);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `misiones-hechicero-${selectedSorcererId}.pdf`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+        console.log('✅ [PDF] Descarga completada');
+      } else {
+        console.warn('⚠️ [PDF] Respuesta vacía o inválida:', response.data);
+      }
     } catch (error) {
-      console.error('Error exporting PDF:', error);
+      console.error('❌ [PDF] Error exporting PDF:', error);
+      if (error instanceof Error) {
+        console.error('Error message:', error.message);
+      }
     } finally {
       setIsExporting(false);
     }
@@ -201,7 +220,7 @@ export const SorcererMissionsPage = () => {
           {/* Toolbar */}
           <div className="flex items-center justify-between">
             <div className="text-sm text-slate-400">
-              {isLoading ? 'Cargando...' : `${missions.length} misiones encontradas`}
+              {isLoading ? t('ui.loading') : `${missions.length} ${t('pages.queries.sorcererMissions.missionsFound')}`}
             </div>
             <Button
               onClick={handleExportPdf}
@@ -209,7 +228,7 @@ export const SorcererMissionsPage = () => {
               variant="secondary"
               size="sm"
             >
-              {isExporting ? 'Exportando...' : '📄 PDF'}
+              {isExporting ? t('pages.queries.sorcererMissions.exporting') : '📄 PDF'}
             </Button>
           </div>
 
@@ -269,7 +288,7 @@ export const SorcererMissionsPage = () => {
               {hasNextPage && (
                 <div className="flex justify-center p-4 border-t border-slate-700">
                   <Button onClick={() => {}} disabled={isFetchingNextPage} size="sm">
-                    {isFetchingNextPage ? 'Cargando...' : 'Cargar más'}
+                    {isFetchingNextPage ? t('ui.loadingMore') : t('ui.loadMore')}
                   </Button>
                 </div>
               )}

@@ -98,12 +98,22 @@ export const MasterDisciplesPage = () => {
 
     setIsExporting(true);
     try {
+      console.log('🔵 [PDF] Iniciando descarga de maestros-discípulos...');
+      console.log('🔵 [PDF] Petición a: /master-disciples/pdf');
+      
       const response = await apiClient.get('/master-disciples/pdf', {
         responseType: 'blob',
       });
 
-      if (response.status === 200 && response.data) {
-        const url = window.URL.createObjectURL(new Blob([response.data]));
+      console.log('🟢 [PDF] Respuesta recibida:', {
+        status: response.status,
+        headers: response.headers,
+        dataType: typeof response.data,
+        dataSize: response.data?.size,
+      });
+
+      if (response.status === 200 && response.data && response.data.size > 0) {
+        const url = window.URL.createObjectURL(response.data);
         const link = document.createElement('a');
         link.href = url;
         link.setAttribute('download', 'maestros-discipulos.pdf');
@@ -111,9 +121,15 @@ export const MasterDisciplesPage = () => {
         link.click();
         link.remove();
         window.URL.revokeObjectURL(url);
+        console.log('✅ [PDF] Descarga completada');
+      } else {
+        console.warn('⚠️ [PDF] Respuesta vacía o inválida:', response.data);
       }
     } catch (error) {
-      console.error('Error exporting PDF:', error);
+      console.error('❌ [PDF] Error exporting PDF:', error);
+      if (error instanceof Error) {
+        console.error('Error message:', error.message);
+      }
     } finally {
       setIsExporting(false);
     }
@@ -155,7 +171,7 @@ export const MasterDisciplesPage = () => {
             variant="secondary"
             size="sm"
           >
-            {isExporting ? 'Exportando...' : '📄 PDF'}
+            {isExporting ? t('pages.queries.exporting') : '📄 PDF'}
           </Button>
         </div>
 
@@ -239,7 +255,7 @@ export const MasterDisciplesPage = () => {
             {hasNextPage && (
               <div className="flex justify-center p-4 border-t border-slate-700">
                 <Button onClick={() => fetchNextPage()} disabled={isFetchingNextPage} size="sm">
-                  {isFetchingNextPage ? t('common.loading') : 'Cargar más'}
+                  {isFetchingNextPage ? t('common.loading') : t('ui.loadMore')}
                 </Button>
               </div>
             )}

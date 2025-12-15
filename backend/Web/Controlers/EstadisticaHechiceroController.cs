@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using GestionDeMisiones.IService;
 using QuestPDF.Fluent;
 using GestionDeMisiones.Web;
@@ -31,19 +32,29 @@ public class EstadisticasHechiceroController : ControllerBase
         return Ok(datos);
     }
 
-[HttpGet("efectividad-hechiceros/pdf")]
+[AllowAnonymous]
+[HttpGet("pdf")]
 public async Task<IActionResult> GetReporteEfectividad()
 {
-    var data = await _service.GetEfectividadMediosVsAltos();
+    try
+    {
+        var data = await _service.GetEfectividadMediosVsAltos();
 
-    var document = new EfectividadHechicerosDocument(data);
+        if (!data.Any())
+            return NotFound(new { error = "No hay datos para generar el reporte." });
 
-    // Crear un MemoryStream y generar el PDF allí
-    var stream = new MemoryStream();
-    document.GeneratePdf(stream);
-    stream.Position = 0; // resetear la posición antes de enviar
+        var document = new EfectividadHechicerosDocument(data);
 
-    return File(stream, "application/pdf", "efectividad-hechiceros.pdf");
+        var stream = new MemoryStream();
+        document.GeneratePdf(stream);
+        stream.Position = 0;
+
+        return File(stream, "application/pdf", "efectividad-hechiceros.pdf");
+    }
+    catch (Exception ex)
+    {
+        return StatusCode(500, new { error = "Error generando PDF: " + ex.Message });
+    }
 }
 
 }

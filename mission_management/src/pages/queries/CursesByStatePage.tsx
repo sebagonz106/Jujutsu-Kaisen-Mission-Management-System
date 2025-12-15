@@ -105,22 +105,42 @@ export const CursesByStatePage = () => {
     
     setIsExporting(true);
     try {
+      console.log('🔵 [PDF] Iniciando descarga de maldiciones...');
+      console.log('🔵 [PDF] Estado:', selectedState);
+      console.log('🔵 [PDF] Petición a: /curse-queries/pdf');
+      
       const response = await apiClient.get(`/curse-queries/${selectedState}/pdf`, {
         responseType: 'blob',
       });
-      
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `maldiciones-${selectedState}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-      
-      toast.success('PDF exportado correctamente');
-    } catch {
-      toast.error('Error al exportar PDF');
+
+      console.log('🟢 [PDF] Respuesta recibida:', {
+        status: response.status,
+        headers: response.headers,
+        dataType: typeof response.data,
+        dataSize: response.data?.size,
+      });
+
+      if (response.status === 200 && response.data && response.data.size > 0) {
+        const url = window.URL.createObjectURL(response.data);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `maldiciones-${selectedState}.pdf`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+        console.log('✅ [PDF] Descarga completada');
+        toast.success(t('toast.pdf.exported'));
+      } else {
+        console.warn('⚠️ [PDF] Respuesta vacía o inválida:', response.data);
+        toast.error(t('toast.pdf.emptyResponse'));
+      }
+    } catch (error) {
+      console.error('❌ [PDF] Error exporting PDF:', error);
+      if (error instanceof Error) {
+        console.error('Error message:', error.message);
+      }
+      toast.error(t('toast.pdf.exportError'));
     } finally {
       setIsExporting(false);
     }
@@ -138,7 +158,7 @@ export const CursesByStatePage = () => {
           onClick={handleExportPdf}
           disabled={!data || data.length === 0 || isExporting}
         >
-          {isExporting ? 'Exportando...' : t('pages.recentActions.exportPdf')}
+          {isExporting ? t('pages.queries.exporting') : t('pages.recentActions.exportPdf')}
         </Button>
       </div>
 

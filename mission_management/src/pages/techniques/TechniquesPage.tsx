@@ -217,7 +217,7 @@ export const TechniquesPage = () => {
               <tr>
                 <TH><SortHeader label={t('form.labels.name')} active={sortKey==='nombre'} direction={sortDir} onClick={() => toggleSort('nombre')} /></TH>
                 <TH><SortHeader label={t('form.labels.type')} active={sortKey==='tipo'} direction={sortDir} onClick={() => toggleSort('tipo')} /></TH>
-                <TH><SortHeader label={'Efectividad'} active={sortKey==='efectividadProm'} direction={sortDir} onClick={() => toggleSort('efectividadProm')} /></TH>
+                <TH><SortHeader label={t('form.labels.effectiveness')} active={sortKey==='efectividadProm'} direction={sortDir} onClick={() => toggleSort('efectividadProm')} /></TH>
                 {canMutate && <TH>{t('ui.actions')}</TH>}
               </tr>
             </THead>
@@ -268,9 +268,9 @@ export const TechniquesPage = () => {
           <Select label={t('form.labels.type')} {...register('tipo')}>
             {Object.values(TECHNIQUE_TYPE).map(tp => <option key={tp} value={tp}>{getTechniqueTypeLabel(tp)}</option>)}
           </Select>
-          <Input label={'Efectividad promedio'} type="number" {...register('efectividadProm', { valueAsNumber: true })} />
+          <Input label={t('form.labels.effectiveness') ?? 'Efectividad promedio'} type="number" min={0} max={100} step={0.1} {...register('efectividadProm', { valueAsNumber: true })} />
           {errors.efectividadProm && <p className="text-xs text-red-400">{errors.efectividadProm.message}</p>}
-          <Input label={'Condiciones de uso'} placeholder={'Condiciones'} {...register('condicionesDeUso')} />
+          <Input label={t('form.labels.usageConditions') ?? 'Condiciones de uso'} placeholder={t('form.placeholders.usageConditions') ?? 'Condiciones'} {...register('condicionesDeUso')} />
           {errors.condicionesDeUso && <p className="text-xs text-red-400">{errors.condicionesDeUso.message}</p>}
         </form>
       </Modal>

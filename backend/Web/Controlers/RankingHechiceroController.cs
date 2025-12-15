@@ -31,15 +31,32 @@ public class RankingHechicerosController : ControllerBase
 [HttpGet("top-por-nivel/pdf")]
 public async Task<IActionResult> GetRankingPorNivelPdf([FromQuery] int ubicacionId)
 {
-    var datos = await _service.GetTopHechicerosPorNivelYUbicacion(ubicacionId);
+    try
+    {
+        if (ubicacionId <= 0)
+        {
+            return BadRequest(new { error = "ubicacionId debe ser mayor a 0" });
+        }
 
-    var document = new RankingHechicerosDocument(datos);
+        var datos = await _service.GetTopHechicerosPorNivelYUbicacion(ubicacionId);
+        
+        if (datos == null || !datos.Any())
+        {
+            return NotFound(new { error = "No hay datos de ranking para la ubicación especificada" });
+        }
 
-    var stream = new MemoryStream();
-    document.GeneratePdf(stream);
-    stream.Position = 0;
+        var document = new RankingHechicerosDocument(datos);
 
-    return File(stream, "application/pdf", "ranking-hechiceros.pdf");
+        var stream = new MemoryStream();
+        document.GeneratePdf(stream);
+        stream.Position = 0;
+
+        return File(stream, "application/pdf", $"ranking-ubicacion-{ubicacionId}.pdf");
+    }
+    catch (Exception ex)
+    {
+        return StatusCode(500, new { error = "Error generando PDF: " + ex.Message });
+    }
 }
 
 }

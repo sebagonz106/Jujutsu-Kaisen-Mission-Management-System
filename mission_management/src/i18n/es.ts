@@ -9,6 +9,7 @@ export const es = {
     sorted_by: 'Ordenado por: {key}',
     sorcerersFound: 'hechicero(s) encontrado(s)',
     techniquesFound: 'técnica(s) encontrada(s)',
+    inProgress: 'En curso',
   },
   grammar: {
     femArt: 'la',
@@ -256,6 +257,8 @@ export const es = {
         misionId: 'Misión ID',
         date: 'Fecha',
         result: 'Resultado',
+        missionsFound: 'misiones encontradas',
+        exporting: 'Exportando...',
       },
       techniqueEffectiveness: {
         title: 'Efectividad de Técnicas',
@@ -408,6 +411,8 @@ export const es = {
     sorcererInCharge: { created: 'Asignado', updated: 'Actualizado', deleted: 'Eliminado' },
     masteredTechnique: { created: 'Registrada', updated: 'Actualizada', deleted: 'Eliminada' },
     subordination: { created: 'Creada', updated: 'Actualizada', deleted: 'Eliminada' },
+    user: { created: 'Usuario creado', updated: 'Usuario actualizado', deleted: 'Usuario eliminado' },
+    pdf: { exported: 'PDF exportado correctamente', emptyResponse: 'Respuesta vacía del servidor', exportError: 'Error al exportar PDF' },
     saveError: 'Error al guardar',
     deleteError: 'Error al eliminar',
   },
@@ -470,6 +475,8 @@ export const es = {
       disciple: 'Discípulo',
       relationshipType: 'Tipo de Relación',
       active: 'Activa',
+      effectiveness: 'Efectividad promedio',
+      usageConditions: 'Condiciones de uso',
     },
     placeholders: {
       seleccionar: 'Seleccionar...',
@@ -488,6 +495,7 @@ export const es = {
       selectSorcerer: 'Seleccionar hechicero...',
       selectRequest: 'Seleccionar solicitud...',
       selectTechnique: 'Seleccionar técnica...',
+      usageConditions: 'Condiciones de uso',
     },
     validation: {
       nameTooShort: 'Nombre muy corto',

@@ -76,20 +76,38 @@ export const SorcererStatsPage = () => {
 
     setIsExporting(true);
     try {
-      const response = await apiClient.get('/sorcerer-stats/efectividad-hechiceros/pdf', {
+      console.log('🔵 [PDF] Iniciando descarga de estadísticas...');
+      console.log('🔵 [PDF] Petición a: /queries/sorcerer-stats/pdf');
+      
+      const response = await apiClient.get('/queries/sorcerer-stats/pdf', {
         responseType: 'blob',
       });
 
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', 'estadisticas-hechiceros.pdf');
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
+      console.log('🟢 [PDF] Respuesta recibida:', {
+        status: response.status,
+        headers: response.headers,
+        dataType: typeof response.data,
+        dataSize: response.data?.size,
+      });
+
+      if (response.status === 200 && response.data && response.data.size > 0) {
+        const url = window.URL.createObjectURL(response.data);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'estadisticas-hechiceros.pdf');
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+        console.log('✅ [PDF] Descarga completada');
+      } else {
+        console.warn('⚠️ [PDF] Respuesta vacía o inválida:', response.data);
+      }
     } catch (error) {
-      console.error('Error exporting PDF:', error);
+      console.error('❌ [PDF] Error exporting PDF:', error);
+      if (error instanceof Error) {
+        console.error('Error message:', error.message);
+      }
     } finally {
       setIsExporting(false);
     }

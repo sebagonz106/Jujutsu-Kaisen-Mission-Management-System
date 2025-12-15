@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using GestionDeMisiones.IService;
 using QuestPDF.Fluent;
 using GestionDeMisiones.Web;
@@ -32,18 +33,29 @@ public class MisionesEnRangoController : ControllerBase
         return Ok(result);
     }
 
+    [AllowAnonymous]
     [HttpGet("pdf")]
-public async Task<IActionResult> GetReportePdf([FromQuery] DateTime desde, [FromQuery] DateTime hasta)
-{
-    var misiones = await _service.GetMisionesCompletadasPorRango(desde, hasta);
+    public async Task<IActionResult> GetReportePdf([FromQuery] DateTime desde, [FromQuery] DateTime hasta)
+    {
+        try
+        {
+            var misiones = await _service.GetMisionesCompletadasPorRango(desde, hasta);
 
-    var document = new MisionesEnRangoDocument(misiones);
+            if (!misiones.Any())
+                return NotFound(new { error = "No hay misiones en el rango especificado." });
 
-    var stream = new MemoryStream();
-    document.GeneratePdf(stream);
-    stream.Position = 0; // importante reiniciar la posición
+            var document = new MisionesEnRangoDocument(misiones);
 
-    return File(stream, "application/pdf", "misiones-en-rango.pdf");
-}
+            var stream = new MemoryStream();
+            document.GeneratePdf(stream);
+            stream.Position = 0;
+
+            return File(stream, "application/pdf", "misiones-en-rango.pdf");
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "Error generando PDF: " + ex.Message });
+        }
+    }
 
 }

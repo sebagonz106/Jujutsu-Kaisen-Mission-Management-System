@@ -229,7 +229,7 @@ export const SorcerersPage = () => {
           <Select label={t('form.labels.grade')} {...register('grado')}>
             {Object.values(SORCERER_GRADE).map((g) => <option key={g} value={g}>{sorcererGradeLabel(g)}</option>)}
           </Select>
-          <Input label={t('form.labels.experience')} type="number" {...register('experiencia', { valueAsNumber: true })} />
+          <Input label={t('form.labels.experience')} type="number" min={0} {...register('experiencia', { valueAsNumber: true })} />
           {errors.experiencia && <p className="text-xs text-red-400">{errors.experiencia.message}</p>}
             <Select label={t('form.labels.state')} {...register('estado')}>
             {Object.values(SORCERER_STATUS).map((s) => <option key={s} value={s}>{sorcererStatusLabel(s)}</option>)}

@@ -87,20 +87,38 @@ export const TechniqueEffectivenessPage = () => {
 
     setIsExporting(true);
     try {
+      console.log('🔵 [PDF] Iniciando descarga de técnicas...');
+      console.log('🔵 [PDF] Petición a: /queries/technique-effectiveness/pdf');
+      
       const response = await apiClient.get('/queries/technique-effectiveness/pdf', {
         responseType: 'blob',
       });
 
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', 'efectividad-tecnicas.pdf');
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
+      console.log('🟢 [PDF] Respuesta recibida:', {
+        status: response.status,
+        headers: response.headers,
+        dataType: typeof response.data,
+        dataSize: response.data?.size,
+      });
+
+      if (response.status === 200 && response.data && response.data.size > 0) {
+        const url = window.URL.createObjectURL(response.data);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'efectividad-tecnicas.pdf');
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+        console.log('✅ [PDF] Descarga completada');
+      } else {
+        console.warn('⚠️ [PDF] Respuesta vacía o inválida:', response.data);
+      }
     } catch (error) {
-      console.error('Error exporting PDF:', error);
+      console.error('❌ [PDF] Error exporting PDF:', error);
+      if (error instanceof Error) {
+        console.error('Error message:', error.message);
+      }
     } finally {
       setIsExporting(false);
     }
@@ -131,7 +149,7 @@ export const TechniqueEffectivenessPage = () => {
             variant="secondary"
             size="sm"
           >
-            {isExporting ? 'Exportando...' : '📄 PDF'}
+            {isExporting ? t('pages.queries.exporting') : '📄 PDF'}
           </Button>
         </div>
 

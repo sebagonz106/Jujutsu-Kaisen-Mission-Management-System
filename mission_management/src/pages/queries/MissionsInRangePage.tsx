@@ -112,24 +112,43 @@ export const MissionsInRangePage = () => {
 
     setIsExporting(true);
     try {
+      console.log('🔵 [PDF] Iniciando descarga de misiones en rango...');
+      console.log('🔵 [PDF] Rango:', dateRange.startDate, '-', dateRange.endDate);
+      console.log('🔵 [PDF] Petición a: /queries/missions-in-range/pdf');
+      
       const response = await apiClient.get('/queries/missions-in-range/pdf', {
         params: {
-          startDate: dateRange.startDate,
-          endDate: dateRange.endDate,
+          desde: dateRange.startDate,
+          hasta: dateRange.endDate,
         },
         responseType: 'blob',
       });
 
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `misiones-en-rango-${dateRange.startDate}-${dateRange.endDate}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
+      console.log('🟢 [PDF] Respuesta recibida:', {
+        status: response.status,
+        headers: response.headers,
+        dataType: typeof response.data,
+        dataSize: response.data?.size,
+      });
+
+      if (response.status === 200 && response.data && response.data.size > 0) {
+        const url = window.URL.createObjectURL(response.data);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `misiones-en-rango-${dateRange.startDate}-${dateRange.endDate}.pdf`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+        console.log('✅ [PDF] Descarga completada');
+      } else {
+        console.warn('⚠️ [PDF] Respuesta vacía o inválida:', response.data);
+      }
     } catch (error) {
-      console.error('Error exporting PDF:', error);
+      console.error('❌ [PDF] Error exporting PDF:', error);
+      if (error instanceof Error) {
+        console.error('Error message:', error.message);
+      }
     } finally {
       setIsExporting(false);
     }
@@ -242,7 +261,7 @@ export const MissionsInRangePage = () => {
                     </div>
                   </TD>
                   <TD className="tabular-nums">{new Date(m.fechaInicio).toLocaleDateString()}</TD>
-                  <TD className="tabular-nums">{m.fechaFin ? new Date(m.fechaFin).toLocaleDateString() : 'En curso'}</TD>
+                  <TD className="tabular-nums">{m.fechaFin ? new Date(m.fechaFin).toLocaleDateString() : t('common.inProgress')}</TD>
                 </tr>
               ))}
             </TBody>

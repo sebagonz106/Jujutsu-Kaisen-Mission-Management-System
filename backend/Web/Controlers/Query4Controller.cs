@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using GestionDeMisiones.IService;
 using GestionDeMisiones.Models;
 using GestionDeMisiones.Web;
@@ -29,21 +30,30 @@ public class Query4Controller : ControllerBase
         var result = await _service.GetEfectividadTecnicasAsync();
         return Ok(result);
     }
-    [HttpGet("efectividad-tecnicas/pdf")]
+    
+    [AllowAnonymous]
+    [HttpGet("pdf")]
     public async Task<IActionResult> GetEfectividadTecnicasPdf()
     {
-        var data = await _service.GetEfectividadTecnicasAsync();
+        try
+        {
+            var data = await _service.GetEfectividadTecnicasAsync();
 
-        if (!data.Any())
-            return NotFound("No hay datos para generar el reporte.");
+            if (!data.Any())
+                return NotFound(new { error = "No hay datos para generar el reporte." });
 
-        var document = new EfectividadTecnicasDocument(data);
+            var document = new EfectividadTecnicasDocument(data);
 
-        var stream = new MemoryStream();
-        document.GeneratePdf(stream);
-        stream.Position = 0;
+            var stream = new MemoryStream();
+            document.GeneratePdf(stream);
+            stream.Position = 0;
 
-        return File(stream, "application/pdf", "efectividad-tecnicas.pdf");
+            return File(stream, "application/pdf", "efectividad-tecnicas.pdf");
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "Error generando PDF: " + ex.Message });
+        }
     }
 
 }

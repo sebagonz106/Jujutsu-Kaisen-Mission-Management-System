@@ -103,9 +103,9 @@ export const AdminUsersPage: React.FC = () => {
     try {
       await userApi.remove(deleteUserId);
       setItems(prev => prev.filter(x => x.id !== deleteUserId));
-      toast.success('Usuario eliminado');
+      toast.success(t('toast.user.deleted'));
     } catch {
-      toast.error('No se pudo eliminar');
+      toast.error(t('toast.deleteError'));
     }
     setDeleteUserId(null);
   };
@@ -113,13 +113,13 @@ export const AdminUsersPage: React.FC = () => {
   const handleCreate = async (data: CreateUsuarioRequest) => {
     const created = await userApi.create(data);
     setItems(prev => [created, ...prev]);
-    toast.success('Usuario creado');
+    toast.success(t('toast.user.created'));
   };
 
   const handleUpdate = async (id: number, data: UpdateUsuarioRequest) => {
     const updated = await userApi.update(id, data);
     setItems(prev => prev.map(x => x.id === id ? updated : x));
-    toast.success('Usuario actualizado');
+    toast.success(t('toast.user.updated'));
   };
 
   if (!user) return <Navigate to="/login" replace />;

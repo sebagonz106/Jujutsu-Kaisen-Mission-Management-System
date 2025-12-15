@@ -33,18 +33,25 @@ public class Query6Controller : ControllerBase
     [HttpGet("pdf")]
     public async Task<IActionResult> GetRelacionHechicerosPdf()
     {
-        var data = await _service.GetRelacionHechiceroDiscipulosAsync();
+        try
+        {
+            var data = await _service.GetRelacionHechiceroDiscipulosAsync();
 
-        if (!data.Any())
-            return NotFound("No hay datos para generar el reporte.");
+            if (!data.Any())
+                return NotFound(new { error = "No hay datos para generar el reporte." });
 
-        var document = new RelacionHechicerosDocument(data);
+            var document = new RelacionHechicerosDocument(data);
 
-        var stream = new MemoryStream();
-        document.GeneratePdf(stream);
-        stream.Position = 0;
+            var stream = new MemoryStream();
+            document.GeneratePdf(stream);
+            stream.Position = 0;
 
-        return File(stream, "application/pdf", "relacion-hechiceros.pdf");
+            return File(stream, "application/pdf", "relacion-hechiceros.pdf");
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "Error generando PDF: " + ex.Message });
+        }
     }
 
 }

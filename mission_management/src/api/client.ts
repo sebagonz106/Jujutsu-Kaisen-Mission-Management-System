@@ -40,15 +40,17 @@ const routeMap: Record<string, string> = {
   // Query endpoints
   '/curse-queries': '/MaldicionConsulta',
   '/mission-range-queries': '/MisionesEnRango',
+  '/queries/missions-in-range': '/MisionesEnRango',
   '/sorcerer-stats': '/EstadisticasHechicero',
+  '/queries/sorcerer-stats': '/EstadisticasHechicero',
   '/subordinations': '/Subordinacion',
   '/sorcerer-missions': '/Query2/hechicero',
-  '/technique-effectiveness': '/Query4',
-  '/master-disciples': '/Query6',
-  '/sorcerer-ranking': '/RankingHechiceros/top-por-nivel',
   '/queries/sorcerer-missions': '/Query2/hechicero',
+  '/technique-effectiveness': '/Query4',
   '/queries/technique-effectiveness': '/Query4',
+  '/master-disciples': '/Query6',
   '/queries/master-disciples': '/Query6',
+  '/sorcerer-ranking': '/RankingHechiceros/top-por-nivel',
   '/queries/ranking-sorcerers': '/RankingHechiceros/top-por-nivel',
 };
 
@@ -65,12 +67,20 @@ function translatePath(url?: string): string | undefined {
   const normalized = pathPart.startsWith('/') ? pathPart : '/' + pathPart;
   const segments = normalized.split('/').filter(Boolean);
   if (segments.length === 0) return url;
-  const baseSeg = '/' + segments[0].toLowerCase();
-  const mappedBase = routeMap[baseSeg];
-  if (!mappedBase) return url; // No mapping needed
-  const rest = segments.slice(1).join('/');
-  const newPath = mappedBase + (rest ? '/' + rest : '');
-  return query ? newPath + '?' + query : newPath;
+  
+  // Try to match multi-segment paths first (e.g. /queries/technique-effectiveness)
+  // then fall back to single segment (e.g. /queries)
+  for (let i = Math.min(3, segments.length); i >= 1; i--) {
+    const testPath = '/' + segments.slice(0, i).join('/').toLowerCase();
+    const mapped = routeMap[testPath];
+    if (mapped) {
+      const rest = segments.slice(i).join('/');
+      const newPath = mapped + (rest ? '/' + rest : '');
+      return query ? newPath + '?' + query : newPath;
+    }
+  }
+  
+  return url; // No mapping found
 }
 
 /**
@@ -137,7 +147,7 @@ apiClient.interceptors.response.use(
       const clientMeta = apiClient as ApiClientWithMeta;
       if (!clientMeta._last403At || now - clientMeta._last403At > 1500) {
         clientMeta._last403At = now;
-        toast.error("You don't have permission to perform this action.");
+        toast.error("No tienes permiso para realizar esta acción.");
       }
     }
     return Promise.reject(error);

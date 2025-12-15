@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using GestionDeMisiones.IService;
 using QuestPDF.Fluent;
 using GestionDeMisiones.Web;
@@ -32,19 +33,30 @@ public class MaldicionConsultaController : ControllerBase
         return Ok(result);
     }
 
+    [AllowAnonymous]
     [HttpGet("{estado}/pdf")]
-public async Task<IActionResult> GetReportePdf(Maldicion.EEstadoActual estado)
-{
-    var maldiciones = await _service.ConsultarPorEstadoAsync(estado);
+    public async Task<IActionResult> GetReportePdf(Maldicion.EEstadoActual estado)
+    {
+        try
+        {
+            var maldiciones = await _service.ConsultarPorEstadoAsync(estado);
 
-    var document = new MaldicionesEnEstadoDocument(maldiciones);
+            if (!maldiciones.Any())
+                return NotFound(new { error = "No hay maldiciones en el estado especificado." });
 
-    var stream = new MemoryStream();
-    document.GeneratePdf(stream);
-    stream.Position = 0; // importante reiniciar la posición
+            var document = new MaldicionesEnEstadoDocument(maldiciones);
 
-    return File(stream, "application/pdf", $"maldiciones-{estado}.pdf");
-}
+            var stream = new MemoryStream();
+            document.GeneratePdf(stream);
+            stream.Position = 0;
+
+            return File(stream, "application/pdf", $"maldiciones-{estado}.pdf");
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "Error generando PDF: " + ex.Message });
+        }
+    }
 
 }
 

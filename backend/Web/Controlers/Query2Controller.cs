@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using GestionDeMisiones.IService;
 using GestionDeMisiones.Models;
 using GestionDeMisiones.Web;
@@ -38,24 +39,30 @@ public class Query2Controller : ControllerBase
         }
     }
 
+    [AllowAnonymous]
     [HttpGet("hechicero/{hechiceroId}/pdf")]
-public async Task<IActionResult> GetMisionesPorHechiceroPdf(int hechiceroId)
-{
-    var misiones = await _service.GetMisionesPorHechiceroAsync(hechiceroId);
+    public async Task<IActionResult> GetMisionesPorHechiceroPdf(int hechiceroId)
+    {
+        try
+        {
+            var misiones = await _service.GetMisionesPorHechiceroAsync(hechiceroId);
 
-    if (!misiones.Any())
-        return NotFound("No se encontraron misiones para el hechicero.");
+            if (!misiones.Any())
+                return NotFound(new { error = "No se encontraron misiones para el hechicero." });
 
-    // Puedes agregar un servicio para obtener el nombre del hechicero si lo deseas
-    var hechiceroNombre = $"ID {hechiceroId}";
+            var hechiceroNombre = $"ID {hechiceroId}";
+            var document = new MisionesPorHechiceroDocument(misiones, hechiceroNombre);
 
-    var document = new MisionesPorHechiceroDocument(misiones, hechiceroNombre);
+            var stream = new MemoryStream();
+            document.GeneratePdf(stream);
+            stream.Position = 0;
 
-    var stream = new MemoryStream();
-    document.GeneratePdf(stream);
-    stream.Position = 0;
-
-    return File(stream, "application/pdf", $"misiones-hechicero-{hechiceroId}.pdf");
-}
+            return File(stream, "application/pdf", $"misiones-hechicero-{hechiceroId}.pdf");
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "Error generando PDF: " + ex.Message });
+        }
+    }
 
 }

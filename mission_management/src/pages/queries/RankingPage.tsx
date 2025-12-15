@@ -129,13 +129,24 @@ export const RankingPage = () => {
 
     setIsExporting(true);
     try {
+      console.log('🔵 [PDF] Iniciando descarga de ranking...');
+      console.log('🔵 [PDF] Ubicación ID:', selectedLocationId);
+      console.log('🔵 [PDF] Petición a: /sorcerer-ranking/pdf');
+      
       const response = await apiClient.get('/sorcerer-ranking/pdf', {
         params: { ubicacionId: selectedLocationId },
         responseType: 'blob',
       });
 
-      if (response.status === 200 && response.data) {
-        const url = window.URL.createObjectURL(new Blob([response.data]));
+      console.log('🟢 [PDF] Respuesta recibida:', {
+        status: response.status,
+        headers: response.headers,
+        dataType: typeof response.data,
+        dataSize: response.data?.size,
+      });
+
+      if (response.status === 200 && response.data && response.data.size > 0) {
+        const url = window.URL.createObjectURL(response.data);
         const link = document.createElement('a');
         link.href = url;
         link.setAttribute('download', `ranking-ubicacion-${selectedLocationId}.pdf`);
@@ -143,9 +154,15 @@ export const RankingPage = () => {
         link.click();
         link.remove();
         window.URL.revokeObjectURL(url);
+        console.log('✅ [PDF] Descarga completada');
+      } else {
+        console.warn('⚠️ [PDF] Respuesta vacía o inválida:', response.data);
       }
     } catch (error) {
-      console.error('Error exporting PDF:', error);
+      console.error('❌ [PDF] Error exporting PDF:', error);
+      if (error instanceof Error) {
+        console.error('Error message:', error.message);
+      }
     } finally {
       setIsExporting(false);
     }
