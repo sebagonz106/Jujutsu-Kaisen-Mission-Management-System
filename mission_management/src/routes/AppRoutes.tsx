@@ -11,6 +11,10 @@ import { QueriesIndexPage } from '../pages/queries/QueriesIndexPage.tsx';
 import { CursesByStatePage } from '../pages/queries/CursesByStatePage.tsx';
 import { MissionsInRangePage } from '../pages/queries/MissionsInRangePage.tsx';
 import { SorcererStatsPage } from '../pages/queries/SorcererStatsPage.tsx';
+import { SorcererMissionsPage } from '../pages/queries/SorcererMissionsPage.tsx';
+import { TechniqueEffectivenessPage } from '../pages/queries/TechniqueEffectivenessPage.tsx';
+import { MasterDisciplesPage } from '../pages/queries/MasterDisciplesPage.tsx';
+import { RankingPage } from '../pages/queries/RankingPage.tsx';
 import { useAuth } from '../hooks/useAuth';
 import { t } from '../i18n';
 
@@ -326,6 +330,46 @@ export const AppRoutes = () => (
           <ProtectedRoute>
             <Layout>
               <SorcererStatsPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/queries/sorcerer-missions"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <SorcererMissionsPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/queries/technique-effectiveness"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <TechniqueEffectivenessPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/queries/master-disciples"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <MasterDisciplesPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/queries/ranking"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <RankingPage />
             </Layout>
           </ProtectedRoute>
         }
