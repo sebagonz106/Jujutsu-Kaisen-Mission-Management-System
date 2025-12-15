@@ -90,13 +90,602 @@ Curso: 2025-2026
 \end{titlepage}
 
 \begin{abstract}
-	
+El presente documento constituye el informe técnico del Sistema de Gestión de Misiones de Jujutsu Kaisen, una aplicación web diseñada para la administración operativa de misiones, hechiceros y maldiciones. Este informe está orientado a desarrolladores y personal de mantenimiento del sistema, proporcionando documentación detallada sobre la arquitectura de software, el modelo de datos, los patrones de diseño implementados y las consideraciones necesarias para el mantenimiento y extensión del sistema.
 \end{abstract}
 
 \tableofcontents
 \newpage
 
+% ===== II. INTRODUCCIÓN =====
+\section{Introducción}
+
+El Sistema de Gestión de Misiones de Jujutsu Kaisen surge como respuesta a la necesidad de centralizar y optimizar la administración de operaciones de exorcismo dentro del universo narrativo de la serie. El sistema permite gestionar el ciclo completo de las misiones desde la recepción de solicitudes hasta la generación de reportes estadísticos.
+
+Desde el punto de vista arquitectónico, el sistema implementa una arquitectura de cinco capas que separa claramente las responsabilidades: núcleo de dominio, infraestructura de persistencia, lógica de aplicación, capa web de API y cliente frontend. Esta separación permite modificar o reemplazar componentes individuales sin afectar al resto del sistema.
+
+El stack tecnológico seleccionado comprende ASP.NET Core 9.0 con Entity Framework Core para el backend, React 19 con TypeScript para el frontend y SQL Server como sistema gestor de base de datos. La comunicación entre capas se realiza mediante inyección de dependencias y el patrón repositorio, donde cada capa depende de abstracciones (interfaces) en lugar de implementaciones concretas, siguiendo así los principios de inversión de dependencias para garantizar bajo acoplamiento y alta cohesión.
+
+% ===== III. DICCIONARIO DE DATOS =====
+\section{Diccionario de Datos}
+
+Esta sección describe las entidades del modelo de dominio, sus atributos, tipos de datos y restricciones. El modelo implementa el paradigma Code-First de Entity Framework Core, donde las clases del dominio determinan el esquema de la base de datos.
+
+\subsection{Entidades Principales}
+
+\subsubsection{Hechicero}
+
+Representa a los hechiceros del sistema, quienes ejecutan las misiones de exorcismo.
+
+\begin{longtable}{|p{3.5cm}|p{3cm}|p{7cm}|}
+\hline
+\textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+\hline
+\endhead
+id & int (PK) & Identificador único generado automáticamente \\
+\hline
+Name & string & Nombre del hechicero (requerido) \\
+\hline
+Grado & EGrados (enum) & Grado del hechicero: estudiante, aprendiz, medio, alto, especial \\
+\hline
+Experiencia & int & Años de experiencia del hechicero \\
+\hline
+Estado & EEstado (enum) & Estado actual: activo, lesionado, recuperandose, baja, inactivo \\
+\hline
+TecnicaPrincipalId & int? (FK) & Referencia a la técnica principal dominada \\
+\hline
+\end{longtable}
+
+El atributo Grado utiliza la enumeración EGrados que define la jerarquía de poder: especial representa el nivel más alto de maestría, seguido de alto, medio, aprendiz y estudiante en orden descendente de competencia.
+
+\subsubsection{Maldicion}
+
+Representa las entidades malditas que deben ser exorcizadas mediante misiones.
+
+\begin{longtable}{|p{4.5cm}|p{3cm}|p{6cm}|}
+\hline
+\textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+\hline
+\endhead
+id & int (PK) & Identificador único \\
+\hline
+Nombre & string & Nombre identificativo de la maldición \\
+\hline
+FechaYHoraDeAparicion & DateTime & Momento de detección de la maldición \\
+\hline
+Grado & EGrado (enum) & Peligrosidad: grado\_1, grado\_2, grado\_3, semi\_especial, especial \\
+\hline
+Tipo & ETipo (enum) & Clasificación: maligna, semi\_maldicion, residual, desconocida \\
+\hline
+EstadoActual & EEstadoActual (enum) & Estado: activa, en\_proceso\_de\_exorcismo, exorcisada \\
+\hline
+NivelPeligro & ENivelPeligro (enum) & Nivel: bajo, moderado, alto \\
+\hline
+UbicacionDeAparicionId & int (FK) & Referencia a la ubicación donde apareció \\
+\hline
+\end{longtable}
+
+El sistema clasifica las maldiciones según su naturaleza mediante ETipo: maligna representa entidades inherentemente hostiles, semi\_maldicion corresponde a seres con maldiciones incompletas, residual a remanentes de energía maldita sin conciencia propia, y desconocida para clasificaciones pendientes de análisis.
+
+\subsubsection{Mision}
+
+Entidad central que representa las operaciones de exorcismo asignadas a los hechiceros.
+
+\begin{longtable}{|p{5cm}|p{3cm}|p{5.5cm}|}
+\hline
+\textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+\hline
+\endhead
+id & int (PK) & Identificador único \\
+\hline
+FechaYHoraDeInicio & DateTime & Inicio programado de la misión \\
+\hline
+FechaYHoraDeFinalizacion & DateTime? & Finalización de la misión (nullable) \\
+\hline
+UbicacionId & int (FK) & Referencia a la ubicación de la misión \\
+\hline
+Estado & EEstadoMision (enum) & Estado: EnProgreso, Completada, Fallida \\
+\hline
+EventosOcurridos & string? & Registro de eventos durante la misión \\
+\hline
+DannosColaterales & string? & Descripción de daños ocasionados \\
+\hline
+NivelUrgencia & ENivelUrgencia (enum) & Urgencia: Bajo, Medio, Alto, Critico \\
+\hline
+\end{longtable}
+
+La entidad implementa validación de integridad temporal mediante una propiedad con lógica: FechaYHoraDeFin debe ser posterior a FechaYHoraDeInicio y lanza una excepción si se intenta asignar una fecha anterior. Además, el Estado por defecto es Pendiente.
+
+\subsubsection{TecnicaMaldita}
+
+Define las técnicas de energía maldita que pueden dominar los hechiceros.
+
+\begin{longtable}{|p{3.5cm}|p{3cm}|p{7cm}|}
+\hline
+\textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+\hline
+\endhead
+id & int (PK) & Identificador único \\
+\hline
+Nombre & string & Nombre de la técnica (requerido) \\
+\hline
+Tipo & ETipoTecnica (enum) & Clasificación: amplificacion, dominio, restriccion, soporte \\
+\hline
+EfectividadProm & int & Efectividad promedio calculada (0-100), valor por defecto 0 \\
+\hline
+CondicionesDeUso & string? & Requisitos para activar la técnica \\
+\hline
+\end{longtable}
+
+ETipoTecnica clasifica las técnicas según su naturaleza: amplificacion (potenciación de energía), dominio (control territorial), restriccion (limitación de poderes) y soporte (asistencia a aliados).
+
+\subsubsection{Ubicacion}
+
+Representa los lugares geográficos donde ocurren las apariciones y misiones.
+
+\begin{longtable}{|p{3.5cm}|p{3cm}|p{7cm}|}
+\hline
+\textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+\hline
+id & int (PK) & Identificador único \\
+\hline
+Nombre & string & Nombre descriptivo del lugar \\
+\hline
+\end{longtable}
+
+\subsubsection{Traslado}
+
+Registra los movimientos de personal y recursos entre ubicaciones.
+
+\begin{longtable}{|p{3.5cm}|p{3cm}|p{7cm}|}
+\hline
+\textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+\hline
+\endhead
+id & int (PK) & Identificador único \\
+\hline
+Fecha & DateTime & Fecha del traslado \\
+\hline
+Estado & EEstadoTraslado (enum) & Estado: programado, en\_curso, finalizado \\
+\hline
+Motivo & string? & Razón del traslado \\
+\hline
+Origen & int (FK) & Ubicación de origen \\
+\hline
+Destino & int (FK) & Ubicación de destino \\
+\hline
+MisionId & int? (FK) & Misión asociada (opcional) \\
+\hline
+\end{longtable}
+
+\subsubsection{Recurso}
+
+Define los recursos materiales disponibles para las misiones.
+
+\begin{longtable}{|p{3.5cm}|p{3cm}|p{7cm}|}
+\hline
+\textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+\hline
+\endhead
+id & int (PK) & Identificador único \\
+\hline
+Nombre & string & Nombre del recurso \\
+\hline
+TipoRecurso & ETipoRecurso (enum) & Tipo: EquipamientoDeCombate, Herramienta, Transporte, Suministros \\
+\hline
+Descripcion & string? & Descripción detallada \\
+\hline
+CantidadDisponible & int & Unidades disponibles en inventario \\
+\hline
+\end{longtable}
+
+\subsubsection{PersonalDeApoyo}
+
+Representa al personal auxiliar que asiste en las misiones.
+
+\begin{longtable}{|p{3.5cm}|p{3cm}|p{7cm}|}
+\hline
+\textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+\hline
+id & int (PK) & Identificador único \\
+\hline
+Name & string & Nombre del personal \\
+\hline
+\end{longtable}
+
+\subsubsection{Solicitud}
+
+Representa las peticiones de intervención ante la aparición de maldiciones.
+
+\begin{longtable}{|p{3.5cm}|p{3cm}|p{7cm}|}
+\hline
+\textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+\hline
+id & int (PK) & Identificador único \\
+\hline
+MaldicionId & int (FK) & Referencia a la maldición reportada \\
+\hline
+Estado & EEstadoSolicitud (enum) & Estado: pendiente, atendiendose, atendida \\
+\hline
+\end{longtable}
+
+\subsubsection{Usuario}
+
+Entidad de autenticación y autorización del sistema.
+
+\begin{longtable}{|p{3.5cm}|p{3cm}|p{7cm}|}
+\hline
+\textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+\hline
+\endhead
+id & int (PK) & Identificador único \\
+\hline
+Nombre & string & Nombre del usuario (requerido) \\
+\hline
+Email & string & Correo electrónico único \\
+\hline
+PasswordHash & string & Hash BCrypt de la contraseña \\
+\hline
+Rol & string & Rol del usuario (Admin, User) \\
+\hline
+Rango & string & Rango operativo del usuario \\
+\hline
+CreadoEn & DateTime & Fecha de creación de la cuenta \\
+\hline
+\end{longtable}
+
+Las contraseñas se almacenan utilizando el algoritmo BCrypt con factor de trabajo configurable, nunca en texto plano.
+
+\subsection{Entidades de Relación}
+
+Las siguientes entidades implementan relaciones muchos a muchos con atributos adicionales.
+
+\subsubsection{HechiceroEnMision}
+
+Asocia hechiceros con las misiones en las que participan.
+
+\begin{longtable}{|p{3.5cm}|p{3cm}|p{7cm}|}
+\hline
+\textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+\hline
+id & int (PK) & Identificador único \\
+\hline
+HechiceroId & int (FK) & Referencia al hechicero \\
+\hline
+MisionId & int (FK) & Referencia a la misión \\
+\hline
+\end{longtable}
+
+\subsubsection{HechiceroEncargado}
+
+Registra al hechicero responsable de una solicitud y su misión resultante.
+
+\begin{longtable}{|p{3.5cm}|p{3cm}|p{7cm}|}
+\hline
+\textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+\hline
+id & int (PK) & Identificador único \\
+\hline
+HechiceroId & int (FK) & Referencia al hechicero encargado \\
+\hline
+SolicitudId & int (FK) & Referencia a la solicitud \\
+\hline
+MisionId & int? (FK) & Referencia a la misión generada \\
+\hline
+\end{longtable}
+
+\subsubsection{TecnicaMalditaDominada}
+
+Relaciona hechiceros con las técnicas que dominan y su nivel de maestría.
+
+\begin{longtable}{|p{3.5cm}|p{3cm}|p{7cm}|}
+\hline
+\textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+\hline
+id & int (PK) & Identificador único \\
+\hline
+HechiceroId & int (FK) & Referencia al hechicero \\
+\hline
+TecnicaMalditaId & int (FK) & Referencia a la técnica \\
+\hline
+NivelDeDominio & int & Porcentaje de dominio (0-100) \\
+\hline
+\end{longtable}
+
+\subsubsection{TecnicaMalditaAplicada}
+
+Registra el uso de técnicas en misiones específicas con su efectividad.
+
+\begin{longtable}{|p{3.5cm}|p{3cm}|p{7cm}|}
+\hline
+\textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+\hline
+id & int (PK) & Identificador único \\
+\hline
+TecnicaMalditaId & int (FK) & Referencia a la técnica \\
+\hline
+MisionId & int (FK) & Referencia a la misión \\
+\hline
+Efectividad & int & Efectividad registrada (0-100) \\
+\hline
+\end{longtable}
+
+\subsubsection{UsoDeRecurso}
+
+Documenta la utilización de recursos durante las misiones.
+
+\begin{longtable}{|p{3.5cm}|p{3cm}|p{7cm}|}
+\hline
+\textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+\hline
+\endhead
+id & int (PK) & Identificador único \\
+\hline
+MisionId & int (FK) & Referencia a la misión \\
+\hline
+RecursoId & int (FK) & Referencia al recurso \\
+\hline
+FechaInicio & DateTime & Inicio del uso del recurso \\
+\hline
+FechaFin & DateTime? & Fin del uso (nullable) \\
+\hline
+Cantidad & int & Unidades utilizadas \\
+\hline
+Observaciones & string? & Notas sobre el uso \\
+\hline
+\end{longtable}
+
+\subsubsection{Subordinacion}
+
+Modela la relación maestro-discípulo entre hechiceros.
+
+\begin{longtable}{|p{3.5cm}|p{3cm}|p{7cm}|}
+\hline
+\textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+\hline
+\endhead
+id & int (PK) & Identificador único \\
+\hline
+MaestroId & int (FK) & Referencia al hechicero maestro \\
+\hline
+DiscipuloId & int (FK) & Referencia al hechicero discípulo \\
+\hline
+FechaInicio & DateTime & Inicio de la relación \\
+\hline
+FechaFin & DateTime? & Fin de la relación (nullable) \\
+\hline
+TipoRelacion & ETipoRelacion (enum) & Tipo: Tutoría, Supervisión, LiderazgoEquipo, Entrenamiento \\
+\hline
+Activa & bool & Indica si la relación está vigente \\
+\hline
+\end{longtable}
+
+\subsubsection{AuditEntry}
+
+Registra las operaciones realizadas en el sistema para auditoría.
+
+\begin{longtable}{|p{3.5cm}|p{3cm}|p{7cm}|}
+\hline
+\textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Atributo} & \textbf{Tipo} & \textbf{Descripción} \\
+\hline
+\endhead
+Id & int (PK) & Identificador único \\
+\hline
+Timestamp & DateTime & Momento de la operación \\
+\hline
+Entity & string & Nombre de la entidad afectada \\
+\hline
+Action & string & Tipo de acción (Create, Update, Delete) \\
+\hline
+EntityId & int & Identificador de la entidad afectada \\
+\hline
+ActorRole & string & Rol del usuario que ejecutó la acción \\
+\hline
+ActorRango & string & Rango del usuario que ejecutó la acción \\
+\hline
+\end{longtable}
+
+% ===== IV. ARQUITECTURA DEL SISTEMA =====
+\section{Arquitectura del Sistema}
+
+\subsection{Arquitectura de Cinco Capas}
+
+El sistema implementa una arquitectura de cinco (seis si se considera la capa de datos separada de la de infraestructura) capas que garantiza la separación de responsabilidades y facilita el mantenimiento independiente de cada componente.
+
+% Espacio para imagen de arquitectura
+\begin{figure}[H]
+\centering
+ \includegraphics[width=0.9\textwidth]{media/diagram.jpg}
+\caption{Diagrama de arquitectura del sistema}
+\label{fig:arquitectura}
+\end{figure}
+
+La capa de Núcleo (Core) contiene las entidades del dominio, enumeraciones y reglas de negocio fundamentales. Esta capa no tiene dependencias externas y define los contratos que las demás capas deben cumplir.
+
+La capa de Infraestructura implementa el acceso a datos mediante el patrón Repository. Contiene el DbContext de Entity Framework Core, las configuraciones de mapeo objeto-relacional y las implementaciones concretas de los repositorios. La clase AppDbContext centraliza la configuración de las entidades y sus relaciones.
+
+La capa de Aplicación orquesta los casos de uso del sistema. Los servicios de esta capa implementan la lógica de negocio combinando operaciones de múltiples repositorios y aplicando validaciones transversales. Cada servicio expone una interfaz (IService) que define su contrato público.
+
+La capa Web expone la funcionalidad mediante controladores REST. Los controladores reciben peticiones HTTP, las validan, invocan los servicios correspondientes y transforman las respuestas utilizando DTOs (Data Transfer Objects) para evitar exponer las entidades del dominio directamente.
+
+La capa de Frontend constituye la interfaz de usuario, implementada como una Single Page Application en React. Esta capa consume la API REST y gestiona el estado de la aplicación mediante TanStack Query para el caché de servidor.
+
+\subsection{Patrones de Diseño}
+
+El sistema aplica varios patrones de diseño empresarial documentados por Fowler \cite{fowler2002}.
+
+El patrón Repository abstrae el acceso a datos proporcionando una interfaz de colección sobre las entidades del dominio. Cada repositorio genérico implementa operaciones CRUD básicas, mientras que repositorios especializados añaden consultas específicas del dominio.
+
+El patrón Service Layer encapsula la lógica de aplicación en servicios transaccionales. Los servicios coordinan las operaciones entre múltiples repositorios y aplican reglas de negocio que trascienden una única entidad.
+
+El patrón Dependency Injection se utiliza extensivamente mediante el contenedor de servicios de ASP.NET Core. Las dependencias se inyectan por constructor, facilitando las pruebas unitarias y el reemplazo de implementaciones.
+
+El patrón DTO separa la representación interna de las entidades de su representación en la API. Los DTOs de entrada validan los datos recibidos mientras que los DTOs de salida controlan qué información se expone al cliente.
+
+\subsection{Diagrama de Clases}
+
+El siguiente diagrama presenta las relaciones entre las principales entidades del dominio a través de los casos de uso del sistema.
+
+% Espacio para diagrama de clases
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{media/use.png}
+\caption{Diagrama de casos de uso}
+\label{fig:usecases}
+\end{figure}
+
+% ===== V. MODELO ENTIDAD-RELACIÓN EXTENDIDO (MERX) =====
+\section{Modelo Entidad-Relación Extendido (MERX)}
+
+El Modelo Entidad-Relación Extendido (MERX) constituye el núcleo del diseño conceptual de la base de datos. Es una notación formal que permite modelar intuitivamente las interrelaciones entre conjuntos de entidades de interés en el dominio específico, basada en Teoría de Conjuntos y Programación Orientada a Objetos. El MERX describe el contenido de la información a almacenar sin comprometerse con las estructuras de almacenamiento específicas, permitiendo que el modelo transmita la máxima información sobre la realidad del dominio para guiar la posterior implementación.
+
+\includepdf[pages=-, pagecommand={}]{media/MERX.pdf}
+
+% ===== VI. FLUJO DE TRABAJO METODOLÓGICO =====
+\section{Flujo de Trabajo Metodológico}
+
+La implementación del sistema siguió una metodología de desarrollo iterativo organizado en fases que garantizan trazabilidad entre requisitos y componentes implementados.
+
+La fase de Planificación estableció el alcance del proyecto, identificó los actores del sistema y definió los requisitos funcionales de alto nivel. Durante esta fase se elaboró el documento de visión y se priorizaron las funcionalidades según el valor de negocio.
+
+La fase de Elaboración profundizó en el análisis de requisitos, produciendo los casos de uso detallados y el modelo conceptual del dominio mediante MERX. Se identificaron los requisitos no funcionales relacionados con seguridad, rendimiento y usabilidad.
+
+La fase de Desarrollo implementó los requisitos siguiendo la arquitectura de cinco capas definida. El desarrollo procede por iteraciones, donde cada iteración entrega funcionalidad completa y probada. Se aplicaron principios SOLID y se mantuvieron pruebas automatizadas.
+
+La fase de Prueba verificó que la implementación cumple los requisitos especificados. Se realizaron pruebas unitarias de los servicios, pruebas de integración de la API y pruebas de aceptación de la interfaz de usuario.
+
+La fase de Implantación prepara el sistema para su despliegue en producción. Se documentaron los procedimientos de instalación, configuración y mantenimiento.
+
+% ===== VII. SOLUCIÓN PROPUESTA =====
+\section{Solución Propuesta}
+
+\subsection{Módulos del Sistema}
+
+El sistema se organiza en módulos funcionales que corresponden a las áreas de gestión identificadas durante el análisis de requisitos.
+
+El módulo de Gestión de Hechiceros permite registrar, consultar, modificar y dar de baja hechiceros. Incluye la asignación de técnicas malditas dominadas con su nivel de maestría y el establecimiento de relaciones de subordinación entre hechiceros.
+
+El módulo de Gestión de Maldiciones administra el catálogo de maldiciones detectadas. Permite clasificarlas por grado, tipo y nivel de peligro, y mantiene el registro de su ubicación de aparición y estado actual.
+
+El módulo de Gestión de Misiones constituye el núcleo operativo del sistema. Permite crear misiones a partir de solicitudes aprobadas, asignar hechiceros y recursos, registrar el progreso y documentar los resultados incluyendo eventos ocurridos y daños colaterales.
+
+El módulo de Gestión de Solicitudes procesa las peticiones de intervención. Los usuarios con rol apropiado pueden aprobar o rechazar solicitudes, generando automáticamente las misiones correspondientes.
+
+El módulo de Gestión de Recursos controla el inventario de recursos materiales disponibles. Permite registrar el uso de recursos en misiones y mantiene actualizada la cantidad disponible.
+
+El módulo de Reportes genera informes estadísticos y exportaciones en formato PDF. Los reportes incluyen listados de hechiceros por misión, maldiciones por ubicación, efectividad de técnicas y relaciones maestro-discípulo.
+
+El módulo de Administración gestiona los usuarios del sistema, sus roles y permisos. Permite crear usuarios, asignar roles y consultar el registro de auditoría.
+
+\subsection{Tecnologías Implementadas}
+
+El backend utiliza ASP.NET Core 9.0 como framework web, aprovechando su sistema de inyección de dependencias nativo y el middleware pipeline para procesamiento de peticiones. Entity Framework Core 9.0 proporciona el ORM con soporte para migraciones Code-First y consultas LINQ traducidas a SQL.
+
+La autenticación se implementa mediante tokens JWT (JSON Web Tokens) firmados con clave simétrica. Los tokens incluyen claims de identidad, rol y rango del usuario, permitiendo autorización basada en políticas.
+
+La generación de documentos PDF utiliza la librería QuestPDF, que permite definir documentos mediante una API fluent en C\#. Los reportes se generan dinámicamente a partir de consultas a la base de datos.
+
+El frontend emplea React 19 con TypeScript para tipado estático. TanStack Query v5 gestiona el estado del servidor con caché automático, invalidación y sincronización en segundo plano. Los formularios utilizan react-hook-form con validación mediante esquemas Zod.
+
+La comunicación cliente-servidor se realiza mediante Axios, con interceptores configurados para adjuntar tokens de autenticación y manejar errores de forma centralizada.
+
+El sistema de internacionalización soporta múltiples idiomas mediante archivos de traducción JSON procesados en tiempo de ejecución.
+
+% ===== VIII. CONSIDERACIONES DE MANTENIMIENTO =====
+\section{Consideraciones de Mantenimiento}
+
+\subsection{Estructura del Código}
+
+El código fuente se organiza siguiendo las convenciones del stack tecnológico. El backend reside en la carpeta \texttt{backend/} con subcarpetas para cada capa: \texttt{Core/Modelos} contiene las entidades, \texttt{Infrastructure/Repository} los repositorios, \texttt{Application/Services} los servicios y \texttt{Web/Controllers} los controladores.
+
+El frontend se ubica en \texttt{mission\_management/src/} con organización por características: \texttt{pages/} contiene los componentes de página, \texttt{components/} los componentes reutilizables, \texttt{api/} los clientes de API, \texttt{hooks/} los hooks personalizados y \texttt{types/} las definiciones TypeScript.
+
+\subsection{Migraciones de Base de Datos}
+
+Las modificaciones al esquema de base de datos se gestionan mediante migraciones de Entity Framework Core. Para crear una nueva migración tras modificar las entidades:
+
+\begin{verbatim}
+dotnet ef migrations add NombreMigracion
+dotnet ef database update
+\end{verbatim}
+
+Las migraciones se almacenan en \texttt{backend/Migrations/} y deben versionarse junto con el código fuente.
+
+\subsection{Configuración}
+
+Los parámetros de configuración se definen en \texttt{appsettings.json} para el backend y variables de entorno para el frontend. La cadena de conexión a la base de datos, la clave de firma JWT y los orígenes CORS permitidos son configurables sin recompilación.
+
+\subsection{Extensibilidad}
+
+Para añadir una nueva entidad al sistema:
+
+1. Crear la clase del modelo en \texttt{Core/Modelos/}
+
+2. Añadir el DbSet correspondiente en \texttt{AppDbContext}
+
+3. Crear la interfaz del repositorio en \texttt{Infrastructure/IRepository/}
+
+4. Implementar el repositorio en \texttt{Infrastructure/Repository/}
+
+5. Crear la interfaz del servicio en \texttt{Application/IServices/}
+
+6. Implementar el servicio en \texttt{Application/Services/}
+
+7. Crear los DTOs en \texttt{Web/DTOs/}
+
+8. Implementar el controlador en \texttt{Web/Controllers/}
+
+9. Registrar las dependencias en \texttt{Program.cs}
+
+10. Generar y aplicar la migración de base de datos
+
+\subsection{Registro de Auditoría}
+
+El sistema mantiene un registro automático de operaciones mediante la entidad AuditEntry. Cada creación, modificación o eliminación de entidades genera una entrada con la marca temporal, la entidad afectada, la acción realizada y el usuario responsable.
+
+Para consultar el historial de auditoría, el módulo de administración proporciona filtros por fecha, entidad y tipo de acción.
+
 % ===== REFERENCIAS =====
+\newpage
 \begin{thebibliography}{9}
 \bibitem{lucina}
 García H, L. \& Montes de Oca R, M. (2005). \textit{Sistemas de Bases de Datos: Modelación y Diseño - Capítulos para estudiantes}. Versión digital.
@@ -106,6 +695,12 @@ Pressman S. R. (2010). \textit{Ingeniería del Software. Un enfoque práctico} (
 
 \bibitem{fowler2002}
 Fowler, M. (2002). \textit{Patterns of Enterprise Application Architecture}. Addison-Wesley.
+
+\bibitem{microsoft2024}
+Microsoft. (2024). \textit{ASP.NET Core Documentation}. \url{https://docs.microsoft.com/aspnet/core}
+
+\bibitem{react2024}
+Meta. (2024). \textit{React Documentation}. \url{https://react.dev}
 \end{thebibliography}
 
 \end{document}

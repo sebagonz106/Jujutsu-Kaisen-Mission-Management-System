@@ -1,0 +1,37 @@
+\babel@toc {spanish}{}\relax 
+\contentsline {section}{\numberline {1}Introducción}{3}{section.1}%
+\contentsline {section}{\numberline {2}Diccionario de Datos}{3}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Entidades Principales}{3}{subsection.2.1}%
+\contentsline {subsubsection}{\numberline {2.1.1}Hechicero}{3}{subsubsection.2.1.1}%
+\contentsline {subsubsection}{\numberline {2.1.2}Maldicion}{4}{subsubsection.2.1.2}%
+\contentsline {subsubsection}{\numberline {2.1.3}Mision}{4}{subsubsection.2.1.3}%
+\contentsline {subsubsection}{\numberline {2.1.4}TecnicaMaldita}{5}{subsubsection.2.1.4}%
+\contentsline {subsubsection}{\numberline {2.1.5}Ubicacion}{5}{subsubsection.2.1.5}%
+\contentsline {subsubsection}{\numberline {2.1.6}Traslado}{5}{subsubsection.2.1.6}%
+\contentsline {subsubsection}{\numberline {2.1.7}Recurso}{6}{subsubsection.2.1.7}%
+\contentsline {subsubsection}{\numberline {2.1.8}PersonalDeApoyo}{6}{subsubsection.2.1.8}%
+\contentsline {subsubsection}{\numberline {2.1.9}Solicitud}{6}{subsubsection.2.1.9}%
+\contentsline {subsubsection}{\numberline {2.1.10}Usuario}{6}{subsubsection.2.1.10}%
+\contentsline {subsection}{\numberline {2.2}Entidades de Relación}{7}{subsection.2.2}%
+\contentsline {subsubsection}{\numberline {2.2.1}HechiceroEnMision}{7}{subsubsection.2.2.1}%
+\contentsline {subsubsection}{\numberline {2.2.2}HechiceroEncargado}{7}{subsubsection.2.2.2}%
+\contentsline {subsubsection}{\numberline {2.2.3}TecnicaMalditaDominada}{7}{subsubsection.2.2.3}%
+\contentsline {subsubsection}{\numberline {2.2.4}TecnicaMalditaAplicada}{7}{subsubsection.2.2.4}%
+\contentsline {subsubsection}{\numberline {2.2.5}UsoDeRecurso}{8}{subsubsection.2.2.5}%
+\contentsline {subsubsection}{\numberline {2.2.6}Subordinacion}{8}{subsubsection.2.2.6}%
+\contentsline {subsubsection}{\numberline {2.2.7}AuditEntry}{8}{subsubsection.2.2.7}%
+\contentsline {section}{\numberline {3}Arquitectura del Sistema}{8}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Arquitectura de Cinco Capas}{8}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Patrones de Diseño}{10}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}Diagrama de Clases}{10}{subsection.3.3}%
+\contentsline {section}{\numberline {4}Modelo Entidad-Relación Extendido (MERX)}{11}{section.4}%
+\contentsline {section}{\numberline {5}Flujo de Trabajo Metodológico}{16}{section.5}%
+\contentsline {section}{\numberline {6}Solución Propuesta}{16}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Módulos del Sistema}{16}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Tecnologías Implementadas}{17}{subsection.6.2}%
+\contentsline {section}{\numberline {7}Consideraciones de Mantenimiento}{17}{section.7}%
+\contentsline {subsection}{\numberline {7.1}Estructura del Código}{17}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}Migraciones de Base de Datos}{18}{subsection.7.2}%
+\contentsline {subsection}{\numberline {7.3}Configuración}{18}{subsection.7.3}%
+\contentsline {subsection}{\numberline {7.4}Extensibilidad}{18}{subsection.7.4}%
+\contentsline {subsection}{\numberline {7.5}Registro de Auditoría}{18}{subsection.7.5}%
