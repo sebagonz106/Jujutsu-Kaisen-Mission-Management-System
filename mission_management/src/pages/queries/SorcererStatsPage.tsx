@@ -1,88 +1,89 @@
 /**
  * @fileoverview RF-14 Query: Sorcerer Statistics page.
  *
- * Implements analytical query requirement (RF-14): displaying comprehensive statistics for a selected sorcerer.
- * Features sorcerer selection, detailed statistics with visual indicators, and export capabilities.
+ * Implements analytical query requirement (RF-14): displaying comparative effectiveness statistics
+ * for medium and high grade sorcerers with infinite scroll pagination.
  *
  * @module pages/queries/SorcererStatsPage
  */
 
-import { useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import { useSorcererStats } from '../../hooks/useSorcererStats';
-import { useInfiniteSorcerers } from '../../hooks/useInfiniteSorcerers';
+import type { SorcererStats } from '../../types/sorcererStats';
 import { Button } from '../../components/ui/Button';
-import { Select } from '../../components/ui/Select';
 import { EmptyState } from '../../components/ui/EmptyState';
+import { Table, THead, TBody, TH, TD, SortHeader } from '../../components/ui/Table';
 import { Skeleton } from '../../components/ui/Skeleton';
-import { z } from 'zod';
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { t } from '../../i18n';
 import { apiClient } from '../../api/client';
-
-/**
- * Zod schema for query parameters validation.
- */
-const querySchema = z.object({
-  sorcererId: z.number().min(1, 'Debes seleccionar un hechicero'),
-});
-
-type QueryFormValues = z.infer<typeof querySchema>;
 
 /**
  * SorcererStatsPage component.
  *
  * Features:
- * - Sorcerer selection dropdown populated from API
- * - Single sorcerer statistics display (not paginated)
+ * - Paginated sorcerer statistics with infinite scrolling
+ * - Compares effectiveness of medium vs high grade sorcerers
+ * - Client-side sorting by any column
  * - Visual effectiveness indicator (progress bar)
  * - Read-only display (no CRUD operations)
- * - Export PDF button (disabled, coming soon)
- * - Empty state when no sorcerer selected
- *
- * Pattern follows CursesByStatePage structure for consistency.
+ * - Export PDF button
+ * - Empty state when no results
  */
 export const SorcererStatsPage = () => {
-  const [selectedSorcererId, setSelectedSorcererId] = useState<number | null>(null);
+  const [sortKey, setSortKey] = useState<keyof SorcererStats>('porcentajeEfectividad');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [isExporting, setIsExporting] = useState(false);
 
-  const { handleSubmit, control, formState: { errors } } = useForm<QueryFormValues>({
-    resolver: zodResolver(querySchema),
-  });
+  // Fetch sorcerer statistics with pagination
+  const query = useSorcererStats({ pageSize: 20 });
+  const data = query.data;
+  const isLoading = query.isLoading;
+  const isError = query.isError;
+  const hasNextPage = query.hasNextPage;
+  const isFetchingNextPage = query.isFetchingNextPage;
 
-  // Fetch all sorcerers for dropdown
-  const sorcerersQuery = useInfiniteSorcerers({ pageSize: 100 });
-  const sorcerers = (sorcerersQuery.data?.pages ?? []).flatMap((p) => p.items);
+  // Flatten and sort data client-side
+  const stats = useMemo(() => {
+    const flat = (data?.pages ?? []).flatMap((p) => p.items);
+    return [...flat].sort((a, b) => {
+      const aVal = a[sortKey];
+      const bVal = b[sortKey];
+      if (aVal == null && bVal == null) return 0;
+      if (aVal == null) return 1;
+      if (bVal == null) return -1;
 
-  // Fetch selected sorcerer's statistics
-  const { query: statsQuery } = useSorcererStats({ sorcererId: selectedSorcererId });
+      let cmp = 0;
+      if (typeof aVal === 'string' && typeof bVal === 'string') {
+        cmp = aVal.localeCompare(bVal);
+      } else if (typeof aVal === 'number' && typeof bVal === 'number') {
+        cmp = aVal - bVal;
+      }
+      return sortDir === 'asc' ? cmp : -cmp;
+    });
+  }, [data, sortKey, sortDir]);
 
-  const shouldFetch = selectedSorcererId !== null;
-  const stats = shouldFetch ? statsQuery.data : undefined;
-  const isLoading = shouldFetch ? statsQuery.isLoading : false;
-  const isError = shouldFetch ? statsQuery.isError : false;
-
-  // Load more sorcerers if needed
-  useEffect(() => {
-    if (sorcerersQuery.hasNextPage && !sorcerersQuery.isFetchingNextPage) {
-      sorcerersQuery.fetchNextPage();
+  const toggleSort = (key: keyof SorcererStats) => {
+    if (sortKey === key) {
+      setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortKey(key);
+      setSortDir('desc');
     }
-  }, [sorcerersQuery]);
+  };
 
   const handleExportPdf = async () => {
-    if (!selectedSorcererId || !stats) return;
+    if (stats.length === 0) return;
 
     setIsExporting(true);
     try {
-      const response = await apiClient.get('/queries/sorcerer-stats/pdf', {
-        params: { sorcererId: selectedSorcererId },
+      const response = await apiClient.get('/sorcerer-stats/efectividad-hechiceros/pdf', {
         responseType: 'blob',
       });
 
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `estadisticas-hechicero-${selectedSorcererId}.pdf`);
+      link.setAttribute('download', 'estadisticas-hechiceros.pdf');
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -94,12 +95,16 @@ export const SorcererStatsPage = () => {
     }
   };
 
-  const onSubmit = (values: QueryFormValues) => {
-    setSelectedSorcererId(values.sorcererId);
+  const loadMore = async () => {
+    if (!hasNextPage || isFetchingNextPage) return;
+    await query.fetchNextPage();
   };
 
+  const isEmpty = !isLoading && stats.length === 0;
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-start justify-between">
         <div>
           <h1 className="page-title">{t('pages.queries.rf14.title')}</h1>
@@ -108,123 +113,112 @@ export const SorcererStatsPage = () => {
         <Button
           variant="secondary"
           onClick={handleExportPdf}
-          disabled={isExporting || !selectedSorcererId || !stats}
+          disabled={isExporting || stats.length === 0}
         >
           {isExporting ? t('pages.queries.exporting') : t('pages.queries.exportPdf')}
         </Button>
       </div>
 
-      {/* Query Parameters Form */}
-      <form onSubmit={handleSubmit(onSubmit)} className="card-surface p-4">
-        <div className="flex gap-4 items-end">
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-slate-300 mb-1">
-              {t('pages.queries.rf14.paramLabel')}
-            </label>
-            <Controller
-              name="sorcererId"
-              control={control}
-              render={({ field }) => (
-                <Select
-                  {...field}
-                  onChange={(e) => field.onChange(Number(e.target.value))}
-                  disabled={sorcerersQuery.isLoading}
-                >
-                  <option value="">Selecciona un hechicero</option>
-                  {sorcerers.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name} - {s.grado}
-                    </option>
-                  ))}
-                </Select>
-              )}
-            />
-            {errors.sorcererId && <p className="text-red-400 text-sm mt-1">{errors.sorcererId.message}</p>}
-          </div>
-          <Button type="submit" disabled={isLoading || sorcerersQuery.isLoading}>
-            {isLoading ? t('pages.queries.rf14.searching') : t('pages.queries.rf14.searchButton')}
-          </Button>
-        </div>
-      </form>
-
       {/* Results Section */}
-      {!shouldFetch ? (
-        <EmptyState
-          title="Selecciona un hechicero"
-          description="Elige el hechicero del que deseas consultar las estadísticas"
-        />
-      ) : isLoading ? (
-        <div className="space-y-2">
-          <Skeleton className="h-8 w-full" />
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-12 w-full" />
-        </div>
-      ) : isError ? (
-        <div className="text-red-400">{t('errors.loadSorcerers')}</div>
-      ) : !stats ? (
-        <EmptyState
-          title={t('pages.queries.rf14.emptyTitle')}
-          description={t('pages.queries.rf14.emptyDesc')}
-        />
-      ) : (
-        <div className="card-surface p-6 space-y-6">
-          {/* Header */}
-          <div className="border-b border-slate-700 pb-4">
-            <h2 className="text-2xl font-cinzel text-amber-400">{stats.nombre}</h2>
-            <p className="text-slate-400 text-sm mt-1">Grado: {stats.grado}</p>
-          </div>
-
-          {/* Statistics Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Total Missions */}
-            <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
-              <div className="text-slate-400 text-sm mb-1">Misiones Totales</div>
-              <div className="text-3xl font-bold text-amber-400">{stats.misionesTotales}</div>
-            </div>
-
-            {/* Successful Missions */}
-            <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
-              <div className="text-slate-400 text-sm mb-1">Misiones Exitosas</div>
-              <div className="text-3xl font-bold text-green-400">{stats.misionesExitosas}</div>
-            </div>
-
-            {/* Effectiveness Percentage */}
-            <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
-              <div className="text-slate-400 text-sm mb-1">Porcentaje de Efectividad</div>
-              <div className="text-3xl font-bold text-purple-400">{stats.porcentajeEfectividad.toFixed(1)}%</div>
-            </div>
-          </div>
-
-          {/* Effectiveness Progress Bar */}
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-slate-400">Efectividad</span>
-              <span className="text-slate-300">{stats.porcentajeEfectividad.toFixed(1)}%</span>
-            </div>
-            <div className="h-3 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
-              <div
-                className="h-full bg-gradient-to-r from-purple-500 to-purple-400 transition-all duration-500"
-                style={{ width: `${stats.porcentajeEfectividad}%` }}
-              />
-            </div>
-          </div>
-
-          {/* Additional Details */}
-          <div className="border-t border-slate-700 pt-4 space-y-2">
-            <div className="flex justify-between">
-              <span className="text-slate-400">ID del Hechicero:</span>
-              <span className="text-slate-200 font-mono">{stats.hechiceroId}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-slate-400">Tasa de Éxito:</span>
-              <span className="text-slate-200">
-                {stats.misionesExitosas} / {stats.misionesTotales}
-              </span>
-            </div>
+      <div className="space-y-4">
+        {/* Toolbar */}
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-slate-400">
+            {isLoading ? t('common.loading') : `${stats.length} ${t('common.sorcerersFound')}`}
           </div>
         </div>
-      )}
+
+        {/* Loading State */}
+        {isLoading && (
+          <div className="card-surface p-6 space-y-3">
+            {[...Array(5)].map((_, i) => (
+              <Skeleton key={i} className="h-10" />
+            ))}
+          </div>
+        )}
+
+        {isEmpty && (
+          <EmptyState
+            title={t('pages.queries.rf14.emptyTitle')}
+            description={t('pages.queries.rf14.emptyDescDetailed')}
+          />
+        )}
+
+        {isError && (
+          <div className="text-red-400">{t('errors.loadSorcerers')}</div>
+        )}
+
+        {/* Table */}
+        {!isLoading && stats.length > 0 && (
+          <div className="card-surface overflow-hidden">
+            <Table>
+              <THead>
+                <tr>
+                  <TH onClick={() => toggleSort('hechiceroId')}>
+                    <SortHeader active={sortKey === 'hechiceroId'} direction={sortDir} label="ID" onClick={() => {}} />
+                  </TH>
+                  <TH onClick={() => toggleSort('nombre')}>
+                    <SortHeader active={sortKey === 'nombre'} direction={sortDir} label={t('common.name')} onClick={() => {}} />
+                  </TH>
+                  <TH onClick={() => toggleSort('grado')}>
+                    <SortHeader active={sortKey === 'grado'} direction={sortDir} label={t('common.grade')} onClick={() => {}} />
+                  </TH>
+                  <TH onClick={() => toggleSort('misionesTotales')}>
+                    <SortHeader active={sortKey === 'misionesTotales'} direction={sortDir} label={t('pages.queries.rf14.totalMissions')} onClick={() => {}} />
+                  </TH>
+                  <TH onClick={() => toggleSort('misionesExitosas')}>
+                    <SortHeader active={sortKey === 'misionesExitosas'} direction={sortDir} label={t('pages.queries.rf14.successfulMissions')} onClick={() => {}} />
+                  </TH>
+                  <TH onClick={() => toggleSort('porcentajeEfectividad')}>
+                    <SortHeader active={sortKey === 'porcentajeEfectividad'} direction={sortDir} label={t('pages.queries.rf14.effectiveness')} onClick={() => {}} />
+                  </TH>
+                </tr>
+              </THead>
+              <TBody>
+                {stats.map((s) => (
+                  <tr key={s.hechiceroId} className="border-b border-slate-700 hover:bg-slate-800/50">
+                    <TD className="font-mono text-slate-400">{s.hechiceroId}</TD>
+                    <TD className="font-medium text-amber-400">{s.nombre}</TD>
+                    <TD>
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${
+                        s.grado.toLowerCase().includes('alto') ? 'bg-purple-900/50 text-purple-300' :
+                        s.grado.toLowerCase().includes('medio') ? 'bg-blue-900/50 text-blue-300' :
+                        'bg-slate-700 text-slate-300'
+                      }`}>
+                        {s.grado}
+                      </span>
+                    </TD>
+                    <TD className="text-center">{s.misionesTotales}</TD>
+                    <TD className="text-center text-green-400">{s.misionesExitosas}</TD>
+                    <TD>
+                      <div className="flex items-center gap-2">
+                        <div className="w-16 bg-slate-700 rounded-full h-2">
+                          <div
+                            className="h-full bg-gradient-to-r from-purple-500 to-purple-400 rounded-full"
+                            style={{ width: `${s.porcentajeEfectividad}%` }}
+                          />
+                        </div>
+                        <span className="text-sm font-bold text-slate-200 w-12 text-right">
+                          {s.porcentajeEfectividad.toFixed(1)}%
+                        </span>
+                      </div>
+                    </TD>
+                  </tr>
+                ))}
+              </TBody>
+            </Table>
+
+            {/* Load More Button */}
+            {hasNextPage && (
+              <div className="flex justify-center p-4 border-t border-slate-700">
+                <Button onClick={loadMore} disabled={isFetchingNextPage} size="sm">
+                  {isFetchingNextPage ? t('common.loading') : t('common.loadMore')}
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

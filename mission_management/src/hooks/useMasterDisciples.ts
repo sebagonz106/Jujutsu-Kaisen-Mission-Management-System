@@ -42,14 +42,10 @@ export const useMasterDisciples = (options: UseMasterDisciplesOptions = {}) => {
     queryKey: ['master-disciples', pageSize],
     queryFn: async ({ pageParam }) => {
       const cursor = typeof pageParam === 'number' ? pageParam : undefined;
-      const params = new URLSearchParams();
-      params.set('limit', pageSize.toString());
-      if (cursor !== undefined) {
-        params.set('cursor', cursor.toString());
-      }
       
       const res = await apiClient.get<PagedResponse<Query6Result>>(
-        `/master-disciples?${params}`
+        `/master-disciples`,
+        { params: { limit: pageSize, cursor } }
       );
       return res.data;
     },

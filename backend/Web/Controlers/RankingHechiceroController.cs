@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using GestionDeMisiones.IService;
 using QuestPDF.Fluent;
 using GestionDeMisiones.Web;
@@ -26,7 +27,7 @@ public class RankingHechicerosController : ControllerBase
 
     
 
-
+[AllowAnonymous]
 [HttpGet("top-por-nivel/pdf")]
 public async Task<IActionResult> GetRankingPorNivelPdf([FromQuery] int ubicacionId)
 {

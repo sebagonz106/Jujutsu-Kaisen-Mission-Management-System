@@ -2,7 +2,7 @@ using GestionDeMisiones.Models;
 using GestionDeMisiones.IRepository;
 using GestionDeMisiones.IService;
 
-namespace GestionDeMisiones.Service;
+namespace GestionDeMisiones.Services;
 
 public class RankingHechiceroService : IRankingHechiceroService
 {
@@ -13,12 +13,13 @@ public class RankingHechiceroService : IRankingHechiceroService
         _repository = repository;
     }
 
-    public Task<IEnumerable<RankingHechicero>> GetTopHechicerosPorNivelYUbicacion(int ubicacionId)
-        => _repository.GetTopHechicerosPorNivelYUbicacion(ubicacionId);
+    public async Task<IEnumerable<RankingHechicero>> GetTopHechicerosPorNivelYUbicacion(int ubicacionId)
+    {
+        return await _repository.GetTopHechicerosPorNivelYUbicacion(ubicacionId);
+    }
 
     public async Task<IEnumerable<RankingHechicero>> GetTopHechicerosPorNivelYUbicacionAsync(int ubicacionId)
     {
         return await _repository.GetTopHechicerosPorNivelYUbicacionAsync(ubicacionId);
     }
 }
-

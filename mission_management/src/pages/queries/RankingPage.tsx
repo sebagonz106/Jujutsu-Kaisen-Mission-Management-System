@@ -129,19 +129,21 @@ export const RankingPage = () => {
 
     setIsExporting(true);
     try {
-      const response = await apiClient.get('/queries/ranking-sorcerers/pdf', {
-        params: { locationId: selectedLocationId },
+      const response = await apiClient.get('/sorcerer-ranking/pdf', {
+        params: { ubicacionId: selectedLocationId },
         responseType: 'blob',
       });
 
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `ranking-ubicacion-${selectedLocationId}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
+      if (response.status === 200 && response.data) {
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `ranking-ubicacion-${selectedLocationId}.pdf`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+      }
     } catch (error) {
       console.error('Error exporting PDF:', error);
     } finally {
@@ -163,10 +165,10 @@ export const RankingPage = () => {
       </div>
 
       {/* Location Select Form */}
-      <div className="bg-white rounded-lg shadow p-6 space-y-4">
+      <div className="card-surface p-6 space-y-4">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
           <div>
-            <label className="block text-sm font-medium mb-2 text-slate-700">
+            <label className="block text-sm font-medium mb-2 text-slate-300">
               {t('pages.queries.sorcererRanking.selectLocation')}
             </label>
             <select
@@ -175,7 +177,7 @@ export const RankingPage = () => {
                 const id = e.target.value ? parseInt(e.target.value) : null;
                 setSelectedLocationId(id);
               }}
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             >
               <option value="">-- {t('pages.queries.sorcererRanking.selectPlaceholder')} --</option>
               {locations.map((loc) => (
@@ -208,7 +210,7 @@ export const RankingPage = () => {
 
           {/* Loading State */}
           {isLoading && (
-            <div className="bg-white rounded-lg shadow overflow-hidden">
+            <div className="card-surface overflow-hidden">
               <div className="p-6 space-y-3">
                 {[...Array(5)].map((_, i) => (
                   <Skeleton key={i} className="h-10" />
@@ -223,9 +225,13 @@ export const RankingPage = () => {
           {!isLoading && ranking.length > 0 && (
             <div className="space-y-4">
               {Array.from(groupedRanking.entries()).map(([nivel, sorcerers]) => (
-                <div key={nivel} className="bg-white rounded-lg shadow overflow-hidden">
+                <div key={nivel} className="card-surface overflow-hidden">
                   {/* Level Header */}
-                  <div className={`px-6 py-3 ${getLevelColor(nivel)}`}>
+                  <div className={`px-6 py-3 ${
+                    nivel.toLowerCase().includes('critica') ? 'bg-red-900/50 text-red-200' :
+                    nivel.toLowerCase().includes('urgente') ? 'bg-orange-900/50 text-orange-200' :
+                    'bg-blue-900/50 text-blue-200'
+                  }`}>
                     <h3 className="font-semibold text-sm">
                       {t('pages.queries.sorcererRanking.level')}: {nivel}
                     </h3>
@@ -254,26 +260,26 @@ export const RankingPage = () => {
                     </THead>
                     <TBody>
                       {sorcerers.map((sorcerer, idx) => (
-                        <tr key={`${nivel}-${sorcerer.hechiceroId}`} className="border-b hover:bg-slate-50">
+                        <tr key={`${nivel}-${sorcerer.hechiceroId}`} className="border-b border-slate-700 hover:bg-slate-800/50">
                           <TD className="font-medium">
                             {idx + 1}. {sorcerer.hechiceroId}
                           </TD>
-                          <TD>{sorcerer.nombreHechicero}</TD>
+                          <TD className="text-amber-400">{sorcerer.nombreHechicero}</TD>
                           <TD className="text-center">{sorcerer.totalMisiones}</TD>
                           <TD className="text-center">
-                            <span className="text-green-600 font-semibold">
+                            <span className="text-green-400 font-semibold">
                               {sorcerer.misionesExitosas}
                             </span>
                           </TD>
                           <TD className="text-center">
                             <div className="flex items-center justify-center gap-2">
-                              <div className="w-12 bg-slate-200 rounded-full h-2">
+                              <div className="w-12 bg-slate-700 rounded-full h-2">
                                 <div
                                   className="bg-gradient-to-r from-green-400 to-green-600 h-2 rounded-full"
                                   style={{ width: `${sorcerer.porcentajeExito}%` }}
                                 />
                               </div>
-                              <span className="font-bold text-sm w-12 text-right">
+                              <span className="font-bold text-sm w-12 text-right text-slate-200">
                                 {sorcerer.porcentajeExito.toFixed(1)}%
                               </span>
                             </div>

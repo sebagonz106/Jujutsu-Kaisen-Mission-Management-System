@@ -50,12 +50,12 @@ export const useInfiniteMissionsInRange = (options: UseInfiniteMissionsInRangeOp
     queryKey: ['missions', 'in-range', startDate, endDate, pageSize],
     queryFn: async ({ pageParam }) => {
       const params = new URLSearchParams();
-      params.set('startDate', startDate);
-      params.set('endDate', endDate);
+      params.set('desde', startDate);
+      params.set('hasta', endDate);
       params.set('limit', pageSize.toString());
       if (pageParam) params.set('cursor', String(pageParam));
       
-      const res = await apiClient.get<unknown>(`/api/missions/in-range?${params}`);
+      const res = await apiClient.get<unknown>(`/mission-range-queries?${params}`);
       return normalizePaged<MissionInRange>(res.data, { limit: pageSize });
     },
     initialPageParam: undefined as string | number | undefined,

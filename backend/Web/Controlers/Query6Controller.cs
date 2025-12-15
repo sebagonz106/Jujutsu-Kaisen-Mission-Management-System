@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using GestionDeMisiones.IService;
 using GestionDeMisiones.Models;
 using GestionDeMisiones.Web;
@@ -28,6 +29,7 @@ public class Query6Controller : ControllerBase
         var result = await _service.GetRelacionHechiceroDiscipulosAsync();
         return Ok(result);
     }
+    [AllowAnonymous]
     [HttpGet("pdf")]
     public async Task<IActionResult> GetRelacionHechicerosPdf()
     {

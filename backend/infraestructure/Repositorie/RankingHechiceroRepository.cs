@@ -17,7 +17,7 @@ public class RankingHechiceroRepository : IRankingHechiceroRepository
         return await BuildRankingAsync(ubicacionId);
     }
 
-    public async Task<List<RankingHechicero>> GetTopHechicerosPorNivelYUbicacionAsync(int ubicacionId)
+    async Task<IEnumerable<RankingHechicero>> IRankingHechiceroRepository.GetTopHechicerosPorNivelYUbicacionAsync(int ubicacionId)
     {
         return await BuildRankingAsync(ubicacionId);
     }

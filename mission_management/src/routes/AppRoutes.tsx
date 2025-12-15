@@ -1,6 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { LoginPage } from '../pages/LoginPage.tsx';
-import { RegisterPage } from '../pages/RegisterPage.tsx';
 import { ProtectedRoute } from './ProtectedRoute.tsx';
 import { RoleGuard } from './RoleGuard.tsx';
 import AdminUsersPage from '../pages/admin/AdminUsersPage.tsx';
@@ -39,6 +38,7 @@ const EntityIndex = () => {
     { to: '/resource-usages', label: t('nav.resourceUsages'), icon: '📦' },
     { to: '/sorcerers-in-charge', label: t('nav.sorcerersInCharge'), icon: '👤' },
     { to: '/mastered-techniques', label: t('nav.masteredTechniques'), icon: '🎓' },
+    { to: '/subordinations', label: t('nav.subordinations'), icon: '👥' },
   ];
   
   return (
@@ -73,6 +73,7 @@ import { TransfersPage } from '../pages/transfers/TransfersPage.tsx';
 import { ResourceUsagesPage } from '../pages/resource-usages/ResourceUsagesPage.tsx';
 import { SorcerersInChargePage } from '../pages/sorcerers-in-charge/SorcerersInChargePage.tsx';
 import { MasteredTechniquesPage } from '../pages/mastered-techniques/MasteredTechniquesPage.tsx';
+import { SubordinationsPage } from '../pages/subordinations/SubordinationsPage.tsx';
 import Layout from '../components/Layout.tsx';
 
 const QueriesIndexPlaceholder = () => (
@@ -102,7 +103,6 @@ export const AppRoutes = () => (
   <BrowserRouter>
     <Routes>
       <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
       <Route
         path="/"
         element={
@@ -270,6 +270,16 @@ export const AppRoutes = () => (
           <ProtectedRoute>
             <Layout>
               <MasteredTechniquesPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/subordinations"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <SubordinationsPage />
             </Layout>
           </ProtectedRoute>
         }

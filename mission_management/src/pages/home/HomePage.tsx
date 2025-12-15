@@ -27,7 +27,12 @@ export const HomePage = () => {
   const { user } = useAuth();
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 relative">
+      {/* Logo superior derecha */}
+      <div className="absolute top-0 right-0">
+        <img src="/logo.svg" alt="Jujutsu Kaisen Mission Management" className="h-14 w-auto" />
+      </div>
+
       <h1 className="page-title">
         {t('pages.home.welcome')}, {user?.name ?? user?.email ?? t('nav.userFallback')}
       </h1>

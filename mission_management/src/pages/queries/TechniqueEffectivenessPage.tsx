@@ -137,7 +137,7 @@ export const TechniqueEffectivenessPage = () => {
 
         {/* Table */}
         {isLoading && (
-          <div className="bg-white rounded-lg shadow overflow-hidden">
+          <div className="card-surface overflow-hidden">
             <div className="p-6 space-y-3">
               {[...Array(5)].map((_, i) => (
                 <Skeleton key={i} className="h-10" />
@@ -149,7 +149,7 @@ export const TechniqueEffectivenessPage = () => {
         {isEmpty && <EmptyState title={t('common.noResults')} />}
 
         {!isLoading && techniques.length > 0 && (
-          <div className="bg-white rounded-lg shadow overflow-hidden">
+          <div className="card-surface overflow-hidden">
             <div className="overflow-x-auto">
               <Table>
                 <THead>
@@ -176,16 +176,20 @@ export const TechniqueEffectivenessPage = () => {
                 </THead>
                 <TBody>
                   {techniques.map((technique) => (
-                    <tr key={technique.hechiceroId} className="border-b hover:bg-slate-50">
+                    <tr key={technique.hechiceroId} className="border-b border-slate-700 hover:bg-slate-800/50">
                       <TD>{technique.hechiceroId}</TD>
-                      <TD>{technique.nombreHechicero || 'N/A'}</TD>
+                      <TD className="text-amber-400">{technique.nombreHechicero || 'N/A'}</TD>
                       <TD>{technique.grado || 'N/A'}</TD>
-                      <TD className="font-semibold">{technique.promedioEfectividad.toFixed(2)}%</TD>
+                      <TD className="font-semibold text-purple-400">{technique.promedioEfectividad.toFixed(2)}%</TD>
                       <TD>
                         <span
-                          className={`px-2 py-1 rounded text-xs font-medium ${getClassificationColor(
-                            technique.clasificacion
-                          )}`}
+                          className={`px-2 py-1 rounded text-xs font-medium ${
+                            (technique.clasificacion?.toLowerCase().includes('alta') || technique.clasificacion?.toLowerCase().includes('high')) 
+                              ? 'bg-green-900/50 text-green-300' 
+                              : (technique.clasificacion?.toLowerCase().includes('media') || technique.clasificacion?.toLowerCase().includes('medium'))
+                              ? 'bg-yellow-900/50 text-yellow-300'
+                              : 'bg-red-900/50 text-red-300'
+                          }`}
                         >
                           {technique.clasificacion || 'N/A'}
                         </span>
@@ -199,7 +203,7 @@ export const TechniqueEffectivenessPage = () => {
 
             {/* Load More Button */}
             {hasNextPage && (
-              <div className="flex justify-center p-4 border-t">
+              <div className="flex justify-center p-4 border-t border-slate-700">
                 <Button onClick={() => {}} disabled={isFetchingNextPage} size="sm">
                   {isFetchingNextPage ? t('common.loading') : 'Cargar más'}
                 </Button>

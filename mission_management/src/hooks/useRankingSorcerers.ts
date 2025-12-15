@@ -40,11 +40,9 @@ export const useRankingSorcerers = (options: UseRankingSorcerersOptions) => {
   return useQuery<RankingHechicero[]>({
     queryKey: ['sorcerers', 'ranking', locationId],
     queryFn: async () => {
-      const params = new URLSearchParams();
-      params.set('ubicacionId', locationId.toString());
-      
       const res = await apiClient.get<RankingHechicero[]>(
-        `/sorcerer-ranking/top-por-nivel?${params}`
+        `/sorcerer-ranking`,
+        { params: { ubicacionId: locationId } }
       );
       return res.data;
     },

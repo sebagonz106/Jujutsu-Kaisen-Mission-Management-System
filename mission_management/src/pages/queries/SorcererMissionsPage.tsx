@@ -152,10 +152,10 @@ export const SorcererMissionsPage = () => {
       </div>
 
       {/* Search and Select Form */}
-      <div className="bg-white rounded-lg shadow p-6 space-y-4">
+      <div className="card-surface p-6 space-y-4">
         {/* Search Input */}
         <div>
-          <label className="block text-sm font-medium mb-2 text-slate-700">
+          <label className="block text-sm font-medium mb-2 text-slate-300">
             {t('pages.queries.sorcererMissions.searchPlaceholder')}
           </label>
           <Input
@@ -173,7 +173,7 @@ export const SorcererMissionsPage = () => {
         {/* Sorcerer Select */}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
           <div>
-            <label className="block text-sm font-medium mb-2 text-slate-700">
+            <label className="block text-sm font-medium mb-2 text-slate-300">
               {t('pages.queries.sorcererMissions.selectLabel')}
             </label>
             <select
@@ -182,7 +182,7 @@ export const SorcererMissionsPage = () => {
                 const id = e.target.value ? parseInt(e.target.value) : null;
                 setSelectedSorcererId(id);
               }}
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             >
               <option value="">-- {t('ui.selectPlaceholder')} --</option>
               {filteredSorcerers.map((s) => (
@@ -200,7 +200,7 @@ export const SorcererMissionsPage = () => {
         <div className="space-y-4">
           {/* Toolbar */}
           <div className="flex items-center justify-between">
-            <div className="text-sm text-slate-600">
+            <div className="text-sm text-slate-400">
               {isLoading ? 'Cargando...' : `${missions.length} misiones encontradas`}
             </div>
             <Button
@@ -215,7 +215,7 @@ export const SorcererMissionsPage = () => {
 
           {/* Table */}
           {isLoading && (
-            <div className="bg-white rounded-lg shadow overflow-hidden">
+            <div className="card-surface overflow-hidden">
               <div className="p-6 space-y-3">
                 {[...Array(5)].map((_, i) => (
                   <Skeleton key={i} className="h-10" />
@@ -227,7 +227,7 @@ export const SorcererMissionsPage = () => {
           {isEmpty && <EmptyState title="Sin resultados" />}
 
           {!isLoading && missions.length > 0 && (
-            <div className="bg-white rounded-lg shadow overflow-hidden">
+            <div className="card-surface overflow-hidden">
               <Table>
                 <THead>
                   <tr>
@@ -244,17 +244,17 @@ export const SorcererMissionsPage = () => {
                 </THead>
                 <TBody>
                   {missions.map((mission) => (
-                    <tr key={`${mission.misionId}-${mission.fechaMision}`} className="border-b hover:bg-slate-50">
+                    <tr key={`${mission.misionId}-${mission.fechaMision}`} className="border-b border-slate-700 hover:bg-slate-800/50">
                       <TD>{mission.misionId}</TD>
                       <TD>{new Date(mission.fechaMision).toLocaleDateString()}</TD>
                       <TD>
                         <span
                           className={`px-2 py-1 rounded text-xs font-medium ${
                             mission.resultado === 'Éxito'
-                              ? 'bg-green-100 text-green-800'
+                              ? 'bg-green-900/50 text-green-300'
                               : mission.resultado === 'Fracaso'
-                              ? 'bg-red-100 text-red-800'
-                              : 'bg-yellow-100 text-yellow-800'
+                              ? 'bg-red-900/50 text-red-300'
+                              : 'bg-yellow-900/50 text-yellow-300'
                           }`}
                         >
                           {mission.resultado || 'N/A'}
@@ -267,7 +267,7 @@ export const SorcererMissionsPage = () => {
 
               {/* Load More Button */}
               {hasNextPage && (
-                <div className="flex justify-center p-4 border-t">
+                <div className="flex justify-center p-4 border-t border-slate-700">
                   <Button onClick={() => {}} disabled={isFetchingNextPage} size="sm">
                     {isFetchingNextPage ? 'Cargando...' : 'Cargar más'}
                   </Button>

@@ -35,6 +35,7 @@ export const MasterDisciplesPage = () => {
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [expandedMasters, setExpandedMasters] = useState<Set<number>>(new Set());
   const [isExporting, setIsExporting] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Fetch master-disciple data
   const { data, hasNextPage, isFetchingNextPage, isLoading, isError, fetchNextPage } = useMasterDisciples({
@@ -44,7 +45,7 @@ export const MasterDisciplesPage = () => {
   // Flatten and sort data client-side
   const masters = useMemo(() => {
     const flat = (data?.pages ?? []).flatMap((p) => p.items);
-    return [...flat].sort((a, b) => {
+    const sorted = [...flat].sort((a, b) => {
       const aVal = a[sortKey];
       const bVal = b[sortKey];
       if (aVal == null && bVal == null) return 0;
@@ -59,7 +60,19 @@ export const MasterDisciplesPage = () => {
       }
       return sortDir === 'asc' ? cmp : -cmp;
     });
-  }, [data, sortKey, sortDir]);
+
+    // Filter by search term
+    if (!searchTerm.trim()) return sorted;
+    const lower = searchTerm.toLowerCase();
+    return sorted.filter((master) =>
+      master.nombreHechicero?.toLowerCase().includes(lower) ||
+      master.grado?.toLowerCase().includes(lower) ||
+      master.discipulos.some((d) =>
+        d.nombreDiscipulo?.toLowerCase().includes(lower) ||
+        d.gradoDiscipulo?.toLowerCase().includes(lower)
+      )
+    );
+  }, [data, sortKey, sortDir, searchTerm]);
 
   const toggleSort = (key: keyof Query6Result) => {
     if (sortKey === key) {
@@ -85,18 +98,20 @@ export const MasterDisciplesPage = () => {
 
     setIsExporting(true);
     try {
-      const response = await apiClient.get('/queries/master-disciples/pdf', {
+      const response = await apiClient.get('/master-disciples/pdf', {
         responseType: 'blob',
       });
 
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', 'maestros-discipulos.pdf');
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
+      if (response.status === 200 && response.data) {
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'maestros-discipulos.pdf');
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+      }
     } catch (error) {
       console.error('Error exporting PDF:', error);
     } finally {
@@ -118,6 +133,17 @@ export const MasterDisciplesPage = () => {
 
       {/* Results Section */}
       <div className="space-y-4">
+        {/* Search Bar */}
+        <div className="card-surface p-4">
+          <input
+            type="text"
+            placeholder="Buscar por nombre o grado..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full px-4 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+          />
+        </div>
+
         {/* Toolbar */}
         <div className="flex items-center justify-between">
           <div className="text-sm text-slate-600">
@@ -135,7 +161,7 @@ export const MasterDisciplesPage = () => {
 
         {/* Table */}
         {isLoading && (
-          <div className="bg-white rounded-lg shadow overflow-hidden">
+          <div className="card-surface overflow-hidden">
             <div className="p-6 space-y-3">
               {[...Array(5)].map((_, i) => (
                 <Skeleton key={i} className="h-10" />
@@ -147,123 +173,71 @@ export const MasterDisciplesPage = () => {
         {isEmpty && <EmptyState title={t('common.noResults')} />}
 
         {!isLoading && masters.length > 0 && (
-          <div className="bg-white rounded-lg shadow overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-slate-50 border-b border-slate-200">
-                  <tr>
-                    <th className="w-8 px-4 py-3"></th>
-                    <th
-                      className="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase cursor-pointer hover:bg-slate-100"
-                      onClick={() => toggleSort('hechiceroId')}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span>{t('pages.queries.masterDisciples.masterId')}</span>
-                        {sortKey === 'hechiceroId' && (
-                          <span className="text-slate-600">{sortDir === 'asc' ? '↑' : '↓'}</span>
-                        )}
+          <div className="card-surface overflow-hidden">
+            <div className="space-y-4 p-4">
+              {masters.map((master) => (
+                <div key={master.hechiceroId} className="border border-slate-700 rounded-lg overflow-hidden">
+                  {/* Master Row */}
+                  <div
+                    className="bg-slate-800/50 hover:bg-slate-800 cursor-pointer transition-colors p-4 flex items-center justify-between"
+                    onClick={() => toggleExpanded(master.hechiceroId)}
+                  >
+                    <div className="flex items-center gap-4 flex-1">
+                      <span className="text-lg text-slate-400">
+                        {expandedMasters.has(master.hechiceroId) ? '▼' : '▶'}
+                      </span>
+                      <div className="flex-1">
+                        <div className="text-sm font-medium text-amber-400">{master.nombreHechicero || 'N/A'}</div>
+                        <div className="text-xs text-slate-400 mt-1">{master.grado || 'N/A'}</div>
                       </div>
-                    </th>
-                    <th
-                      className="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase cursor-pointer hover:bg-slate-100"
-                      onClick={() => toggleSort('nombreHechicero')}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span>{t('pages.queries.masterDisciples.name')}</span>
-                        {sortKey === 'nombreHechicero' && (
-                          <span className="text-slate-600">{sortDir === 'asc' ? '↑' : '↓'}</span>
-                        )}
-                      </div>
-                    </th>
-                    <th
-                      className="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase cursor-pointer hover:bg-slate-100"
-                      onClick={() => toggleSort('grado')}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span>{t('pages.queries.masterDisciples.grade')}</span>
-                        {sortKey === 'grado' && (
-                          <span className="text-slate-600">{sortDir === 'asc' ? '↑' : '↓'}</span>
-                        )}
-                      </div>
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase">
-                      {t('pages.queries.masterDisciples.disciples')}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {masters.map((master) => (
-                    <tbody key={master.hechiceroId}>
-                      {/* Master Row */}
-                      <tr className="border-b hover:bg-slate-50">
-                        <td className="w-8 px-4 py-3 text-center">
-                          <button
-                            onClick={() => toggleExpanded(master.hechiceroId)}
-                            className="hover:bg-slate-200 rounded p-1 transition-colors"
-                            title={
-                              expandedMasters.has(master.hechiceroId) ? 'Contraer' : 'Expandir'
-                            }
-                          >
-                            <span className="text-lg text-slate-600">
-                              {expandedMasters.has(master.hechiceroId) ? '▼' : '▶'}
-                            </span>
-                          </button>
-                        </td>
-                        <td className="px-4 py-3 text-sm text-slate-900">
-                          {master.hechiceroId}
-                        </td>
-                        <td className="px-4 py-3 text-sm font-medium text-slate-900">
-                          {master.nombreHechicero || 'N/A'}
-                        </td>
-                        <td className="px-4 py-3 text-sm text-slate-600">
-                          {master.grado || 'N/A'}
-                        </td>
-                        <td className="px-4 py-3 text-sm text-slate-600">
-                          {master.discipulos.length} {t('pages.queries.masterDisciples.disciples')}
-                        </td>
-                      </tr>
+                    </div>
+                    <div className="text-sm text-slate-400">
+                      {master.discipulos.length} {t('pages.queries.masterDisciples.disciples')}
+                    </div>
+                  </div>
 
-                      {/* Disciples Rows */}
-                      {expandedMasters.has(master.hechiceroId) &&
+                  {/* Disciples List */}
+                  {expandedMasters.has(master.hechiceroId) && (
+                    <div className="bg-slate-800/30 divide-y divide-slate-700">
+                      {master.discipulos.length === 0 ? (
+                        <div className="p-4 text-sm text-slate-400 text-center">
+                          {t('common.noResults')}
+                        </div>
+                      ) : (
                         master.discipulos.map((discipulo: any, idx: number) => (
-                          <tr
-                            key={`${master.hechiceroId}-discipulo-${idx}`}
-                            className="border-b bg-slate-50 hover:bg-slate-100"
-                          >
-                            <td className="w-8 px-4 py-2"></td>
-                            <td colSpan={4} className="px-4 py-2">
-                              <div className="flex items-start space-x-3">
-                                <div className="text-slate-400 mt-0.5">
-                                  {idx === master.discipulos.length - 1 ? '└─' : '├─'}
+                          <div key={`${master.hechiceroId}-discipulo-${idx}`} className="p-4 hover:bg-slate-800/50 transition-colors">
+                            <div className="flex items-start gap-3">
+                              <div className="text-slate-500 mt-0.5 flex-shrink-0">
+                                {idx === master.discipulos.length - 1 ? '└─' : '├─'}
+                              </div>
+                              <div className="flex-1 space-y-2">
+                                <div className="text-sm font-medium text-slate-200">
+                                  {discipulo.nombreDiscipulo || 'N/A'}
                                 </div>
-                                <div className="space-y-1">
-                                  <div className="text-sm font-medium text-slate-900">
-                                    {discipulo.nombreDiscipulo || 'N/A'}
+                                <div className="grid grid-cols-2 gap-4 text-xs text-slate-400">
+                                  <div>
+                                    <strong className="text-slate-300">{t('pages.queries.masterDisciples.grade')}:</strong>{' '}
+                                    {discipulo.gradoDiscipulo || 'N/A'}
                                   </div>
-                                  <div className="flex gap-4 text-xs text-slate-600">
-                                    <span>
-                                      <strong>{t('pages.queries.masterDisciples.grade')}:</strong>{' '}
-                                      {discipulo.gradoDiscipulo || 'N/A'}
-                                    </span>
-                                    <span>
-                                      <strong>{t('pages.queries.masterDisciples.relation')}:</strong>{' '}
-                                      {discipulo.tipoRelacion || 'N/A'}
-                                    </span>
+                                  <div>
+                                    <strong className="text-slate-300">{t('pages.queries.masterDisciples.relation')}:</strong>{' '}
+                                    {discipulo.tipoRelacion || 'N/A'}
                                   </div>
                                 </div>
                               </div>
-                            </td>
-                          </tr>
-                        ))}
-                    </tbody>
-                  ))}
-                </tbody>
-              </table>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
 
             {/* Load More Button */}
             {hasNextPage && (
-              <div className="flex justify-center p-4 border-t">
+              <div className="flex justify-center p-4 border-t border-slate-700">
                 <Button onClick={() => fetchNextPage()} disabled={isFetchingNextPage} size="sm">
                   {isFetchingNextPage ? t('common.loading') : 'Cargar más'}
                 </Button>

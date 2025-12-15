@@ -85,6 +85,18 @@ builder.Services.AddScoped<IMisionesEnRangoRepository, MisionesEnRangoRepository
 builder.Services.AddScoped<IMisionesEnRangoService, MisionesEnRangoService>();
 builder.Services.AddScoped<IEstadisticasHechiceroRepository, EstadisticasHechiceroRepository>();
 builder.Services.AddScoped<IEstadisticasHechiceroService, EstadisticasHechiceroService>();
+builder.Services.AddScoped<IRankingHechiceroRepository, RankingHechiceroRepository>();
+builder.Services.AddScoped<IRankingHechiceroService, RankingHechiceroService>();
+// Subordinacion CRUD
+builder.Services.AddScoped<ISubordinacionRepository, SubordinacionRepository>();
+builder.Services.AddScoped<ISubordinacionService, SubordinacionService>();
+// Query services (Query2, Query4, Query6)
+builder.Services.AddScoped<IQuery2Repository, Query2Repository>();
+builder.Services.AddScoped<IQuery2Service, Query2Service>();
+builder.Services.AddScoped<IQuery4Repository, Query4Repository>();
+builder.Services.AddScoped<IQuery4Service, Query4Service>();
+builder.Services.AddScoped<IQuery6Repository, Query6Repository>();
+builder.Services.AddScoped<IQuery6Service, Query6Service>();
 // Audit service
 builder.Services.AddScoped<IAuditRepository, AuditRepository>();
 builder.Services.AddScoped<IAuditService, AuditService>();

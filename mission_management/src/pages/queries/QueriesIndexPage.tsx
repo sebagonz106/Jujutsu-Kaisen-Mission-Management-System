@@ -105,18 +105,7 @@ export const QueriesIndexPage = () => {
           <div className="mt-4 text-jjk-purple text-sm font-medium">RF-18 →</div>
         </Link>
 
-        {/* Placeholder cards for future queries */}
-        {[19].map((rf) => (
-          <div
-            key={rf}
-            className="card-surface p-6 opacity-50 cursor-not-allowed flex flex-col"
-          >
-            <div className="text-4xl mb-3 grayscale">📊</div>
-            <h3 className="text-xl font-semibold text-slate-400 mb-2">{t('pages.queries.emptyTitle')}</h3>
-            <p className="text-slate-500 text-sm flex-1">{t('pages.queries.emptyDesc')}</p>
-            <div className="mt-4 text-slate-600 text-sm font-medium">RF-{rf}</div>
-          </div>
-        ))}
+
       </div>
     </div>
   );

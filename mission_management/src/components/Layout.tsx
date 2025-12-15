@@ -59,6 +59,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <NavLink to="/resource-usages" className={({ isActive }) => `nav-link text-sm ${isActive ? 'nav-link--active' : ''}`}>{t('nav.resourceUsages')}</NavLink>
                 <NavLink to="/sorcerers-in-charge" className={({ isActive }) => `nav-link text-sm ${isActive ? 'nav-link--active' : ''}`}>{t('nav.sorcerersInCharge')}</NavLink>
                 <NavLink to="/mastered-techniques" className={({ isActive }) => `nav-link text-sm ${isActive ? 'nav-link--active' : ''}`}>{t('nav.masteredTechniques')}</NavLink>
+                <NavLink to="/subordinations" className={({ isActive }) => `nav-link text-sm ${isActive ? 'nav-link--active' : ''}`}>{t('nav.subordinations')}</NavLink>
                 {canMutate && (
                   <NavLink to="/entities/recent-actions" className={({ isActive }) => `nav-link text-sm ${isActive ? 'nav-link--active' : ''}`}>{t('nav.recentActions')}</NavLink>
                 )}
