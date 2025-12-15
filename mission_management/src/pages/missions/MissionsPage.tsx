@@ -217,9 +217,15 @@ export const MissionsPage = () => {
   const onSubmit = handleSubmit(async (values) => {
     try {
       const effectiveUrgency = values.urgency ?? MISSION_URGENCY.planned; // backend requires a value
+      
+      // Determine if mission is being completed/canceled - assign endAt automatically
+      const isBeingCompleted = [MISSION_STATE.success, MISSION_STATE.failure, MISSION_STATE.canceled].includes(
+        values.state as typeof MISSION_STATE.success | typeof MISSION_STATE.failure | typeof MISSION_STATE.canceled
+      );
+      
       const payload: Omit<Mission, 'id'> = {
         startAt: new Date().toISOString(),
-        endAt: undefined,
+        endAt: isBeingCompleted ? new Date().toISOString() : undefined,
         locationId: values.locationId,
         state: values.state,
         events: values.events || '',

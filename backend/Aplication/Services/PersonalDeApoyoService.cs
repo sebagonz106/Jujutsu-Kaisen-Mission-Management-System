@@ -57,7 +57,6 @@ public class PersonalDeApoyoService : IPersonalDeApoyoService
 
         // Actualizar solo campos permitidos
         existing.Name = personal.Name;
-        existing.Estado = personal.Estado;
 
         await _repo.UpdateAsync(existing);
         return true;

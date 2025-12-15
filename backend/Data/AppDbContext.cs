@@ -26,6 +26,7 @@ namespace GestionDeMisiones.Data
         public DbSet<TecnicaMalditaAplicada>TecnicaMalditaAplicada{ get; set; }
 
         public DbSet<TecnicaMalditaDominada> TecnicasMalditasDominadas { get; set; }
+        public DbSet<Subordinacion> Subordinaciones { get; set; }
 
         // Usuarios (para autenticación persistente)
         public DbSet<Usuario> Usuarios { get; set; }
@@ -91,6 +92,19 @@ namespace GestionDeMisiones.Data
                 .HasOne(tmd => tmd.TecnicaMaldita)
                 .WithMany(tm => tm.TecnicasMalditasDominadas)
                 .HasForeignKey(tmd => tmd.TecnicaMalditaId);
+
+            // Subordinacion: evitar cascade delete múltiple hacia Hechiceros
+            modelBuilder.Entity<Subordinacion>()
+                .HasOne(s => s.Maestro)
+                .WithMany()
+                .HasForeignKey(s => s.MaestroId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Subordinacion>()
+                .HasOne(s => s.Discipulo)
+                .WithMany()
+                .HasForeignKey(s => s.DiscipuloId)
+                .OnDelete(DeleteBehavior.Restrict);
 
         }
     }

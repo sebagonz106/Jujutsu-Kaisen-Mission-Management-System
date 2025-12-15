@@ -233,9 +233,6 @@ namespace GestionDeMisiones.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("Estado")
-                        .HasColumnType("int");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -290,6 +287,41 @@ namespace GestionDeMisiones.Migrations
                     b.HasIndex("MaldicionId");
 
                     b.ToTable("Solicitud");
+                });
+
+            modelBuilder.Entity("GestionDeMisiones.Models.Subordinacion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activa")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("DiscipuloId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("FechaFin")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("FechaInicio")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("MaestroId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TipoRelacion")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DiscipuloId");
+
+                    b.HasIndex("MaestroId");
+
+                    b.ToTable("Subordinaciones");
                 });
 
             modelBuilder.Entity("GestionDeMisiones.Models.TecnicaMaldita", b =>
@@ -518,6 +550,21 @@ namespace GestionDeMisiones.Migrations
                     b.ToTable("TrasladoDeHechicero", (string)null);
                 });
 
+            modelBuilder.Entity("PersonalDeApoyoTraslado", b =>
+                {
+                    b.Property<int>("SupervisoresId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TrasladosSupervisadosId")
+                        .HasColumnType("int");
+
+                    b.HasKey("SupervisoresId", "TrasladosSupervisadosId");
+
+                    b.HasIndex("TrasladosSupervisadosId");
+
+                    b.ToTable("PersonalDeApoyoTraslado");
+                });
+
             modelBuilder.Entity("GestionDeMisiones.Models.Hechicero", b =>
                 {
                     b.HasOne("GestionDeMisiones.Models.TecnicaMaldita", "TecnicaPrincipal")
@@ -606,6 +653,25 @@ namespace GestionDeMisiones.Migrations
                         .IsRequired();
 
                     b.Navigation("Maldicion");
+                });
+
+            modelBuilder.Entity("GestionDeMisiones.Models.Subordinacion", b =>
+                {
+                    b.HasOne("GestionDeMisiones.Models.Hechicero", "Discipulo")
+                        .WithMany()
+                        .HasForeignKey("DiscipuloId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("GestionDeMisiones.Models.Hechicero", "Maestro")
+                        .WithMany()
+                        .HasForeignKey("MaestroId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Discipulo");
+
+                    b.Navigation("Maestro");
                 });
 
             modelBuilder.Entity("GestionDeMisiones.Models.TecnicaMalditaAplicada", b =>
@@ -703,6 +769,21 @@ namespace GestionDeMisiones.Migrations
                     b.HasOne("GestionDeMisiones.Models.Traslado", null)
                         .WithMany()
                         .HasForeignKey("TrasladosId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("PersonalDeApoyoTraslado", b =>
+                {
+                    b.HasOne("GestionDeMisiones.Models.PersonalDeApoyo", null)
+                        .WithMany()
+                        .HasForeignKey("SupervisoresId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("GestionDeMisiones.Models.Traslado", null)
+                        .WithMany()
+                        .HasForeignKey("TrasladosSupervisadosId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

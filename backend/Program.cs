@@ -13,8 +13,12 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Security.Claims;
+using QuestPDF.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure QuestPDF license
+QuestPDF.Settings.License = LicenseType.Community;
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -79,6 +83,24 @@ builder.Services.AddScoped<ITecnicaMalditaRepository, TecnicaMalditaRepository>(
 builder.Services.AddScoped<ITecnicaMalditaService, TecnicaMalditaService>();
 builder.Services.AddScoped<ITecnicaMalditaDominadaRepository, TecnicaMalditaDominadaRepository>();
 builder.Services.AddScoped<ITecnicaMalditaDominadaService, TecnicaMalditaDominadaService>();
+builder.Services.AddScoped<IMaldicionesEnEstadoRepository, MaldicionesEnEstadoRepository>();
+builder.Services.AddScoped<IMaldicionesEnEstadosService, MaldicionesEnEstadoService>();
+builder.Services.AddScoped<IMisionesEnRangoRepository, MisionesEnRangoRepository>();
+builder.Services.AddScoped<IMisionesEnRangoService, MisionesEnRangoService>();
+builder.Services.AddScoped<IEstadisticasHechiceroRepository, EstadisticasHechiceroRepository>();
+builder.Services.AddScoped<IEstadisticasHechiceroService, EstadisticasHechiceroService>();
+builder.Services.AddScoped<IRankingHechiceroRepository, RankingHechiceroRepository>();
+builder.Services.AddScoped<IRankingHechiceroService, RankingHechiceroService>();
+// Subordinacion CRUD
+builder.Services.AddScoped<ISubordinacionRepository, SubordinacionRepository>();
+builder.Services.AddScoped<ISubordinacionService, SubordinacionService>();
+// Query services (Query2, Query4, Query6)
+builder.Services.AddScoped<IQuery2Repository, Query2Repository>();
+builder.Services.AddScoped<IQuery2Service, Query2Service>();
+builder.Services.AddScoped<IQuery4Repository, Query4Repository>();
+builder.Services.AddScoped<IQuery4Service, Query4Service>();
+builder.Services.AddScoped<IQuery6Repository, Query6Repository>();
+builder.Services.AddScoped<IQuery6Service, Query6Service>();
 // Audit service
 builder.Services.AddScoped<IAuditRepository, AuditRepository>();
 builder.Services.AddScoped<IAuditService, AuditService>();

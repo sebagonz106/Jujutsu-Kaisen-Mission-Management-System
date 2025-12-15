@@ -24,7 +24,7 @@ namespace GestionDeMisiones.Repository
                 .ToListAsync();
         }
 
-        public async Task<List<HechiceroEncargado>> GetPagedAsync(int? cursor, int limit)
+        async Task<IEnumerable<HechiceroEncargado>> IHechiceroEncargadoRepository.GetPagedAsync(int? cursor, int limit)
         {
             var query = _context.HechiceroEncargado
                 .Include(h => h.Hechicero)
