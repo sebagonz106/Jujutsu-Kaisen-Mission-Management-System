@@ -20,7 +20,7 @@ namespace GestionDeMisiones.Service
         public async Task<(IEnumerable<HechiceroEncargado> items, int? nextCursor, bool hasMore)> GetPagedAsync(int? cursor, int limit)
         {
             limit = Math.Clamp(limit, 1, 100);
-            var items = await _repository.GetPagedAsync(cursor, limit);
+            var items = (await _repository.GetPagedAsync(cursor, limit)).ToList();
             var hasMore = items.Count > limit;
             if (hasMore) items = items.Take(limit).ToList();
             var nextCursor = hasMore && items.Count > 0 ? items[^1].Id : (int?)null;

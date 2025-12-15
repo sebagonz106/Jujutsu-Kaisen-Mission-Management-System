@@ -2,8 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using GestionDeMisiones.IService;
 using GestionDeMisiones.Models;
-using Microsoft.AspNetCore.Authorization;
-
 [ApiController]
 [Route("api/[controller]")]
 public class TrasladoController : ControllerBase
@@ -12,12 +10,14 @@ public class TrasladoController : ControllerBase
     public TrasladoController(ITrasladoService service) => _service = service;
 
     [HttpGet]
-    [Authorize]
-    public async Task<ActionResult<IEnumerable<Traslado>>> GetAllTransport([FromQuery] int? limit, [FromQuery] int? cursor)
+    public async Task<ActionResult<IEnumerable<Traslado>>> GetAllTransport(
+        [FromQuery] int? limit,
+        [FromQuery] int? cursor)
     {
         if (limit.HasValue || cursor.HasValue)
         {
-            var (items, nextCursor, hasMore) = await _service.GetPagedAsync(cursor, limit ?? 20);
+            var lim = limit ?? 20;
+            var (items, nextCursor, hasMore) = await _service.GetPagedAsync(cursor, lim);
             return Ok(new { items, nextCursor, hasMore });
         }
         var list = await _service.GetAllAsync();
@@ -25,7 +25,6 @@ public class TrasladoController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    // [Authorize]
     public async Task<ActionResult<Traslado>> GetTrasladoById(int id)
     {
         var traslado = await _service.GetByIdAsync(id);
@@ -34,7 +33,6 @@ public class TrasladoController : ControllerBase
     }
 
     [HttpPost]
-    // [Authorize(Roles = "admin")]
     public async Task<ActionResult<Traslado>> PostTraslado([FromBody] Traslado traslado)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -51,7 +49,6 @@ public class TrasladoController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    // [Authorize(Roles = "admin")]
     public async Task<IActionResult> PutTraslado(int id, [FromBody] Traslado traslado)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -62,11 +59,56 @@ public class TrasladoController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    // [Authorize(Roles = "admin")]
     public async Task<IActionResult> DeleteTraslado(int id)
     {
         var deleted = await _service.DeleteAsync(id);
         if (!deleted) return NotFound("El Traslado que intento eliminar no existe");
+        return NoContent();
+    }
+
+    [HttpGet("{id}/hechiceros")]
+    public async Task<ActionResult<IEnumerable<Hechicero>>> GetHechicerosEnTraslado(int id)
+    {
+        var hechiceros = await _service.GetHechicerosEnTrasladoAsync(id);
+        return Ok(hechiceros);
+    }
+
+    [HttpGet("{id}/personal-apoyo")]
+    public async Task<ActionResult<IEnumerable<PersonalDeApoyo>>> GetPersonalApoyoEnTraslado(int id)
+    {
+        var personal = await _service.GetPersonalApoyoEnTrasladoAsync(id);
+        return Ok(personal);
+    }
+
+    [HttpPost("{id}/hechiceros/{hechiceroId}")]
+    public async Task<IActionResult> AgregarHechiceroATraslado(int id, int hechiceroId)
+    {
+        var resultado = await _service.AgregarHechiceroAsync(id, hechiceroId);
+        if (!resultado) return NotFound("No se pudo agregar el hechicero al traslado");
+        return NoContent();
+    }
+
+    [HttpDelete("{id}/hechiceros/{hechiceroId}")]
+    public async Task<IActionResult> QuitarHechiceroDeTraslado(int id, int hechiceroId)
+    {
+        var resultado = await _service.QuitarHechiceroAsync(id, hechiceroId);
+        if (!resultado) return NotFound("No se pudo quitar el hechicero del traslado");
+        return NoContent();
+    }
+
+    [HttpPost("{id}/personal-apoyo/{personalId}")]
+    public async Task<IActionResult> AgregarPersonalApoyoATraslado(int id, int personalId)
+    {
+        var resultado = await _service.AgregarPersonalApoyoAsync(id, personalId);
+        if (!resultado) return NotFound("No se pudo agregar el personal de apoyo al traslado");
+        return NoContent();
+    }
+
+    [HttpDelete("{id}/personal-apoyo/{personalId}")]
+    public async Task<IActionResult> QuitarPersonalApoyoDeTraslado(int id, int personalId)
+    {
+        var resultado = await _service.QuitarPersonalApoyoAsync(id, personalId);
+        if (!resultado) return NotFound("No se pudo quitar el personal de apoyo del traslado");
         return NoContent();
     }
 }

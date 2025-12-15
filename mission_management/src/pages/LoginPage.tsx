@@ -5,7 +5,7 @@ import { useAuth } from '../hooks/useAuth';
 import { authApi } from '../api/authApi';
 import { toast } from 'sonner';
 import axios from 'axios';
-import { useLocation, useNavigate, Link } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { t } from '../i18n';
 
 const schema = z.object({
@@ -88,7 +88,7 @@ export const LoginPage = () => {
           </button>
         </form>
         <div className="text-center text-sm text-jjk-fog">
-          {t('pages.login.linkNoAccount')}{' '}<Link to="/register" className="text-jjk-gold hover:underline">{t('pages.login.linkRegister')}</Link>
+          {t('pages.login.adminOnly')}
         </div>
       </div>
     </div>
