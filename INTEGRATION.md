@@ -123,15 +123,49 @@ dotnet user-secrets set "Jwt:Key" "PROD-SECRET-GENERATE-LONG-RANDOM" --project B
 ```
 - Para producción: usar variable de entorno o vault.
 
+## Poblar Base de Datos
+
+### Opción 1: Poblar base de datos existente (no elimina datos)
+```powershell
+cd backend
+.\seed-database.ps1
+```
+
+### Opción 2: Resetear y repoblar desde cero (ELIMINA TODOS LOS DATOS)
+```powershell
+cd backend
+.\reset-database.ps1
+```
+
+### Opción 3: Comando manual
+```powershell
+cd backend
+dotnet build
+dotnet ef database update
+dotnet run -- --seed
+```
+
+El seeder crea automáticamente:
+- 7 Usuarios (admin, hechiceros, observador, soporte)
+- 10 Ubicaciones (Tokyo, Shibuya, Kyoto, etc.)
+- 12 Técnicas Malditas (Limitless, Ten Shadows, Black Flash, etc.)
+- 12 Hechiceros (Gojo, Yuji, Megumi, Nobara, etc.)
+- 10 Maldiciones (Sukuna, Mahito, Jogo, etc.)
+- 5 Personal de Apoyo
+- 10 Recursos (armas, vehículos, herramientas)
+- 8 Misiones (completadas, en progreso, pendientes)
+- Relaciones: técnicas dominadas, hechiceros en misión, traslados, uso de recursos, subordinaciones
+
 ## Comandos de Ejecución
 Backend:
 ```powershell
-dotnet build Backend/GestionDeMisiones.sln
-dotnet run --project Backend/GestionDeMisiones.csproj
+cd backend
+dotnet build
+dotnet run
 ```
 Frontend:
 ```powershell
-cd Jujutsu-Kaisen-Mission-Management-System/mission_management
+cd mission_management
 npm install
 npm run dev
 ```
