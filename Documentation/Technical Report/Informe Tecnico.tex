@@ -1,0 +1,111 @@
+\documentclass[12pt, a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{tikz}
+\usepackage{pdfpages}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{microtype}
+\graphicspath{{media/}}
+\usetikzlibrary{positioning}
+\geometry{margin=2.5cm}
+\setlength{\parskip}{0.6em}
+\setlength{\parindent}{0pt}
+
+\newcommand{\nodo}[1]{\fbox{\parbox{3cm}{\centering #1}}}
+\newcommand{\flecha}{\par\bigskip\centering $\downarrow$\par\bigskip}
+
+% Configuración de secciones
+\titleformat{\section}{\large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection}{1em}{}
+
+
+\begin{document}
+
+% ===== I. PRESENTACIÓN =====
+\begin{titlepage}
+\centering
+\textbf{Universidad de la Habana \\
+Facultad de Matemática y Computación \\
+Carrera: Ciencia de la Computación \\
+Año: 3ero \\
+Asignaturas: Ingeniería de Software y Sistemas de Bases de Datos II}\\[2cm]
+
+
+\begin{figure}[H]
+	\centering
+	
+	% --- Subfigura (a) ---
+	\begin{subfigure}[b]{0.45\textwidth}
+		\centering
+		\includegraphics[width=0.9\textwidth]{logo.png}
+		\caption{Logo}
+		\label{fig:logo}
+	\end{subfigure}
+	\hfill
+	% --- Subfigura (b) ---
+	\begin{subfigure}[b]{0.45\textwidth}
+		\centering
+		\includegraphics[width=0.9\textwidth]{logoMin.jpeg}
+		\caption{Miniatura}
+		\label{fig:logoMin}
+	\end{subfigure}
+	
+	% --- Leyenda general de la figura ---
+	\caption{Arte de la aplicación}
+	\label{fig:art}
+
+\end{figure}
+
+
+\vspace{1cm}
+{\LARGE \textbf{Sistema de Gestión de Misiones de Jujutsu Kaisen}}\\[0.5cm]
+{\large \textbf{Informe Técnico}}
+
+\vspace{1.5cm}
+\textbf{Desarrolladores:}\\
+\begin{tabular}{lll}
+\textbf{Nombre y Apellidos} & \textbf{Grupo} & \textbf{Usuario Telegram} \\
+Ronald Alfonso Pérez & C-311 & (\href{https://t.me/RAlfonsoP}{\textcolor{blue}{@RAlfonsoP}}),\\
+Juan Carlos Carmenate Díaz & C-311 & (\href{https://t.me/Juank404}{\textcolor{blue}{@Juank404}}),\\
+Sebastian González Alfonso & C-312 & (\href{https://t.me/sebagonz106}{\textcolor{blue}{@sebagonz106}}),\\
+Abraham Rey Sánchez Amador & C-312 & (\href{https://t.me/AbrahamR_Sanchez}{\textcolor{blue}{@AbrahamR\_Sanchez}}).
+\end{tabular}
+
+\vfill
+Curso: 2025-2026
+\end{titlepage}
+
+\begin{abstract}
+	
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+% ===== REFERENCIAS =====
+\begin{thebibliography}{9}
+\bibitem{lucina}
+García H, L. \& Montes de Oca R, M. (2005). \textit{Sistemas de Bases de Datos: Modelación y Diseño - Capítulos para estudiantes}. Versión digital.
+
+\bibitem{pressman2010}
+Pressman S. R. (2010). \textit{Ingeniería del Software. Un enfoque práctico} (Séptima edición). McGraw-Hill Interamericana Editores, México, D. F.
+
+\bibitem{fowler2002}
+Fowler, M. (2002). \textit{Patterns of Enterprise Application Architecture}. Addison-Wesley.
+\end{thebibliography}
+
+\end{document}
