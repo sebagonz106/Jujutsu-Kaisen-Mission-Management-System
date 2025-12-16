@@ -54,17 +54,20 @@ namespace GestionDeMisiones.Controllers
 
         [HttpPost]
         // [Authorize(Roles = "admin")]
-        public async Task<ActionResult<Maldicion>> Create([FromBody] Maldicion maldicion)
+        public async Task<ActionResult> Create([FromBody] Maldicion maldicion)
         {
             if (!ModelState.IsValid)
                 return BadRequest("Envíe una maldición válida.");
 
-            var created = await _service.CreateAsync(maldicion);
+            var (success, message, generatedData) = await _service.CreateAsync(maldicion);
             
+            if (!success)
+                return BadRequest(message);
+
             var (role, name) = GetActorInfo();
-            await _auditService.LogActionAsync("maldicion", "create", created!.Id, role, null, name, $"Creada maldición: {created.Nombre}");
+            await _auditService.LogActionAsync("maldicion", "create", generatedData.maldicionId, role, null, name, $"Creada maldición con solicitud automática: {maldicion.Nombre}");
             
-            return CreatedAtAction(nameof(GetById), new { id = created!.Id }, created);
+            return CreatedAtAction(nameof(GetById), new { id = generatedData.maldicionId }, new { message, generatedData });
         }
 
         [HttpPut("{id}")]

@@ -155,6 +155,21 @@ namespace GestionDeMisiones.Tests.TestHelpers
             };
         }
 
+        public static HechiceroEncargado CrearHechiceroEncargado(
+            int id = 1,
+            int hechiceroId = 1,
+            int solicitudId = 1,
+            int misionId = 1)
+        {
+            return new HechiceroEncargado
+            {
+                Id = id,
+                HechiceroId = hechiceroId,
+                SolicitudId = solicitudId,
+                MisionId = misionId
+            };
+        }
+
         public static HechiceroEnMision CrearHechiceroEnMision(
             int id = 1,
             int hechiceroId = 1,

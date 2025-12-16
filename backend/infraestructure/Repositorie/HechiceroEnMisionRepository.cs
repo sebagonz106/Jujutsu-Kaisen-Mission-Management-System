@@ -26,10 +26,11 @@ public class HechiceroEnMisionRepository:IHechiceroEnMisionRepository
         return hechicero;
     }
 
-    public async Task AddAsync(HechiceroEnMision hechicero)
+    public async Task<HechiceroEnMision> AddAsync(HechiceroEnMision hechicero)
     {
         await _context.HechiceroEnMision.AddAsync(hechicero);
         await _context.SaveChangesAsync();
+        return hechicero;
     }
 
     public async  Task UpdateAsync(HechiceroEnMision hechicero)
@@ -41,5 +42,14 @@ public class HechiceroEnMisionRepository:IHechiceroEnMisionRepository
     {
         _context.HechiceroEnMision.Remove(hechicero);
         await _context.SaveChangesAsync();
+    }
+
+    public async Task<List<HechiceroEnMision>> GetByMisionIdAsync(int misionId)
+    {
+        return await _context.HechiceroEnMision
+            .Include(h => h.Hechicero)
+            .Include(h => h.Mision)
+            .Where(h => h.MisionId == misionId)
+            .ToListAsync();
     }
 }

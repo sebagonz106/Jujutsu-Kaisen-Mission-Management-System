@@ -53,44 +53,30 @@ public class MisionController : ControllerBase
     }
 
     [HttpPost]
+    [ApiExplorerSettings(IgnoreApi = true)]  // Bloquear creación manual - Misiones se generan automáticamente desde Solicitud
     // [Authorize(Roles = "admin")] // solo super admin puede crear
-    public async Task<ActionResult<Mision>> PostMision([FromBody] Mision mision)
+    public async Task<IActionResult> PostMision([FromBody] Mision mision)
     {
-        if (!ModelState.IsValid)
-            return BadRequest("La misión no cumple el formato");
-
-        try
-        {
-            var created = await _service.CreateAsync(mision);
-            
-            var (role, rank, name) = GetActorInfo();
-            await _auditService.LogActionAsync("mision", "create", created.Id, role, rank, name, $"Creada misión #{created.Id}");
-            
-            return CreatedAtAction(nameof(GetMision), new { id = created.Id }, created);
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(ex.Message);
-        }
+        return StatusCode(403, new { error = "Las Misiones se crean automáticamente al cambiar una Solicitud a estado 'atendiendose'. No se pueden crear manualmente." });
     }
 
     [HttpPut("{id}")]
     // [Authorize(Roles = "admin")] // solo super admin puede actualizar
-    public async Task<IActionResult> PutMision(int id, [FromBody] Mision mision)
+    public async Task<IActionResult> PutMision(int id, [FromBody] GestionDeMisiones.Web.DTOs.MisionUpdateRequest request)
     {
         if (!ModelState.IsValid)
             return BadRequest("La misión no cumple el formato");
 
         try
         {
-            var updated = await _service.UpdateAsync(id, mision);
-            if (!updated)
-                return NotFound("La misión que quiere modificar no existe");
+            var (success, message, generatedData) = await _service.UpdateAsync(id, request);
+            if (!success)
+                return NotFound(message);
 
             var (role, rank, name) = GetActorInfo();
             await _auditService.LogActionAsync("mision", "update", id, role, rank, name, $"Actualizada misión #{id}");
 
-            return NoContent();
+            return Ok(new { message, generatedData });
         }
         catch (ArgumentException ex)
         {

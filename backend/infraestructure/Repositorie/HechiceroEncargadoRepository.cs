@@ -47,10 +47,11 @@ namespace GestionDeMisiones.Repository
                 .FirstOrDefaultAsync(h => h.Id == id);
         }
 
-        public async Task AddAsync(HechiceroEncargado hechiceroEncargado)
+        public async Task<HechiceroEncargado> AddAsync(HechiceroEncargado hechiceroEncargado)
         {
             await _context.HechiceroEncargado.AddAsync(hechiceroEncargado);
             await _context.SaveChangesAsync();
+            return hechiceroEncargado;
         }
 
         public async Task UpdateAsync(HechiceroEncargado hechiceroEncargado)
@@ -63,6 +64,24 @@ namespace GestionDeMisiones.Repository
         {
             _context.HechiceroEncargado.Remove(hechiceroEncargado);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<HechiceroEncargado?> GetBySolicitudIdAsync(int solicitudId)
+        {
+            return await _context.HechiceroEncargado
+                .Include(h => h.Hechicero)
+                .Include(h => h.Mision)
+                .Include(h => h.Solicitud)
+                .FirstOrDefaultAsync(h => h.SolicitudId == solicitudId);
+        }
+
+        public async Task<HechiceroEncargado?> GetByMisionIdAsync(int misionId)
+        {
+            return await _context.HechiceroEncargado
+                .Include(h => h.Hechicero)
+                .Include(h => h.Mision)
+                .Include(h => h.Solicitud)
+                .FirstOrDefaultAsync(h => h.MisionId == misionId);
         }
     }
 }

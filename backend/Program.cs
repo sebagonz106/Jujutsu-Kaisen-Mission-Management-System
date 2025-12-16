@@ -60,7 +60,13 @@ builder.Services.AddCors(options =>
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),sqlOptions=>sqlOptions.EnableRetryOnFailure()));
 builder.Services.AddScoped<IMaldicionRepository, MaldicionRepository>();
-builder.Services.AddScoped<IMaldicionService, MaldicionService>();
+builder.Services.AddScoped<ISolicitudRepository, SolicitudRepository>();
+builder.Services.AddScoped<IMaldicionService>(provider =>
+    new MaldicionService(
+        provider.GetRequiredService<IMaldicionRepository>(),
+        provider.GetRequiredService<ISolicitudRepository>()
+    )
+);
 builder.Services.AddScoped<IHechiceroRepository, HechiceroRepository>();
 builder.Services.AddScoped<IHechiceroService, HechiceroService>();
 builder.Services.AddScoped<ITrasladoRepository, TrasladoRepository>();
@@ -72,7 +78,15 @@ builder.Services.AddScoped<IUbicacionService, UbicacionService>();
 builder.Services.AddScoped<IUsoDeRecursoRepository, UsoDeRecursoRepository>();
 builder.Services.AddScoped<IUsoDeRecursoService, UsoDeRecursoService>();
 builder.Services.AddScoped<IMisionRepository, MisionRepository>();
-builder.Services.AddScoped<IMisionService, MisionService>();
+builder.Services.AddScoped<IMisionService>(provider =>
+    new MisionService(
+        provider.GetRequiredService<IMisionRepository>(),
+        provider.GetRequiredService<IUbicacionRepository>(),
+        provider.GetRequiredService<ISolicitudRepository>(),
+        provider.GetRequiredService<IHechiceroEnMisionRepository>(),
+        provider.GetRequiredService<IHechiceroEncargadoRepository>()
+    )
+);
 builder.Services.AddScoped<IHechiceroEnMisionRepository, HechiceroEnMisionRepository>();
 builder.Services.AddScoped<IHechiceroEnMisionService, HechiceroEnMisionService>();
 builder.Services.AddScoped<IPersonalDeApoyoRepository, PersonalDeApoyoRepository>();
