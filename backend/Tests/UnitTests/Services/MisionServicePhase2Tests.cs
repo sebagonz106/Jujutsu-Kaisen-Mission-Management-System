@@ -17,6 +17,7 @@ public class MisionServicePhase2Tests
     private readonly Mock<ISolicitudRepository> _solicitudRepoMock = new();
     private readonly Mock<IHechiceroEnMisionRepository> _hemRepoMock = new();
     private readonly Mock<IHechiceroEncargadoRepository> _heRepoMock = new();
+    private readonly Mock<IMaldicionRepository> _maldicionRepoMock = new();
     private readonly MisionService _service;
 
     public MisionServicePhase2Tests()
@@ -26,7 +27,8 @@ public class MisionServicePhase2Tests
             _ubicacionRepoMock.Object,
             _solicitudRepoMock.Object,
             _hemRepoMock.Object,
-            _heRepoMock.Object
+            _heRepoMock.Object,
+            _maldicionRepoMock.Object
         );
     }
 

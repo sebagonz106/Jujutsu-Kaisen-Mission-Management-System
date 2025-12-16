@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("GestionDeMisiones")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+80f1c57992fa97385ad750e08ec3e4a6cf1712c3")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+34b7c21940e22b846caa6c3fd3df7208f59ba0c9")]
 [assembly: System.Reflection.AssemblyProductAttribute("GestionDeMisiones")]
 [assembly: System.Reflection.AssemblyTitleAttribute("GestionDeMisiones")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

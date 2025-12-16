@@ -84,7 +84,8 @@ builder.Services.AddScoped<IMisionService>(provider =>
         provider.GetRequiredService<IUbicacionRepository>(),
         provider.GetRequiredService<ISolicitudRepository>(),
         provider.GetRequiredService<IHechiceroEnMisionRepository>(),
-        provider.GetRequiredService<IHechiceroEncargadoRepository>()
+        provider.GetRequiredService<IHechiceroEncargadoRepository>(),
+        provider.GetRequiredService<IMaldicionRepository>()
     )
 );
 builder.Services.AddScoped<IHechiceroEnMisionRepository, HechiceroEnMisionRepository>();

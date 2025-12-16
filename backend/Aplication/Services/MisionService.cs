@@ -14,19 +14,22 @@ public class MisionService : IMisionService
         private readonly ISolicitudRepository _solicitudRepo;
         private readonly IHechiceroEnMisionRepository _hechiceroEnMisionRepo;
         private readonly IHechiceroEncargadoRepository _hechiceroEncargadoRepo;
+        private readonly IMaldicionRepository _maldicionRepo;
 
         public MisionService(
             IMisionRepository misionRepo,
             IUbicacionRepository ubicacionRepo,
             ISolicitudRepository solicitudRepo,
             IHechiceroEnMisionRepository hechiceroEnMisionRepo,
-            IHechiceroEncargadoRepository hechiceroEncargadoRepo)
+            IHechiceroEncargadoRepository hechiceroEncargadoRepo,
+            IMaldicionRepository maldicionRepo)
         {
             _misionRepo = misionRepo;
             _ubicacionRepo = ubicacionRepo;
             _solicitudRepo = solicitudRepo;
             _hechiceroEnMisionRepo = hechiceroEnMisionRepo;
             _hechiceroEncargadoRepo = hechiceroEncargadoRepo;
+            _maldicionRepo = maldicionRepo;
         }    
         public async Task<IEnumerable<Mision>> GetAllAsync()
         => await _misionRepo.GetAllAsync();
@@ -95,6 +98,14 @@ public class MisionService : IMisionService
                     {
                         solicitud.Estado = EEstadoSolicitud.atendida;
                         await _solicitudRepo.UpdateAsync(solicitud);
+
+                        // Actualizar estado de Maldición a "en_proceso_de_exorcismo"
+                        var maldicion = await _maldicionRepo.GetByIdAsync(solicitud.MaldicionId);
+                        if (maldicion != null)
+                        {
+                            maldicion.EstadoActual = Maldicion.EEstadoActual.en_proceso_de_exorcismo;
+                            await _maldicionRepo.UpdateAsync(maldicion.Id, maldicion);
+                        }
                     }
                 }
 
@@ -112,7 +123,7 @@ public class MisionService : IMisionService
                 }
 
                 return (true, 
-                    "Misión actualizada a 'en_progreso'. HechiceroEnMision y Solicitud generados/actualizados automáticamente.",
+                    "Misión actualizada a 'en_progreso'. HechiceroEnMision, Solicitud y Maldición (estado: en_proceso_de_exorcismo) generados/actualizados automáticamente.",
                     new { misionId = mision.Id, hechicerosEnMisionIds = hemIds });
             }
             catch (Exception ex)
@@ -131,22 +142,39 @@ public class MisionService : IMisionService
                 mision.FechaYHoraDeFin = DateTime.Now;
                 await _misionRepo.UpdateAsync(mision);
 
-                // Si se completa con FRACASO, devolver Solicitud a pendiente para permitir nueva Misión
-                if (request.Estado == Mision.EEstadoMision.CompletadaConFracaso)
+                // Obtener HechiceroEncargado para acceder a la Solicitud y su Maldición
+                var hechiceroEncargado = await _hechiceroEncargadoRepo.GetByMisionIdAsync(mision.Id);
+                
+                if (hechiceroEncargado != null)
                 {
-                    var hechiceroEncargado = await _hechiceroEncargadoRepo.GetByMisionIdAsync(mision.Id);
-                    if (hechiceroEncargado != null)
+                    var solicitud = await _solicitudRepo.GetByIdAsync(hechiceroEncargado.SolicitudId);
+                    if (solicitud != null)
                     {
-                        var solicitud = await _solicitudRepo.GetByIdAsync(hechiceroEncargado.SolicitudId);
-                        if (solicitud != null)
+                        // Actualizar estado de Maldición basado en resultado
+                        var maldicion = await _maldicionRepo.GetByIdAsync(solicitud.MaldicionId);
+                        if (maldicion != null)
                         {
-                            solicitud.Estado = EEstadoSolicitud.pendiente;
-                            await _solicitudRepo.UpdateAsync(solicitud);
+                            if (request.Estado == Mision.EEstadoMision.CompletadaConExito)
+                            {
+                                // Éxito: Maldición pasa a "exorcisada"
+                                maldicion.EstadoActual = Maldicion.EEstadoActual.exorcisada;
+                            }
+                            else if (request.Estado == Mision.EEstadoMision.CompletadaConFracaso)
+                            {
+                                // Fracaso: Maldición vuelve a "activa"
+                                maldicion.EstadoActual = Maldicion.EEstadoActual.activa;
+                                // Solicitud vuelve a pendiente para permitir nueva Misión
+                                solicitud.Estado = EEstadoSolicitud.pendiente;
+                                await _solicitudRepo.UpdateAsync(solicitud);
+                            }
+                            await _maldicionRepo.UpdateAsync(maldicion.Id, maldicion);
                         }
                     }
                 }
 
-                var mensaje = request.Estado == Mision.EEstadoMision.CompletadaConExito ? "Misión completada con éxito" : "Misión completada con fracaso. Solicitud devuelta a pendiente";
+                var mensaje = request.Estado == Mision.EEstadoMision.CompletadaConExito ? 
+                    "Misión completada con éxito. Maldición marcada como exorcisada" : 
+                    "Misión completada con fracaso. Solicitud y Maldición devueltas a estado anterior";
                 return (true, mensaje, new { misionId = mision.Id });
             }
             catch (Exception ex)
@@ -165,7 +193,7 @@ public class MisionService : IMisionService
                 mision.FechaYHoraDeFin = DateTime.Now;
                 await _misionRepo.UpdateAsync(mision);
 
-                // Devolver Solicitud a 'pendiente' para permitir nueva Misión
+                // Devolver Solicitud a 'pendiente' y Maldición a 'activa'
                 var hechiceroEncargado = await _hechiceroEncargadoRepo.GetByMisionIdAsync(mision.Id);
                 if (hechiceroEncargado != null)
                 {
@@ -174,10 +202,18 @@ public class MisionService : IMisionService
                     {
                         solicitud.Estado = EEstadoSolicitud.pendiente;
                         await _solicitudRepo.UpdateAsync(solicitud);
+
+                        // Devolver Maldición a estado "activa"
+                        var maldicion = await _maldicionRepo.GetByIdAsync(solicitud.MaldicionId);
+                        if (maldicion != null)
+                        {
+                            maldicion.EstadoActual = Maldicion.EEstadoActual.activa;
+                            await _maldicionRepo.UpdateAsync(maldicion.Id, maldicion);
+                        }
                     }
                 }
 
-                return (true, "Misión cancelada y Solicitud devuelta a 'pendiente'", new { misionId = mision.Id });
+                return (true, "Misión cancelada, Solicitud y Maldición devueltas a 'pendiente' y 'activa'", new { misionId = mision.Id });
             }
             catch (Exception ex)
             {
