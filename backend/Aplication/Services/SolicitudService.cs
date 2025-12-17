@@ -2,6 +2,7 @@ using GestionDeMisiones.Models;
 using GestionDeMisiones.IService;
 using GestionDeMisiones.IRepository;
 using GestionDeMisiones.DTOs;
+using Microsoft.EntityFrameworkCore;
 
 namespace GestionDeMisiones.Service;
 
@@ -147,35 +148,58 @@ public class SolicitudService : ISolicitudService
             }
         }
 
-        // Cambio atendiendose → pendiente (deshacer - elimina Misión + HechiceroEncargado)
+        // Cambio atendiendose → pendiente (deshacer - elimina SOLO la Misión activa y su HechiceroEncargado)
         else if (existing.Estado == EEstadoSolicitud.atendiendose && 
                  request.Estado == EEstadoSolicitud.pendiente)
         {
             try
             {
-                // Obtener TODOS los HechiceroEncargado asociados a esta solicitud
+                // Buscar el HechiceroEncargado vinculado a una misión activa (Pendiente o EnProgreso)
                 var hechicerosEncargados = await _hechiceroEncargadoRepo.GetAllBySolicitudIdAsync(existing.Id);
-                foreach (var he in hechicerosEncargados)
-                {
-                    // Obtener la Misión asociada
-                    var mision = await _misionRepo.GetByIdAsync(he.MisionId);
+                HechiceroEncargado? targetHe = null;
+                Mision? targetMision = null;
 
-                    // Solo eliminar la misión y su HechiceroEncargado si la misión está en Pendiente o EnProgreso
-                    if (mision != null &&
-                        (mision.Estado == Mision.EEstadoMision.Pendiente || mision.Estado == Mision.EEstadoMision.EnProgreso))
+                if (hechicerosEncargados != null)
+                {
+                    foreach (var he in hechicerosEncargados)
                     {
-                        await _misionRepo.DeleteAsync(mision);
-                        await _hechiceroEncargadoRepo.DeleteAsync(he);
+                        var m = await _misionRepo.GetByIdAsync(he.MisionId);
+                        if (m != null && (m.Estado == Mision.EEstadoMision.Pendiente || m.Estado == Mision.EEstadoMision.EnProgreso))
+                        {
+                            targetHe = he;
+                            targetMision = m;
+                            break; // solo el vinculado a la misión activa
+                        }
                     }
-                    // Si la misión existe pero no está en un estado eliminable, dejamos tanto la misión
-                    // como el registro de HechiceroEncargado intactos.
                 }
 
-                // Actualizar Solicitud
+                // Si encontramos la misión/hechicero vinculados, eliminarlos
+                if (targetMision != null && targetHe != null)
+                {
+                    try
+                    {
+                        await _misionRepo.DeleteAsync(targetMision);
+                    }
+                    catch (DbUpdateConcurrencyException)
+                    {
+                        // Ignorar si ya fue eliminado
+                    }
+
+                    try
+                    {
+                        await _hechiceroEncargadoRepo.DeleteAsync(targetHe);
+                    }
+                    catch (DbUpdateConcurrencyException)
+                    {
+                        // Ignorar si ya fue eliminado
+                    }
+                }
+
+                // Actualizar Solicitud al nuevo estado
                 existing.Estado = request.Estado;
                 await _solicitudRepo.UpdateAsync(existing);
 
-                return (true, "Solicitud devuelta a estado 'pendiente'. Misión y HechiceroEncargado eliminados.", null);
+                return (true, "Solicitud devuelta a estado 'pendiente'. Misión y HechiceroEncargado vinculados eliminados.", null);
             }
             catch (Exception ex)
             {
@@ -229,8 +253,15 @@ public class SolicitudService : ISolicitudService
                         };
                         var heCreado = await _hechiceroEncargadoRepo.AddAsync(nuevoHE);
                         
-                        // Eliminar el anterior
-                        await _hechiceroEncargadoRepo.DeleteAsync(he);
+                        // Eliminar el anterior (manejar concurrencia)
+                        try
+                        {
+                            await _hechiceroEncargadoRepo.DeleteAsync(he);
+                        }
+                        catch (DbUpdateConcurrencyException)
+                        {
+                            // Ignorar si ya fue eliminado
+                        }
 
                         return (true, 
                             $"HechiceroEncargado actualizado (nuevo creado). Hechicero anterior removido de esta misión.",
@@ -240,7 +271,14 @@ public class SolicitudService : ISolicitudService
                     else
                     {
                         he.HechiceroId = request.HechiceroEncargadoId.Value;
-                        await _hechiceroEncargadoRepo.UpdateAsync(he);
+                        try
+                        {
+                            await _hechiceroEncargadoRepo.UpdateAsync(he);
+                        }
+                        catch (DbUpdateConcurrencyException)
+                        {
+                            return (false, "Conflicto al actualizar HechiceroEncargado (concurrency)", null);
+                        }
                         
                         return (true, 
                             "HechiceroEncargado actualizado.",
@@ -252,8 +290,15 @@ public class SolicitudService : ISolicitudService
                 if (request.NivelUrgencia.HasValue && request.NivelUrgencia.Value != mision.NivelUrgencia)
                 {
                     mision.NivelUrgencia = request.NivelUrgencia.Value;
-                    await _misionRepo.UpdateAsync(mision);
-                    
+                    try
+                    {
+                        await _misionRepo.UpdateAsync(mision);
+                    }
+                    catch (DbUpdateConcurrencyException)
+                    {
+                        return (false, "Conflicto al actualizar NivelUrgencia de la Misión (concurrency)", null);
+                    }
+
                     return (true, 
                         "NivelUrgencia de la Misión actualizado.",
                         new { nivelUrgencia = mision.NivelUrgencia });
@@ -277,6 +322,33 @@ public class SolicitudService : ISolicitudService
             return (true, "Solicitud marcada como atendida", null);
         }
 
+        // Mismo estado: permitir actualización flexible sin cambio de estado
+        else if (existing.Estado == request.Estado)
+        {
+            try
+            {
+                // En estado pendiente: no hay cambios posibles (espera transición a atendiendose)
+                if (existing.Estado == EEstadoSolicitud.pendiente)
+                {
+                    return (true, "Solicitud en estado pendiente. No hay cambios que aplicar. Para asignar un hechicero, cambie el estado a 'atendiendose'.", null);
+                }
+
+                // En estado atendiendose: puede cambiar hechicero o urgencia (ver rama anterior)
+                // En estado atendida: no hay cambios posibles
+                if (existing.Estado == EEstadoSolicitud.atendida)
+                {
+                    return (true, "Solicitud ya ha sido atendida. No se pueden realizar cambios.", null);
+                }
+
+                // Si llegamos aquí, no hay cambios válidos que hacer
+                return (true, "Solicitud actualizada sin cambio de estado", new { solicitudId = existing.Id });
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Error al actualizar solicitud: {ex.Message}", null);
+            }
+        }
+
         // Transición no permitida
         else
         {
@@ -291,21 +363,98 @@ public class SolicitudService : ISolicitudService
         var existing = await _solicitudRepo.GetByIdAsync(id);
         if (existing == null)
             return false;
+        // Buscar el HechiceroEncargado vinculado a una misión activa (Pendiente o EnProgreso)
+        var hechicerosEncargados = await _hechiceroEncargadoRepo.GetAllBySolicitudIdAsync(id);
+        HechiceroEncargado? targetHeToRemove = null;
+        Mision? targetMissionToCancel = null;
 
-        // Si Solicitud tiene Misión en Pendiente o EnProgreso, cambiarla a Cancelada
-        var he = await _hechiceroEncargadoRepo.GetBySolicitudIdAsync(id);
-        if (he != null)
+        if (hechicerosEncargados != null)
         {
-            var mision = await _misionRepo.GetByIdAsync(he.MisionId);
-            if (mision != null && (mision.Estado == Mision.EEstadoMision.Pendiente || mision.Estado == Mision.EEstadoMision.EnProgreso))
+            foreach (var he in hechicerosEncargados)
             {
-                mision.Estado = Mision.EEstadoMision.Cancelada;
-                mision.FechaYHoraDeFin = DateTime.Now;
-                await _misionRepo.UpdateAsync(mision);
+                try
+                {
+                    var m = await _misionRepo.GetByIdAsync(he.MisionId);
+                    if (m != null && (m.Estado == Mision.EEstadoMision.Pendiente || m.Estado == Mision.EEstadoMision.EnProgreso))
+                    {
+                        targetHeToRemove = he;
+                        targetMissionToCancel = m;
+                        break; // solo el vinculado a la misión activa
+                    }
+                }
+                catch (Exception)
+                {
+                    // ignorar problemas al consultar una mision concreta
+                }
             }
         }
 
-        await _solicitudRepo.DeleteAsync(existing);
+        if (targetMissionToCancel != null)
+        {
+            targetMissionToCancel.Estado = Mision.EEstadoMision.Cancelada;
+            targetMissionToCancel.FechaYHoraDeFin = DateTime.Now;
+            try
+            {
+                await _misionRepo.UpdateAsync(targetMissionToCancel);
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                // Ignorar conflictos de concurrencia al actualizar la misión
+            }
+        }
+
+        if (targetHeToRemove != null)
+        {
+            try
+            {
+                await _hechiceroEncargadoRepo.DeleteAsync(targetHeToRemove);
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                // Ignorar si ya fue eliminado por otra operación
+            }
+        }
+
+        try
+        {
+            await _solicitudRepo.DeleteAsync(existing);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            // Si la eliminación encuentra un conflicto, devolver false para indicar que no se eliminó
+            return false;
+        }
+
         return true;
+    }
+
+    /// <summary>
+    /// Obtiene el hechicero encargado y nivel de urgencia de una solicitud.
+    /// Busca entre todos los HechiceroEncargado asociados y retorna el vinculado a la misión activa.
+    /// Retorna null si no hay misión activa (estado pendiente).
+    /// </summary>
+    public async Task<dynamic?> GetHechiceroEncargadoDetailAsync(int solicitudId)
+    {
+        // Obtener TODOS los HechiceroEncargado de esta solicitud
+        var hechicerosEncargados = await _hechiceroEncargadoRepo.GetAllBySolicitudIdAsync(solicitudId);
+        
+        // Buscar el vinculado a una misión activa (no Pendiente, no Cancelada)
+        foreach (var he in hechicerosEncargados)
+        {
+            var mision = await _misionRepo.GetByIdAsync(he.MisionId);
+            if (mision != null && 
+                mision.Estado != Mision.EEstadoMision.Pendiente && 
+                mision.Estado != Mision.EEstadoMision.Cancelada)
+            {
+                return new
+                {
+                    hechiceroId = he.HechiceroId,
+                    misionId = he.MisionId,
+                    nivelUrgencia = mision.NivelUrgencia.ToString()
+                };
+            }
+        }
+
+        return null;
     }
 }

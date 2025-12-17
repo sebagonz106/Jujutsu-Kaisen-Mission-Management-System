@@ -12,4 +12,6 @@ public interface ISolicitudService
     // Sobrecarga: UpdateAsync con DTO para la lógica de cascada
     Task<(bool success, string message, dynamic? generatedData)> UpdateAsync(int id, SolicitudUpdateRequest request);
     Task<bool> DeleteAsync(int id);
+    // Obtiene detalles del hechicero encargado y urgencia de una solicitud
+    Task<dynamic?> GetHechiceroEncargadoDetailAsync(int solicitudId);
 }

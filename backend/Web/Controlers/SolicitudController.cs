@@ -50,6 +50,45 @@ public class SolicitudController : ControllerBase
         return Ok(solicitud);
     }
 
+    [HttpGet("{id}/detail")]
+    // [Authorize]
+    public async Task<IActionResult> GetSolicitudDetail(int id)
+    {
+        var solicitud = await _service.GetByIdAsync(id);
+        if (solicitud == null)
+            return NotFound("La solicitud que buscas no existe");
+
+        object response = new
+        {
+            id = solicitud.Id,
+            maldicionId = solicitud.MaldicionId,
+            estado = solicitud.Estado,
+            hechiceroEncargadoId = (int?)null,
+            nivelUrgencia = (string?)null
+        };
+
+        // Si la solicitud está en estado "atendiendose" o superior, obtener hechicero y urgencia
+        if (solicitud.Estado == EEstadoSolicitud.atendiendose || 
+            solicitud.Estado == EEstadoSolicitud.atendida)
+        {
+            // Obtener el primer HechiceroEncargado asociado (si existe)
+            var hechiceroEncargado = await _service.GetHechiceroEncargadoDetailAsync(id);
+            if (hechiceroEncargado != null)
+            {
+                response = new
+                {
+                    id = solicitud.Id,
+                    maldicionId = solicitud.MaldicionId,
+                    estado = solicitud.Estado,
+                    hechiceroEncargadoId = (int?)hechiceroEncargado.hechiceroId,
+                    nivelUrgencia = (string?)hechiceroEncargado.nivelUrgencia
+                };
+            }
+        }
+
+        return Ok(response);
+    }
+
     [HttpPost]
     [ApiExplorerSettings(IgnoreApi = true)]  // Bloquear creación manual - Solicitudes se generan automáticamente desde Maldición
     // [Authorize(Roles = "admin")]

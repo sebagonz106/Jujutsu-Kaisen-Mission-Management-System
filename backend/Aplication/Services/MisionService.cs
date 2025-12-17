@@ -92,14 +92,10 @@ public class MisionService : IMisionService
                 var hechiceroEncargado = await _hechiceroEncargadoRepo.GetByMisionIdAsync(mision.Id);
                 if (hechiceroEncargado != null)
                 {
-                    // Actualizar Solicitud asociada a 'atendida'
+                    // Actualizar estado de Maldición a "en_proceso_de_exorcismo"
                     var solicitud = await _solicitudRepo.GetByIdAsync(hechiceroEncargado.SolicitudId);
                     if (solicitud != null)
                     {
-                        solicitud.Estado = EEstadoSolicitud.atendida;
-                        await _solicitudRepo.UpdateAsync(solicitud);
-
-                        // Actualizar estado de Maldición a "en_proceso_de_exorcismo"
                         var maldicion = await _maldicionRepo.GetByIdAsync(solicitud.MaldicionId);
                         if (maldicion != null)
                         {
@@ -123,7 +119,7 @@ public class MisionService : IMisionService
                 }
 
                 return (true, 
-                    "Misión actualizada a 'en_progreso'. HechiceroEnMision, Solicitud y Maldición (estado: en_proceso_de_exorcismo) generados/actualizados automáticamente.",
+                    "Misión actualizada a 'en_progreso'. HechiceroEnMision y Maldición (estado: en_proceso_de_exorcismo) generados/actualizados automáticamente.",
                     new { misionId = mision.Id, hechicerosEnMisionIds = hemIds });
             }
             catch (Exception ex)
@@ -180,6 +176,13 @@ public class MisionService : IMisionService
             {
                 mision.Estado = request.Estado;
                 mision.FechaYHoraDeFin = DateTime.Now;
+                
+                // Actualizar eventos y daños colaterales si se proporcionan
+                if (!string.IsNullOrEmpty(request.EventosOcurridos))
+                    mision.EventosOcurridos = request.EventosOcurridos;
+                if (!string.IsNullOrEmpty(request.DannosColaterales))
+                    mision.DannosColaterales = request.DannosColaterales;
+                
                 await _misionRepo.UpdateAsync(mision);
 
                 // Obtener HechiceroEncargado para acceder a la Solicitud y su Maldición
@@ -196,8 +199,10 @@ public class MisionService : IMisionService
                         {
                             if (request.Estado == Mision.EEstadoMision.CompletadaConExito)
                             {
-                                // Éxito: Maldición pasa a "exorcisada"
+                                // Éxito: Maldición pasa a "exorcisada" y Solicitud a "atendida"
                                 maldicion.EstadoActual = Maldicion.EEstadoActual.exorcisada;
+                                solicitud.Estado = EEstadoSolicitud.atendida;
+                                await _solicitudRepo.UpdateAsync(solicitud);
                             }
                             else if (request.Estado == Mision.EEstadoMision.CompletadaConFracaso)
                             {
@@ -223,14 +228,23 @@ public class MisionService : IMisionService
             }
         }
 
-        // Transición en_progreso → cancelada
-        else if (mision.Estado == Mision.EEstadoMision.EnProgreso && request.Estado == Mision.EEstadoMision.Cancelada)
+        // Transición a cancelada desde cualquier estado no completado
+        else if (request.Estado == Mision.EEstadoMision.Cancelada &&
+                 mision.Estado != Mision.EEstadoMision.CompletadaConExito &&
+                 mision.Estado != Mision.EEstadoMision.CompletadaConFracaso)
         {
             try
             {
                 // Cambiar Misión a cancelada (no eliminar, solo cambiar estado)
                 mision.Estado = Mision.EEstadoMision.Cancelada;
                 mision.FechaYHoraDeFin = DateTime.Now;
+                
+                // Actualizar eventos y daños colaterales si se proporcionan
+                if (!string.IsNullOrEmpty(request.EventosOcurridos))
+                    mision.EventosOcurridos = request.EventosOcurridos;
+                if (!string.IsNullOrEmpty(request.DannosColaterales))
+                    mision.DannosColaterales = request.DannosColaterales;
+                
                 await _misionRepo.UpdateAsync(mision);
 
                 // Devolver Solicitud a 'pendiente' y Maldición a 'activa'
@@ -253,11 +267,68 @@ public class MisionService : IMisionService
                     }
                 }
 
-                return (true, "Misión cancelada, Solicitud y Maldición devueltas a 'pendiente' y 'activa'", new { misionId = mision.Id });
+                return (true, "Misión cancelada. Solicitud y Maldición devueltas a 'pendiente' y 'activa'", new { misionId = mision.Id });
             }
             catch (Exception ex)
             {
                 return (false, $"Error al cancelar misión: {ex.Message}", null);
+            }
+        }
+
+        // Mismo estado: permitir actualización flexible de campos sin cambio de estado
+        else if (mision.Estado == request.Estado)
+        {
+            try
+            {
+                // Actualizar campos de fecha si se proporcionan
+                if (request.FechaYHoraDeInicio.HasValue)
+                    mision.FechaYHoraDeInicio = request.FechaYHoraDeInicio.Value;
+                if (request.FechaYHoraDeFin.HasValue)
+                    mision.FechaYHoraDeFin = request.FechaYHoraDeFin.Value;
+                
+                // Actualizar campos de eventos y daños colaterales si se proporcionan
+                if (!string.IsNullOrEmpty(request.EventosOcurridos))
+                    mision.EventosOcurridos = request.EventosOcurridos;
+                if (!string.IsNullOrEmpty(request.DannosColaterales))
+                    mision.DannosColaterales = request.DannosColaterales;
+                
+                await _misionRepo.UpdateAsync(mision);
+
+                // Agregar/actualizar hechiceros si se proporcionan y la misión está en EnProgreso
+                var hemIds = new List<int>();
+                if (request.HechicerosIds != null && request.HechicerosIds.Length > 0 && 
+                    mision.Estado == Mision.EEstadoMision.EnProgreso)
+                {
+                    // Obtener hechiceros ya asignados a esta misión
+                    var existentes = await _hechiceroEnMisionRepo.GetByMisionIdAsync(mision.Id);
+                    var existentesIds = existentes.Select(e => e.HechiceroId).ToHashSet();
+
+                    // Crear HechiceroEnMision solo para hechiceros nuevos
+                    foreach (var hechiceroId in request.HechicerosIds)
+                    {
+                        // Si el hechicero ya estaba asignado, no crear duplicado
+                        if (!existentesIds.Contains(hechiceroId))
+                        {
+                            var hem = new HechiceroEnMision
+                            {
+                                HechiceroId = hechiceroId,
+                                MisionId = mision.Id
+                            };
+                            var creado = await _hechiceroEnMisionRepo.AddAsync(hem);
+                            hemIds.Add(creado.Id);
+                        }
+                    }
+                }
+                
+                var mensaje = hemIds.Count > 0 
+                    ? $"Misión actualizada. Se agregaron {hemIds.Count} nuevo(s) hechicero(s)."
+                    : "Misión actualizada sin cambio de estado";
+                
+                return (true, mensaje, hemIds.Count > 0 ? new { misionId = mision.Id, hechicerosEnMisionIds = hemIds } : new { misionId = mision.Id });
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Error al actualizar misión: {ex.Message}", null);
             }
         }
 

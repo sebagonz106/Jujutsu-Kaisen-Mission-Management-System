@@ -11,11 +11,19 @@ public class MisionController : ControllerBase
 {
     private readonly IMisionService _service;
     private readonly IAuditService _auditService;
+    private readonly GestionDeMisiones.IRepository.IHechiceroEnMisionRepository _hechiceroEnMisionRepo;
+    private readonly GestionDeMisiones.IRepository.IHechiceroEncargadoRepository _hechiceroEncargadoRepo;
+    private readonly GestionDeMisiones.IRepository.ISolicitudRepository _solicitudRepo;
+    private readonly GestionDeMisiones.IRepository.IMaldicionRepository _maldicionRepo;
 
-    public MisionController(IMisionService service, IAuditService auditService)
+    public MisionController(IMisionService service, IAuditService auditService, GestionDeMisiones.IRepository.IHechiceroEnMisionRepository hechiceroEnMisionRepo, GestionDeMisiones.IRepository.IHechiceroEncargadoRepository hechiceroEncargadoRepo, GestionDeMisiones.IRepository.ISolicitudRepository solicitudRepo, GestionDeMisiones.IRepository.IMaldicionRepository maldicionRepo)
     {
         _service = service;
         _auditService = auditService;
+        _hechiceroEnMisionRepo = hechiceroEnMisionRepo;
+        _hechiceroEncargadoRepo = hechiceroEncargadoRepo;
+        _solicitudRepo = solicitudRepo;
+        _maldicionRepo = maldicionRepo;
     }
 
     private (string role, string? rank, string? name) GetActorInfo()
@@ -52,6 +60,34 @@ public class MisionController : ControllerBase
         return Ok(mision);
     }
 
+    [HttpGet("{id}/detail")]
+    public async Task<IActionResult> GetMisionDetail(int id)
+    {
+        var mision = await _service.GetByIdAsync(id);
+        if (mision == null)
+            return NotFound("La misión que buscas no existe");
+
+        var hems = await _hechiceroEnMisionRepo.GetByMisionIdAsync(id);
+        var hechiceroIds = hems?.Select(h => h.HechiceroId).ToArray() ?? Array.Empty<int>();
+
+        object? maldicionDto = null;
+        var encargado = await _hechiceroEncargadoRepo.GetByMisionIdAsync(id);
+        if (encargado != null)
+        {
+            var solicitud = await _solicitudRepo.GetByIdAsync(encargado.SolicitudId);
+            if (solicitud != null)
+            {
+                var mald = await _maldicionRepo.GetByIdAsync(solicitud.MaldicionId);
+                if (mald != null)
+                {
+                    maldicionDto = new { id = mald.Id, nombre = mald.Nombre, grado = mald.Grado, estadoActual = mald.EstadoActual };
+                }
+            }
+        }
+
+        return Ok(new { success = true, mission = mision, hechiceroIds, maldicion = maldicionDto });
+    }
+
     [HttpPost]
     [ApiExplorerSettings(IgnoreApi = true)]  // Bloquear creación manual - Misiones se generan automáticamente desde Solicitud
     // [Authorize(Roles = "admin")] // solo super admin puede crear
@@ -76,7 +112,7 @@ public class MisionController : ControllerBase
             var (role, rank, name) = GetActorInfo();
             await _auditService.LogActionAsync("mision", "update", id, role, rank, name, $"Actualizada misión #{id}");
 
-            return Ok(new { message, generatedData });
+            return Ok(new { success = true, message, generatedData });
         }
         catch (ArgumentException ex)
         {
