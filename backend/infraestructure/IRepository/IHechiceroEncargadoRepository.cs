@@ -16,6 +16,11 @@ namespace GestionDeMisiones.IRepository
         /// Obtiene el HechiceroEncargado asociado a una Solicitud específica.
         /// </summary>
         Task<HechiceroEncargado?> GetBySolicitudIdAsync(int solicitudId);
+
+        /// <summary>
+        /// Obtiene TODOS los HechiceroEncargado asociados a una Solicitud (puede haber múltiples).
+        /// </summary>
+        Task<IEnumerable<HechiceroEncargado>> GetAllBySolicitudIdAsync(int solicitudId);
         
         /// <summary>
         /// Obtiene el HechiceroEncargado asociado a una Misión específica.

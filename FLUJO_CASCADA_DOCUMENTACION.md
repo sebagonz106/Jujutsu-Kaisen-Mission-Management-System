@@ -49,7 +49,7 @@ El sistema implementa un flujo de cascada donde **los cambios en una entidad des
 │                 HECHICERO ENCARGADO                          │
 │ (nexo entre Solicitud, Maldición y Misión)                  │
 └────────────────────────┬────────────────────────────────────┘
-                         │ 1:1
+                         │ 1:N
                          ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                       MISION                                 │

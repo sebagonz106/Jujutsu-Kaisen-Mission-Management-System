@@ -92,16 +92,20 @@ public class SolicitudService : ISolicitudService
             if (hechicero == null)
                 return (false, $"El Hechicero con ID {request.HechiceroEncargadoId} no existe", null);
 
-            // Verificar que no existe otra Misión no-cancelada/no-completada
-            var misionesActivas = await _misionRepo.GetAllAsync();
-            var misionExistente = misionesActivas.FirstOrDefault(m => 
-                m.Id != 0 && // Placeholder para filtro real si es necesario
-                m.Estado != Mision.EEstadoMision.Cancelada && 
-                m.Estado != Mision.EEstadoMision.CompletadaConExito && 
-                m.Estado != Mision.EEstadoMision.CompletadaConFracaso);
-            
-            if (misionExistente != null)
-                return (false, $"Ya existe una Misión activa (no cancelada/completada) para esta Solicitud", null);
+            // Verificar que no existen Misiones ACTIVAS ASOCIADAS A ESTA SOLICITUD
+            // Una solicitud puede tener múltiples misiones a través de múltiples HechiceroEncargado
+            var hechicerosEncargados = await _hechiceroEncargadoRepo.GetAllBySolicitudIdAsync(id);
+            foreach (var he in hechicerosEncargados)
+            {
+                var misionExistente = await _misionRepo.GetByIdAsync(he.MisionId);
+                if (misionExistente != null &&
+                    misionExistente.Estado != Mision.EEstadoMision.Cancelada && 
+                    misionExistente.Estado != Mision.EEstadoMision.CompletadaConExito && 
+                    misionExistente.Estado != Mision.EEstadoMision.CompletadaConFracaso)
+                {
+                    return (false, $"Ya existe una Misión activa para esta Solicitud", null);
+                }
+            }
 
             try
             {
@@ -110,9 +114,14 @@ public class SolicitudService : ISolicitudService
                 await _solicitudRepo.UpdateAsync(existing);
 
                 // Crear Misión automáticamente
+                // Usar la ubicación de aparición de la Maldición asociada a la Solicitud
+                var maldicion = existing.Maldicion ?? await _maldicionRepo.GetByIdAsync(existing.MaldicionId);
+                if (maldicion == null)
+                    return (false, "No se encontró la Maldición asociada a la Solicitud", null);
+
                 var mision = new Mision
                 {
-                    UbicacionId = 0,
+                    UbicacionId = maldicion.UbicacionDeAparicionId,
                     NivelUrgencia = request.NivelUrgencia.Value,
                     FechaYHoraDeInicio = DateTime.Now,
                     Estado = Mision.EEstadoMision.Pendiente
@@ -144,17 +153,22 @@ public class SolicitudService : ISolicitudService
         {
             try
             {
-                // Obtener HechiceroEncargado asociado
-                var he = await _hechiceroEncargadoRepo.GetBySolicitudIdAsync(existing.Id);
-                if (he != null)
+                // Obtener TODOS los HechiceroEncargado asociados a esta solicitud
+                var hechicerosEncargados = await _hechiceroEncargadoRepo.GetAllBySolicitudIdAsync(existing.Id);
+                foreach (var he in hechicerosEncargados)
                 {
-                    // Obtener y eliminar Misión asociada
+                    // Obtener la Misión asociada
                     var mision = await _misionRepo.GetByIdAsync(he.MisionId);
-                    if (mision != null)
-                        await _misionRepo.DeleteAsync(mision);
 
-                    // Eliminar HechiceroEncargado
-                    await _hechiceroEncargadoRepo.DeleteAsync(he);
+                    // Solo eliminar la misión y su HechiceroEncargado si la misión está en Pendiente o EnProgreso
+                    if (mision != null &&
+                        (mision.Estado == Mision.EEstadoMision.Pendiente || mision.Estado == Mision.EEstadoMision.EnProgreso))
+                    {
+                        await _misionRepo.DeleteAsync(mision);
+                        await _hechiceroEncargadoRepo.DeleteAsync(he);
+                    }
+                    // Si la misión existe pero no está en un estado eliminable, dejamos tanto la misión
+                    // como el registro de HechiceroEncargado intactos.
                 }
 
                 // Actualizar Solicitud

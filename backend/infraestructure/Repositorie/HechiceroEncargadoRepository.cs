@@ -75,6 +75,16 @@ namespace GestionDeMisiones.Repository
                 .FirstOrDefaultAsync(h => h.SolicitudId == solicitudId);
         }
 
+        public async Task<IEnumerable<HechiceroEncargado>> GetAllBySolicitudIdAsync(int solicitudId)
+        {
+            return await _context.HechiceroEncargado
+                .Include(h => h.Hechicero)
+                .Include(h => h.Mision)
+                .Include(h => h.Solicitud)
+                .Where(h => h.SolicitudId == solicitudId)
+                .ToListAsync();
+        }
+
         public async Task<HechiceroEncargado?> GetByMisionIdAsync(int misionId)
         {
             return await _context.HechiceroEncargado

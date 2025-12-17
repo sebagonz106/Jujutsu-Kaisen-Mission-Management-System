@@ -79,7 +79,7 @@ public class SolicitudController : ControllerBase
             
             await _auditService.LogActionAsync("solicitud", "update", id, role, null, name, auditMessage);
 
-            return Ok(new { message, generatedData });
+            return Ok(new { success = true, message, generatedData });
         }
         catch (Exception ex)
         {
