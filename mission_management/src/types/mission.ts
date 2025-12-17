@@ -67,7 +67,77 @@ export interface Mission {
 
   /** Array of sorcerer IDs assigned to this mission. */
   sorcererIds: number[];
+  /** Associated curse (single) */
+  curseId?: number;
+}
+/**
+ * Payload for updating a mission with cascading logic.
+ * 
+ * Used when changing mission state:
+ * - `pending` → `in_progress`: Requires ubicacionId and hechicerosIds
+ * - `in_progress` → `success` | `failure` | `canceled`: eventosOcurridos and dannosColaterales required
+ */
+export interface UpdateMissionPayload {
+  /**
+   * New mission state (translated from backend Spanish names).
+   * 
+   * Allowed transitions:
+   * - 'pending' → 'in_progress'
+   * - 'in_progress' → 'success' | 'failure' | 'canceled'
+   */
+  estado: Mission['state'];
 
-  /** Array of curse IDs targeted by this mission. */
-  curseIds: number[];
+  /**
+   * Location ID where the mission takes place.
+   * Required only when transitioning from 'pending' to 'in_progress'.
+   */
+  ubicacionId?: number;
+
+  /**
+   * Array of sorcerer IDs to assign to the mission.
+   * Required only when transitioning from 'pending' to 'in_progress'.
+   * Must contain at least one sorcerer ID.
+   */
+  hechicerosIds?: number[];
+
+  /**
+   * Events that occurred during the mission.
+   * Required when mission state is 'success', 'failure', or 'canceled'.
+   */
+  eventosOcurridos?: string;
+
+  /**
+   * Collateral damage caused during the mission.
+   * Required when mission state is 'success', 'failure', or 'canceled'.
+   */
+  dannosColaterales?: string;
+}
+
+/**
+ * Response from backend when updating a mission with cascading logic.
+ * 
+ * The response includes success status, a descriptive message,
+ * and optional generatedData containing IDs of auto-created entities.
+ */
+export interface MissionUpdateResponse {
+  /** Whether the update succeeded. */
+  success: boolean;
+
+  /** Human-readable message describing what happened and cascading effects. */
+  message: string;
+
+  /**
+   * Data about auto-created or modified entities.
+   * Present when cascading operations occur (e.g., HechiceroEnMision creation).
+   */
+  generatedData?: {
+    /** ID of the updated mission. */
+    misionId?: number;
+
+    /** Array of IDs for newly created HechiceroEnMision records. */
+    hechicerosEnMisionIds?: number[];
+
+    /** Updated mission urgency level (when changed). */
+    nivelUrgencia?: string;
+  };
 }

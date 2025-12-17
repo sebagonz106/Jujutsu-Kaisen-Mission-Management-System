@@ -8,10 +8,12 @@ namespace GestionDeMisiones.Service
     public class MaldicionService : IMaldicionService
     {
         private readonly IMaldicionRepository _repository;
+        private readonly ISolicitudRepository _solicitudRepository;
 
-        public MaldicionService(IMaldicionRepository repository)
+        public MaldicionService(IMaldicionRepository repository, ISolicitudRepository solicitudRepository)
         {
             _repository = repository;
+            _solicitudRepository = solicitudRepository;
         }
 
         public Task<List<Maldicion>> GetAllAsync() => _repository.GetAllAsync();
@@ -27,12 +29,65 @@ namespace GestionDeMisiones.Service
             return (list, nextCursor, hasMore);
         }
 
-        public Task<Maldicion?> GetByIdAsync(int id) => _repository.GetByIdAsync(id);
-
-        public async Task<Maldicion?> CreateAsync(Maldicion maldicion)
+        public async Task<Maldicion?> GetByIdAsync(int id)
         {
-            maldicion.Id = 0;
-            return await _repository.AddAsync(maldicion);
+            var maldicion = await _repository.GetByIdAsync(id);
+            
+            // Si no existe la maldición pero es solicitada, crear una "desconocida"
+            if (maldicion == null)
+            {
+                try
+                {
+                    var maldicionDesconocida = new Maldicion
+                    {
+                        Id = id,
+                        Nombre = "Desconocida",
+                        FechaYHoraDeAparicion = DateTime.Now,
+                        Grado = Maldicion.EGrado.especial,
+                        Tipo = Maldicion.ETipo.desconocida,
+                        EstadoActual = Maldicion.EEstadoActual.activa,
+                        NivelPeligro = Maldicion.ENivelPeligro.alto,
+                        UbicacionDeAparicionId = 1 // Ubicación por defecto o desconocida
+                    };
+                    
+                    // Intentar agregar con el ID específico
+                    maldicion = await _repository.AddAsync(maldicionDesconocida);
+                }
+                catch
+                {
+                    // Si falla la creación, retornar null (el ID ya existe)
+                    return null;
+                }
+            }
+            
+            return maldicion;
+        }
+
+        public async Task<(bool success, string message, dynamic? generatedData)> CreateAsync(Maldicion maldicion)
+        {
+            try
+            {
+                maldicion.Id = 0;
+                var maldicionCreada = await _repository.AddAsync(maldicion);
+
+                // Crear Solicitud automáticamente
+                var solicitud = new Solicitud
+                {
+                    MaldicionId = maldicionCreada.Id,
+                    Estado = EEstadoSolicitud.pendiente
+                };
+                var solicitudCreada = await _solicitudRepository.AddAsync(solicitud);
+
+                return (true, "Maldición creada. Solicitud generada automáticamente.", new
+                {
+                    maldicionId = maldicionCreada.Id,
+                    solicitudId = solicitudCreada.Id
+                });
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Error al crear Maldición: {ex.Message}", null);
+            }
         }
 
         public Task<bool> UpdateAsync(int id, Maldicion maldicion) => _repository.UpdateAsync(id, maldicion);

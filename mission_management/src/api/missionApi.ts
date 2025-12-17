@@ -8,7 +8,7 @@
 
 import { apiClient } from './client';
 import { normalizePaged } from './pagedApi';
-import type { Mission } from '../types/mission';
+import type { Mission, UpdateMissionPayload, MissionUpdateResponse } from '../types/mission';
 
 // Backend mission shape (PascalCase + enum names + navigation objects)
 interface BackendMission {
@@ -22,7 +22,9 @@ interface BackendMission {
   nivelUrgencia?: 'Planificada' | 'Urgente' | 'EmergenciaCritica';
   // Relations currently expressed via join tables; assumed backend will expose flattened arrays we map to sorcererIds/curseIds.
   hechiceros?: Array<{ hechiceroId: number }>; // if returned
-  tecnicas?: Array<{ tecnicaMalditaId: number }>; // placeholder for curse mapping if needed
+  // Backend: single associated maldicion id may be present
+  maldicionId?: number;
+  tecnicas?: Array<{ tecnicaMalditaId: number }>; // legacy placeholder for curse mapping if needed
 }
 
 // Enum translation maps frontend <-> backend
@@ -59,7 +61,8 @@ function normalizeMission(raw: BackendMission | Mission): Mission {
       collateralDamage: raw.dannosColaterales,
       urgency: raw.nivelUrgencia ? urgenciaFromBackend[raw.nivelUrgencia] : 'planned',
       sorcererIds: (raw.hechiceros ?? []).map(h => h.hechiceroId),
-      curseIds: (raw.tecnicas ?? []).map(c => c.tecnicaMalditaId),
+      // Prefer explicit maldicionId, fallback to first tecnica if present
+      curseId: raw.maldicionId ?? ((raw.tecnicas ?? [])[0]?.tecnicaMalditaId) ?? undefined,
     };
   }
   return raw as Mission;
@@ -85,7 +88,23 @@ export const missionApi = {
     const qs = qp.length ? `?${qp.join('&')}` : '';
     const { data } = await apiClient.get(`/missions${qs}`);
     const norm = normalizePaged<BackendMission>(data, { limit: params?.limit });
-    return { ...norm, items: norm.items.map(normalizeMission) };
+    const items = norm.items.map(normalizeMission);
+
+    // If backend list doesn't include associated maldicion id, fetch details for page items
+    const missing = items.filter(i => (i as any).curseId === undefined).map(i => i.id);
+    if (missing.length > 0) {
+      await Promise.all(missing.map(async (id) => {
+        try {
+          const { data: detail } = await apiClient.get<any>(`/missions/${id}/detail`);
+          const found = items.find(x => x.id === id);
+          if (found) (found as any).curseId = detail?.maldicion?.id ?? undefined;
+        } catch (_) {
+          // ignore
+        }
+      }));
+    }
+
+    return { ...norm, items };
   },
 
   /**
@@ -97,6 +116,17 @@ export const missionApi = {
   async get(id: number): Promise<Mission> {
     const { data } = await apiClient.get<BackendMission>(`/missions/${id}`);
     return normalizeMission(data);
+  },
+
+  /**
+   * Fetch a mission with related data (assigned sorcerer ids and associated curse)
+   */
+  async getDetail(id: number): Promise<{ mission: Mission; hechiceroIds: number[]; maldicion: { id: number; nombre: string; grado: string; estadoActual: string } | null }> {
+    const { data } = await apiClient.get<any>(`/missions/${id}/detail`);
+    const mission = normalizeMission(data.mission);
+    // Ensure mission.curseId reflects returned maldicion when provided
+    if (data.maldicion && (mission as any).curseId === undefined) (mission as any).curseId = data.maldicion.id;
+    return { mission, hechiceroIds: data.hechiceroIds ?? [], maldicion: data.maldicion ?? null };
   },
 
   /**
@@ -121,23 +151,45 @@ export const missionApi = {
   },
 
   /**
-   * Updates an existing mission.
+   * Updates an existing mission with cascading logic support.
+   * 
+   * Handles state transitions with validation:
+   * - 'pending' → 'in_progress': requires ubicacionId and hechicerosIds
+   * - 'in_progress' → 'success' | 'failure' | 'canceled': no additional fields needed
+   * 
+   * Automatically updates associated Solicitud and Maldicion states.
    *
-   * @param id - The mission ID.
-   * @param payload - Partial mission data to update.
-   * @returns Promise resolving to the updated mission.
+   * @param id - The mission ID to update.
+   * @param payload - Update payload with new estado and optional ubicacionId/hechicerosIds.
+   * @returns Promise resolving to response with success status, message, and optional generatedData containing auto-created entity IDs.
    */
-  async update(id: number, payload: Partial<Omit<Mission, 'id'>>): Promise<void> {
-    const send: Partial<BackendMission> = {};
-    if (payload.startAt !== undefined) send.fechaYHoraDeInicio = payload.startAt;
-    if (payload.endAt !== undefined) send.fechaYHoraDeFin = payload.endAt ?? null;
-    if (payload.locationId !== undefined) send.ubicacionId = payload.locationId;
-    if (payload.state !== undefined) send.estado = estadoToBackend[payload.state];
-    if (payload.events !== undefined) send.eventosOcurridos = payload.events;
-    if (payload.collateralDamage !== undefined) send.dannosColaterales = payload.collateralDamage;
-    if (payload.urgency !== undefined) send.nivelUrgencia = urgenciaToBackend[payload.urgency];
-    // Relations (sorcererIds/curseIds) omitted until backend endpoints for assignment exist.
-    await apiClient.put(`/missions/${id}`, send);
+  async update(id: number, payload: UpdateMissionPayload): Promise<MissionUpdateResponse> {
+    try {
+      // Convert frontend Mission['state'] to backend Spanish enum values
+      const send: any = {
+        estado: estadoToBackend[payload.estado],
+        ubicacionId: payload.ubicacionId,
+        hechicerosIds: payload.hechicerosIds,
+      };
+
+      // Include events and collateral damage if provided
+      if (payload.eventosOcurridos !== undefined) send.eventosOcurridos = payload.eventosOcurridos;
+      if (payload.dannosColaterales !== undefined) send.dannosColaterales = payload.dannosColaterales;
+      
+      const { data } = await apiClient.put<MissionUpdateResponse>(`/missions/${id}`, send);
+      
+      // Validate response structure
+      if (!data.success) {
+        throw new Error(data.message || 'Failed to update mission');
+      }
+      
+      return data;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('Unknown error updating mission');
+    }
   },
 
   /**

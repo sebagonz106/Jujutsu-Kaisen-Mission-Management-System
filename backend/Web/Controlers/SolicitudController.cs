@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using GestionDeMisiones.Models;
 using GestionDeMisiones.IService;
 using GestionDeMisiones.IServices;
+using GestionDeMisiones.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 
@@ -10,12 +11,14 @@ using System.Security.Claims;
 public class SolicitudController : ControllerBase
 {
     private readonly ISolicitudService _service;
+    private readonly Microsoft.Extensions.Logging.ILogger<SolicitudController> _logger;
     private readonly IAuditService _auditService;
 
-    public SolicitudController(ISolicitudService service, IAuditService auditService)
+    public SolicitudController(ISolicitudService service, IAuditService auditService, Microsoft.Extensions.Logging.ILogger<SolicitudController> logger)
     {
         _service = service;
         _auditService = auditService;
+        _logger = logger;
     }
 
     private (string role, string? name) GetActorInfo()
@@ -49,49 +52,80 @@ public class SolicitudController : ControllerBase
         return Ok(solicitud);
     }
 
-    [HttpPost]
-    // [Authorize(Roles = "admin")]
-    public async Task<ActionResult<Solicitud>> NewSolicitud([FromBody] Solicitud solicitud)
+    [HttpGet("{id}/detail")]
+    // [Authorize]
+    public async Task<IActionResult> GetSolicitudDetail(int id)
     {
-        if (!ModelState.IsValid)
-            return BadRequest("Envíe una solicitud válida");
+        var solicitud = await _service.GetByIdAsync(id);
+        if (solicitud == null)
+            return NotFound("La solicitud que buscas no existe");
 
-        try
+        object response = new
         {
-            var created = await _service.CreateAsync(solicitud);
-            
-            var (role, name) = GetActorInfo();
-            await _auditService.LogActionAsync("solicitud", "create", created.Id, role, null, name, $"Creada solicitud #{created.Id} para maldición #{created.MaldicionId}");
-            
-            return CreatedAtAction(nameof(GetSolicitudById), new { id = created.Id }, created);
-        }
-        catch (ArgumentException ex)
+            id = solicitud.Id,
+            maldicionId = solicitud.MaldicionId,
+            estado = solicitud.Estado,
+            hechiceroEncargadoId = (int?)null,
+            nivelUrgencia = (string?)null
+        };
+
+        // Si la solicitud está en estado "atendiendose" o superior, obtener hechicero y urgencia
+        if (solicitud.Estado == EEstadoSolicitud.atendiendose || 
+            solicitud.Estado == EEstadoSolicitud.atendida)
         {
-            return BadRequest(ex.Message);
+            // Obtener el primer HechiceroEncargado asociado (si existe)
+            var hechiceroEncargado = await _service.GetHechiceroEncargadoDetailAsync(id);
+            if (hechiceroEncargado != null)
+            {
+                response = new
+                {
+                    id = solicitud.Id,
+                    maldicionId = solicitud.MaldicionId,
+                    estado = solicitud.Estado,
+                    hechiceroEncargadoId = (int?)hechiceroEncargado.hechiceroId,
+                    nivelUrgencia = (string?)hechiceroEncargado.nivelUrgencia
+                };
+            }
         }
+
+        return Ok(response);
+    }
+
+    [HttpPost]
+    [ApiExplorerSettings(IgnoreApi = true)]  // Bloquear creación manual - Solicitudes se generan automáticamente desde Maldición
+    // [Authorize(Roles = "admin")]
+    public async Task<IActionResult> NewSolicitud([FromBody] Solicitud solicitud)
+    {
+        return StatusCode(403, new { error = "Las Solicitudes se crean automáticamente al crear una Maldición. No se pueden crear manualmente." });
     }
 
     [HttpPut("{id}")]
     // [Authorize(Roles = "admin")]
-    public async Task<IActionResult> PutSolicitud(int id, [FromBody] Solicitud solicitud)
+    public async Task<IActionResult> PutSolicitud(int id, [FromBody] SolicitudUpdateRequest request)
     {
         if (!ModelState.IsValid)
             return BadRequest("Envíe una solicitud válida");
 
         try
         {
-            var updated = await _service.UpdateAsync(id, solicitud);
-            if (!updated)
-                return NotFound("La solicitud que quiere editar no existe");
+            var (success, message, generatedData) = await _service.UpdateAsync(id, request);
+            
+            if (!success)
+                return BadRequest(message);
 
             var (role, name) = GetActorInfo();
-            await _auditService.LogActionAsync("solicitud", "update", id, role, null, name, $"Actualizada solicitud #{id}");
+            var auditMessage = $"Actualizada solicitud #{id}. {message}";
+            if (generatedData != null)
+                auditMessage += $" (Misión: {generatedData.misionId}, HechiceroEncargado: {generatedData.hechiceroEncargadoId})";
+            
+            await _auditService.LogActionAsync("solicitud", "update", id, role, null, name, auditMessage);
 
-            return NoContent();
+            return Ok(new { success = true, message, generatedData });
         }
-        catch (ArgumentException ex)
+        catch (Exception ex)
         {
-            return BadRequest(ex.Message);
+            _logger.LogError(ex, "Error al actualizar solicitud {SolicitudId}", id);
+            return StatusCode(500, new { error = ex.Message });
         }
     }
 
@@ -99,13 +133,30 @@ public class SolicitudController : ControllerBase
     // [Authorize(Roles = "admin")]
     public async Task<IActionResult> DeleteSolicitud(int id)
     {
-        var deleted = await _service.DeleteAsync(id);
-        if (!deleted)
-            return NotFound("La solicitud que quiere eliminar no existe");
+        _logger.LogWarning($"Intento de eliminar Solicitud: {id}");
+        try
+        {
+            var deleted = await _service.DeleteAsync(id);
+            if (!deleted)
+            {
+                _logger.LogWarning($"No se encontró la solicitud {id} para eliminar");
+                return NotFound("La solicitud que quiere eliminar no existe");
+            }
 
-        var (role, name) = GetActorInfo();
-        await _auditService.LogActionAsync("solicitud", "delete", id, role, null, name, $"Eliminada solicitud #{id}");
-
-        return NoContent();
+            var (role, name) = GetActorInfo();
+            await _auditService.LogActionAsync("solicitud", "delete", id, role, null, name, $"Eliminada solicitud #{id}");
+            _logger.LogInformation($"Solicitud {id} eliminada correctamente");
+            return NoContent();
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogError(ex, $"Error al eliminar solicitud {id}: {ex.Message}");
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error inesperado al eliminar solicitud {id}: {ex.Message}");
+            return StatusCode(500, "Error inesperado al eliminar la solicitud");
+        }
     }
 }

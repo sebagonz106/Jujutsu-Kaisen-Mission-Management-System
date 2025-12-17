@@ -107,14 +107,43 @@ const curseGradeRank: Record<string, number> = {
   grado_2: 2,
   grado_3: 3,
 };
-const getTopCurseName = (ids: (number | string)[] | undefined): string | undefined => {
-  if (!ids || ids.length === 0) return undefined;
-  const numIds = ids.map((x) => Number(x)).filter((n) => !Number.isNaN(n));
+const getTopCurseName = (idOrIds: number | (number | string)[] | undefined): string | undefined => {
+  if (idOrIds === undefined || idOrIds === null) return undefined;
+  let numIds: number[] = [];
+  if (typeof idOrIds === 'number') numIds = [idOrIds];
+  else if (Array.isArray(idOrIds)) numIds = idOrIds.map(x => Number(x)).filter(n => !Number.isNaN(n));
   if (numIds.length === 0) return undefined;
   const list = curses.filter((c) => numIds.includes(c.id));
   if (list.length === 0) return undefined;
   list.sort((a, b) => (curseGradeRank[b.grado] ?? 0) - (curseGradeRank[a.grado] ?? 0));
   return list[0]?.nombre;
+};
+
+// Helper to convert frontend Mission format to backend PascalCase format
+const toBackendMission = (m: Mission): any => {
+  const stateToBackend: Record<string, string> = {
+    pending: 'Pendiente',
+    in_progress: 'EnProgreso',
+    success: 'CompletadaConExito',
+    failure: 'CompletadaConFracaso',
+    canceled: 'Cancelada',
+  };
+  const urgencyToBackend: Record<string, string> = {
+    planned: 'Planificada',
+    urgent: 'Urgente',
+    critical: 'EmergenciaCritica',
+  };
+  return {
+    id: m.id,
+    fechaYHoraDeInicio: m.startAt,
+    fechaYHoraDeFin: m.endAt ?? null,
+    ubicacionId: m.locationId,
+    estado: stateToBackend[m.state] || 'Pendiente',
+    eventosOcurridos: m.events ?? '',
+    dannosColaterales: m.collateralDamage ?? '',
+    nivelUrgencia: urgencyToBackend[m.urgency] || 'Planificada',
+    maldicionId: (m as any).curseId,
+  };
 };
 
 // Use relative paths so MSW intercepts regardless of VITE_API_URL base.
@@ -269,16 +298,30 @@ export const handlers = [
       const cursor = Number(cursorParam);
       if (!Number.isNaN(cursor)) list = list.filter(m => m.id < cursor);
     }
-    if (!limit) return HttpResponse.json({ items: list, nextCursor: null, hasMore: false });
-    const slice = list.slice(0, limit);
-    const hasMore = list.length > slice.length;
+    const backendList = list.map(toBackendMission);
+    if (!limit) return HttpResponse.json({ items: backendList, nextCursor: null, hasMore: false });
+    const slice = backendList.slice(0, limit);
+    const hasMore = backendList.length > slice.length;
     const nextCursor = hasMore ? slice[slice.length - 1]?.id ?? null : null;
     return HttpResponse.json({ items: slice, nextCursor, hasMore });
   }),
   http.get('/missions/:id', ({ params }) => {
     const id = Number(params.id);
     const found = missions.find((m) => m.id === id);
-    return found ? HttpResponse.json(found) : HttpResponse.json({ message: 'Not found' }, { status: 404 });
+    return found ? HttpResponse.json(toBackendMission(found)) : HttpResponse.json({ message: 'Not found' }, { status: 404 });
+  }),
+  http.get('/missions/:id/detail', ({ params }) => {
+    const id = Number(params.id);
+    const m = missions.find((mi) => mi.id === id);
+    if (!m) return HttpResponse.json({ message: 'Not found' }, { status: 404 });
+    const hechiceroIds = m.sorcererIds ?? [];
+    let maldicionDto = null;
+    const cid = (m as any).curseId ?? (Array.isArray((m as any).curseIds) ? (m as any).curseIds[0] : undefined);
+    if (cid !== undefined) {
+      const c = curses.find(x => x.id === cid);
+      if (c) maldicionDto = { id: c.id, nombre: c.nombre, grado: c.grado, estadoActual: c.estadoActual };
+    }
+    return HttpResponse.json({ success: true, mission: toBackendMission(m), hechiceroIds, maldicion: maldicionDto });
   }),
   http.post('/missions', async ({ request }) => {
     const forbid = forbidIfNotHighRankSorcerer(request);
@@ -304,7 +347,7 @@ export const handlers = [
             .replace('Urgente', 'urgent')
             .replace('EmergenciaCritica', 'critical') as Mission['urgency'],
           sorcererIds: [],
-          curseIds: [],
+          curseId: undefined,
         };
       }
       return raw as Omit<Mission, 'id'>;
@@ -312,15 +355,16 @@ export const handlers = [
     const validated = validateMissionPayload(body);
     if (!validated.ok) return HttpResponse.json({ message: validated.error }, { status: 400 });
     const created = createMission(body);
-    // Try created.curseIds first, then fall back to payload (which may contain string ids)
+    // Prefer created.curseId then fallback to payload curseId or payload.curseIds first element
+    const payloadCurseId = (body as unknown as { curseId?: unknown }).curseId;
     const payloadCurseIds = Array.isArray((body as unknown as { curseIds?: unknown }).curseIds)
       ? (body as unknown as { curseIds?: (number | string)[] }).curseIds
       : undefined;
-    const curseIdsSource = created.curseIds ?? payloadCurseIds;
-    const curseName = getTopCurseName(curseIdsSource);
+    const curseIdSource = (created as any).curseId ?? (typeof payloadCurseId === 'number' ? payloadCurseId : undefined) ?? (payloadCurseIds ? Number(payloadCurseIds[0]) : undefined);
+    const curseName = getTopCurseName(curseIdSource);
     const detail = curseName ? `atiende ${curseName}` : `sin maldición asociada`;
     pushAudit('mission', 'create', created.id, request, `Creó misión — ${detail}`);
-    return HttpResponse.json(created, { status: 201 });
+    return HttpResponse.json(toBackendMission(created), { status: 201 });
   }),
   http.put('/missions/:id', async ({ params, request }) => {
     const forbid = forbidIfNotHighRankSorcerer(request);
@@ -361,18 +405,18 @@ export const handlers = [
     if (!validated.ok) return HttpResponse.json({ message: validated.error }, { status: 400 });
     const updated = updateMission(id, body);
     if (updated) {
-      const curseName = getTopCurseName(updated.curseIds);
+      const curseName = getTopCurseName((updated as any).curseId ?? undefined);
       const detail = curseName ? `atiende ${curseName}` : `sin maldición asociada`;
       pushAudit('mission', 'update', id, request, `Actualizó misión — ${detail}`);
     }
-    return updated ? HttpResponse.json(updated) : HttpResponse.json({ message: 'Not found' }, { status: 404 });
+    return updated ? HttpResponse.json(toBackendMission(updated)) : HttpResponse.json({ message: 'Not found' }, { status: 404 });
   }),
   http.delete('/missions/:id', ({ params, request }) => {
     const forbid = forbidIfNotHighRankSorcerer(request);
     if (forbid) return forbid;
     const id = Number(params.id);
     const current = missions.find(m => m.id === id);
-    const curseName = current ? getTopCurseName(current.curseIds) : undefined;
+    const curseName = current ? getTopCurseName((current as any).curseId ?? undefined) : undefined;
     const detail = curseName ? `que atendía ${curseName}` : `sin maldición asociada`;
     const ok = removeMission(id);
     if (ok) pushAudit('mission', 'delete', id, request, `Eliminó misión — ${detail}`);

@@ -11,11 +11,19 @@ public class MisionController : ControllerBase
 {
     private readonly IMisionService _service;
     private readonly IAuditService _auditService;
+    private readonly GestionDeMisiones.IRepository.IHechiceroEnMisionRepository _hechiceroEnMisionRepo;
+    private readonly GestionDeMisiones.IRepository.IHechiceroEncargadoRepository _hechiceroEncargadoRepo;
+    private readonly GestionDeMisiones.IRepository.ISolicitudRepository _solicitudRepo;
+    private readonly GestionDeMisiones.IRepository.IMaldicionRepository _maldicionRepo;
 
-    public MisionController(IMisionService service, IAuditService auditService)
+    public MisionController(IMisionService service, IAuditService auditService, GestionDeMisiones.IRepository.IHechiceroEnMisionRepository hechiceroEnMisionRepo, GestionDeMisiones.IRepository.IHechiceroEncargadoRepository hechiceroEncargadoRepo, GestionDeMisiones.IRepository.ISolicitudRepository solicitudRepo, GestionDeMisiones.IRepository.IMaldicionRepository maldicionRepo)
     {
         _service = service;
         _auditService = auditService;
+        _hechiceroEnMisionRepo = hechiceroEnMisionRepo;
+        _hechiceroEncargadoRepo = hechiceroEncargadoRepo;
+        _solicitudRepo = solicitudRepo;
+        _maldicionRepo = maldicionRepo;
     }
 
     private (string role, string? rank, string? name) GetActorInfo()
@@ -52,45 +60,59 @@ public class MisionController : ControllerBase
         return Ok(mision);
     }
 
-    [HttpPost]
-    // [Authorize(Roles = "admin")] // solo super admin puede crear
-    public async Task<ActionResult<Mision>> PostMision([FromBody] Mision mision)
+    [HttpGet("{id}/detail")]
+    public async Task<IActionResult> GetMisionDetail(int id)
     {
-        if (!ModelState.IsValid)
-            return BadRequest("La misión no cumple el formato");
+        var mision = await _service.GetByIdAsync(id);
+        if (mision == null)
+            return NotFound("La misión que buscas no existe");
 
-        try
+        var hems = await _hechiceroEnMisionRepo.GetByMisionIdAsync(id);
+        var hechiceroIds = hems?.Select(h => h.HechiceroId).ToArray() ?? Array.Empty<int>();
+
+        object? maldicionDto = null;
+        var encargado = await _hechiceroEncargadoRepo.GetByMisionIdAsync(id);
+        if (encargado != null)
         {
-            var created = await _service.CreateAsync(mision);
-            
-            var (role, rank, name) = GetActorInfo();
-            await _auditService.LogActionAsync("mision", "create", created.Id, role, rank, name, $"Creada misión #{created.Id}");
-            
-            return CreatedAtAction(nameof(GetMision), new { id = created.Id }, created);
+            var solicitud = await _solicitudRepo.GetByIdAsync(encargado.SolicitudId);
+            if (solicitud != null)
+            {
+                var mald = await _maldicionRepo.GetByIdAsync(solicitud.MaldicionId);
+                if (mald != null)
+                {
+                    maldicionDto = new { id = mald.Id, nombre = mald.Nombre, grado = mald.Grado, estadoActual = mald.EstadoActual };
+                }
+            }
         }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(ex.Message);
-        }
+
+        return Ok(new { success = true, mission = mision, hechiceroIds, maldicion = maldicionDto });
+    }
+
+    [HttpPost]
+    [ApiExplorerSettings(IgnoreApi = true)]  // Bloquear creación manual - Misiones se generan automáticamente desde Solicitud
+    // [Authorize(Roles = "admin")] // solo super admin puede crear
+    public async Task<IActionResult> PostMision([FromBody] Mision mision)
+    {
+        return StatusCode(403, new { error = "Las Misiones se crean automáticamente al cambiar una Solicitud a estado 'atendiendose'. No se pueden crear manualmente." });
     }
 
     [HttpPut("{id}")]
     // [Authorize(Roles = "admin")] // solo super admin puede actualizar
-    public async Task<IActionResult> PutMision(int id, [FromBody] Mision mision)
+    public async Task<IActionResult> PutMision(int id, [FromBody] GestionDeMisiones.Web.DTOs.MisionUpdateRequest request)
     {
         if (!ModelState.IsValid)
             return BadRequest("La misión no cumple el formato");
 
         try
         {
-            var updated = await _service.UpdateAsync(id, mision);
-            if (!updated)
-                return NotFound("La misión que quiere modificar no existe");
+            var (success, message, generatedData) = await _service.UpdateAsync(id, request);
+            if (!success)
+                return NotFound(message);
 
             var (role, rank, name) = GetActorInfo();
             await _auditService.LogActionAsync("mision", "update", id, role, rank, name, $"Actualizada misión #{id}");
 
-            return NoContent();
+            return Ok(new { success = true, message, generatedData });
         }
         catch (ArgumentException ex)
         {

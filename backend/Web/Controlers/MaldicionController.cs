@@ -13,11 +13,13 @@ namespace GestionDeMisiones.Controllers
     {
         private readonly IMaldicionService _service;
         private readonly IAuditService _auditService;
+        private readonly Microsoft.Extensions.Logging.ILogger<MaldicionController> _logger;
 
-        public MaldicionController(IMaldicionService service, IAuditService auditService)
-        {
-            _service = service;
-            _auditService = auditService;
+public MaldicionController(IMaldicionService service, IAuditService auditService, Microsoft.Extensions.Logging.ILogger<MaldicionController> logger)
+    {
+        _service = service;
+        _auditService = auditService;
+        _logger = logger;
         }
 
         private (string role, string? name) GetActorInfo()
@@ -54,17 +56,20 @@ namespace GestionDeMisiones.Controllers
 
         [HttpPost]
         // [Authorize(Roles = "admin")]
-        public async Task<ActionResult<Maldicion>> Create([FromBody] Maldicion maldicion)
+        public async Task<ActionResult> Create([FromBody] Maldicion maldicion)
         {
             if (!ModelState.IsValid)
                 return BadRequest("Envíe una maldición válida.");
 
-            var created = await _service.CreateAsync(maldicion);
+            var (success, message, generatedData) = await _service.CreateAsync(maldicion);
             
+            if (!success)
+                return BadRequest(message);
+
             var (role, name) = GetActorInfo();
-            await _auditService.LogActionAsync("maldicion", "create", created!.Id, role, null, name, $"Creada maldición: {created.Nombre}");
+            await _auditService.LogActionAsync("maldicion", "create", generatedData.maldicionId, role, null, name, $"Creada maldición con solicitud automática: {maldicion.Nombre}");
             
-            return CreatedAtAction(nameof(GetById), new { id = created!.Id }, created);
+            return CreatedAtAction(nameof(GetById), new { id = generatedData.maldicionId }, new { message, generatedData });
         }
 
         [HttpPut("{id}")]
@@ -88,15 +93,24 @@ namespace GestionDeMisiones.Controllers
         // [Authorize(Roles = "admin")]
         public async Task<IActionResult> Delete(int id)
         {
-            var maldicion = await _service.GetByIdAsync(id);
-            var deleted = await _service.DeleteAsync(id);
-            if (!deleted)
-                return NotFound("La maldición que desea eliminar no existe.");
+            try
+            {
+                var maldicion = await _service.GetByIdAsync(id);
+                var deleted = await _service.DeleteAsync(id);
+                if (!deleted)
+                    return NotFound("La maldición que desea eliminar no existe.");
 
-            var (role, name) = GetActorInfo();
-            await _auditService.LogActionAsync("maldicion", "delete", id, role, null, name, $"Eliminada maldición: {maldicion?.Nombre}");
+                var (role, name) = GetActorInfo();
+                await _auditService.LogActionAsync("maldicion", "delete", id, role, null, name, $"Eliminada maldición: {maldicion?.Nombre}");
+                _logger?.LogInformation("Maldicion {MaldicionId} eliminada correctamente", id);
 
-            return NoContent();
+                return NoContent();
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger?.LogWarning(ex, "Intento de eliminar Maldicion en uso: {MaldicionId}", id);
+                return BadRequest(ex.Message);
+            }
         }
     }
 }
