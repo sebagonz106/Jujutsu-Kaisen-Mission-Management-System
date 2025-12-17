@@ -70,13 +70,58 @@ namespace GestionDeMisiones.Repository
 
         public async Task<bool> DeleteAsync(int id)
         {
-            var maldicion = await _context.Maldiciones.FindAsync(id);
-            if (maldicion == null)
-                return false;
+            var strategy = _context.Database.CreateExecutionStrategy();
 
-            _context.Maldiciones.Remove(maldicion);
-            await _context.SaveChangesAsync();
-            return true;
+            return await strategy.ExecuteAsync(async () =>
+            {
+                // Iniciar transacción explícita para garantizar atomicidad de la operación
+                await using var tx = await _context.Database.BeginTransactionAsync();
+
+                var maldicion = await _context.Maldiciones.FindAsync(id);
+                if (maldicion == null)
+                    return false;
+
+                // Limpiar las entidades dependientes para evitar conflictos de FK:
+                // 1) Obtener Solicitudes de esta Maldición
+                // 2) Eliminar HechiceroEncargado relacionados
+                // 3) Eliminar las Solicitudes
+                var solicitudes = await _context.Solicitud.Where(s => s.MaldicionId == id).ToListAsync();
+                if (solicitudes.Any())
+                {
+                    var solicitudIds = solicitudes.Select(s => s.Id).ToList();
+
+                    var hechiceros = _context.HechiceroEncargado.Where(h => solicitudIds.Contains(h.SolicitudId));
+                    _context.HechiceroEncargado.RemoveRange(hechiceros);
+
+                    _context.Solicitud.RemoveRange(solicitudes);
+                }
+
+                _context.Maldiciones.Remove(maldicion);
+
+                try
+                {
+                    await _context.SaveChangesAsync();
+                    await tx.CommitAsync();
+                    return true;
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    // Conflicto de concurrencia: no se eliminó
+                    await tx.RollbackAsync();
+                    return false;
+                }
+                catch (DbUpdateException ex)
+                {
+                    // Fallos de integridad / FK: revertir y convertir a excepción comprensible
+                    await tx.RollbackAsync();
+                    throw new InvalidOperationException("No se pudo eliminar la maldición debido a restricciones de integridad referencial.", ex);
+                }
+                catch (Exception)
+                {
+                    await tx.RollbackAsync();
+                    throw;
+                }
+            });
         }
     }
 }

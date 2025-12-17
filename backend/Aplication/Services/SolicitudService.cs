@@ -13,9 +13,11 @@ public class SolicitudService : ISolicitudService
     private readonly IMisionRepository _misionRepo;
     private readonly IHechiceroEncargadoRepository _hechiceroEncargadoRepo;
     private readonly IHechiceroRepository _hechiceroRepo;
+    private readonly Microsoft.Extensions.Logging.ILogger<SolicitudService> _logger;
 
     public SolicitudService(
         ISolicitudRepository solicitudRepo,
+        Microsoft.Extensions.Logging.ILogger<SolicitudService> logger,
         IMaldicionRepository maldicionRepo,
         IMisionRepository misionRepo,
         IHechiceroEncargadoRepository hechiceroEncargadoRepo,
@@ -26,6 +28,18 @@ public class SolicitudService : ISolicitudService
         _misionRepo = misionRepo;
         _hechiceroEncargadoRepo = hechiceroEncargadoRepo;
         _hechiceroRepo = hechiceroRepo;
+        _logger = logger; // injected logger
+    }
+
+    // Backwards-compatible constructor for tests and callers that don't provide a logger
+    public SolicitudService(
+        ISolicitudRepository solicitudRepo,
+        IMaldicionRepository maldicionRepo,
+        IMisionRepository misionRepo,
+        IHechiceroEncargadoRepository hechiceroEncargadoRepo,
+        IHechiceroRepository hechiceroRepo)
+        : this(solicitudRepo, Microsoft.Extensions.Logging.Abstractions.NullLogger<SolicitudService>.Instance, maldicionRepo, misionRepo, hechiceroEncargadoRepo, hechiceroRepo)
+    {
     }
 
     public async Task<IEnumerable<Solicitud>> GetAllAsync()
@@ -144,6 +158,7 @@ public class SolicitudService : ISolicitudService
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error al cambiar a 'atendiendose' para la solicitud {SolicitudId}", id);
                 return (false, $"Error al actualizar solicitud: {ex.Message}", null);
             }
         }
@@ -203,6 +218,7 @@ public class SolicitudService : ISolicitudService
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error al deshacer (atendiendose -> pendiente) para la solicitud {SolicitudId}", existing.Id);
                 return (false, $"Error al deshacer solicitud: {ex.Message}", null);
             }
         }
@@ -309,6 +325,7 @@ public class SolicitudService : ISolicitudService
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error al actualizar datos en 'atendiendose' para la solicitud {SolicitudId}", existing.Id);
                 return (false, $"Error al actualizar datos en atendiendose: {ex.Message}", null);
             }
         }
@@ -382,9 +399,10 @@ public class SolicitudService : ISolicitudService
                         break; // solo el vinculado a la misión activa
                     }
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    // ignorar problemas al consultar una mision concreta
+                    // Registrar y continuar si hay problemas al consultar una misión concreta
+                    _logger.LogWarning(ex, "Fallo al consultar misión asociada con HechiceroEncargado {HeId}", he.Id);
                 }
             }
         }
@@ -415,14 +433,44 @@ public class SolicitudService : ISolicitudService
             }
         }
 
+        // Además, eliminar cualquier HechiceroEncargado restante vinculado a esta solicitud
+        try
+        {
+            var restantes = await _hechiceroEncargadoRepo.GetAllBySolicitudIdAsync(id);
+            if (restantes != null)
+            {
+                foreach (var r in restantes)
+                {
+                    try
+                    {
+                        await _hechiceroEncargadoRepo.DeleteAsync(r);
+                    }
+                    catch (DbUpdateConcurrencyException)
+                    {
+                        // Ignorar si ya fue eliminado
+                    }
+                }
+            }
+        }
+        catch (Exception)
+        {
+            // No bloquear la eliminación por fallas al intentar limpiar dependencias; se manejará al intentar eliminar la solicitud
+        }
+
         try
         {
             await _solicitudRepo.DeleteAsync(existing);
         }
         catch (DbUpdateConcurrencyException)
         {
-            // Si la eliminación encuentra un conflicto, devolver false para indicar que no se eliminó
+            // Si la eliminación encuentra un conflicto de concurrencia, devolver false
             return false;
+        }
+        catch (DbUpdateException ex)
+        {
+            // Problemas de FK / integridad referencial: registrar y convertir a InvalidOperationException
+            _logger.LogError(ex, "Error de integridad al eliminar Solicitud {SolicitudId}", id);
+            throw new InvalidOperationException("No se puede eliminar la solicitud porque existen entidades relacionadas que impiden la operación.", ex);
         }
 
         return true;

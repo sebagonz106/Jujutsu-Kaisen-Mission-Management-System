@@ -58,7 +58,14 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),sqlOptions=>sqlOptions.EnableRetryOnFailure()));
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), sqlOptions => sqlOptions.EnableRetryOnFailure());
+    if (builder.Environment.IsDevelopment())
+    {
+        // Mostrar detalles sensibles en logs solo en desarrollo para ayudar a depurar claves/fks en excepciones
+        options.EnableSensitiveDataLogging();
+    }
+});
 builder.Services.AddScoped<IMaldicionRepository, MaldicionRepository>();
 builder.Services.AddScoped<ISolicitudRepository, SolicitudRepository>();
 builder.Services.AddScoped<IMaldicionService>(provider =>
@@ -166,6 +173,8 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    // Mostrar página de excepciones en desarrollo para ver detalles y stack traces en la consola
+    app.UseDeveloperExceptionPage();
 }
 
 app.UseHttpsRedirection();

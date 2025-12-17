@@ -13,11 +13,13 @@ namespace GestionDeMisiones.Controllers
     {
         private readonly IMaldicionService _service;
         private readonly IAuditService _auditService;
+        private readonly Microsoft.Extensions.Logging.ILogger<MaldicionController> _logger;
 
-        public MaldicionController(IMaldicionService service, IAuditService auditService)
-        {
-            _service = service;
-            _auditService = auditService;
+public MaldicionController(IMaldicionService service, IAuditService auditService, Microsoft.Extensions.Logging.ILogger<MaldicionController> logger)
+    {
+        _service = service;
+        _auditService = auditService;
+        _logger = logger;
         }
 
         private (string role, string? name) GetActorInfo()
@@ -91,15 +93,24 @@ namespace GestionDeMisiones.Controllers
         // [Authorize(Roles = "admin")]
         public async Task<IActionResult> Delete(int id)
         {
-            var maldicion = await _service.GetByIdAsync(id);
-            var deleted = await _service.DeleteAsync(id);
-            if (!deleted)
-                return NotFound("La maldición que desea eliminar no existe.");
+            try
+            {
+                var maldicion = await _service.GetByIdAsync(id);
+                var deleted = await _service.DeleteAsync(id);
+                if (!deleted)
+                    return NotFound("La maldición que desea eliminar no existe.");
 
-            var (role, name) = GetActorInfo();
-            await _auditService.LogActionAsync("maldicion", "delete", id, role, null, name, $"Eliminada maldición: {maldicion?.Nombre}");
+                var (role, name) = GetActorInfo();
+                await _auditService.LogActionAsync("maldicion", "delete", id, role, null, name, $"Eliminada maldición: {maldicion?.Nombre}");
+                _logger?.LogInformation("Maldicion {MaldicionId} eliminada correctamente", id);
 
-            return NoContent();
+                return NoContent();
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger?.LogWarning(ex, "Intento de eliminar Maldicion en uso: {MaldicionId}", id);
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

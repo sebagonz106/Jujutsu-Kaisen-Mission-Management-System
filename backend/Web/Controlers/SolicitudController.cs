@@ -11,12 +11,14 @@ using System.Security.Claims;
 public class SolicitudController : ControllerBase
 {
     private readonly ISolicitudService _service;
+    private readonly Microsoft.Extensions.Logging.ILogger<SolicitudController> _logger;
     private readonly IAuditService _auditService;
 
-    public SolicitudController(ISolicitudService service, IAuditService auditService)
+    public SolicitudController(ISolicitudService service, IAuditService auditService, Microsoft.Extensions.Logging.ILogger<SolicitudController> logger)
     {
         _service = service;
         _auditService = auditService;
+        _logger = logger;
     }
 
     private (string role, string? name) GetActorInfo()
@@ -122,6 +124,7 @@ public class SolicitudController : ControllerBase
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "Error al actualizar solicitud {SolicitudId}", id);
             return StatusCode(500, new { error = ex.Message });
         }
     }
@@ -130,20 +133,30 @@ public class SolicitudController : ControllerBase
     // [Authorize(Roles = "admin")]
     public async Task<IActionResult> DeleteSolicitud(int id)
     {
+        _logger.LogWarning($"Intento de eliminar Solicitud: {id}");
         try
         {
             var deleted = await _service.DeleteAsync(id);
             if (!deleted)
+            {
+                _logger.LogWarning($"No se encontró la solicitud {id} para eliminar");
                 return NotFound("La solicitud que quiere eliminar no existe");
+            }
 
             var (role, name) = GetActorInfo();
             await _auditService.LogActionAsync("solicitud", "delete", id, role, null, name, $"Eliminada solicitud #{id}");
-
+            _logger.LogInformation($"Solicitud {id} eliminada correctamente");
             return NoContent();
         }
         catch (InvalidOperationException ex)
         {
+            _logger.LogError(ex, $"Error al eliminar solicitud {id}: {ex.Message}");
             return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error inesperado al eliminar solicitud {id}: {ex.Message}");
+            return StatusCode(500, "Error inesperado al eliminar la solicitud");
         }
     }
 }
