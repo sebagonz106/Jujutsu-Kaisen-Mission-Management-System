@@ -132,6 +132,46 @@ public class MisionService : IMisionService
             }
         }
 
+        // Cuando está en en_progreso y se reciben HechicerosIds: agregar nuevos hechiceros sin cambiar estado
+        else if (mision.Estado == Mision.EEstadoMision.EnProgreso && 
+                 request.Estado == Mision.EEstadoMision.EnProgreso &&
+                 request.HechicerosIds != null && request.HechicerosIds.Length > 0)
+        {
+            try
+            {
+                // Obtener hechiceros ya asignados a esta misión
+                var existentes = await _hechiceroEnMisionRepo.GetByMisionIdAsync(id);
+                var existentesIds = existentes.Select(e => e.HechiceroId).ToHashSet();
+
+                // Crear HechiceroEnMision solo para hechiceros nuevos
+                var hemIds = new List<int>();
+                foreach (var hechiceroId in request.HechicerosIds)
+                {
+                    // Si el hechicero ya estaba asignado, no crear duplicado
+                    if (!existentesIds.Contains(hechiceroId))
+                    {
+                        var hem = new HechiceroEnMision
+                        {
+                            HechiceroId = hechiceroId,
+                            MisionId = mision.Id
+                        };
+                        var creado = await _hechiceroEnMisionRepo.AddAsync(hem);
+                        hemIds.Add(creado.Id);
+                    }
+                }
+
+                var mensaje = hemIds.Count > 0 
+                    ? $"Se agregaron {hemIds.Count} nuevo(s) hechicero(s) a la misión." 
+                    : "Ningún hechicero nuevo fue agregado (todos ya estaban asignados).";
+                
+                return (true, mensaje, new { misionId = mision.Id, hechicerosEnMisionIds = hemIds });
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Error al agregar hechiceros a misión: {ex.Message}", null);
+            }
+        }
+
         // Transición en_progreso → completada (éxito o fracaso)
         else if (mision.Estado == Mision.EEstadoMision.EnProgreso &&
                  (request.Estado == Mision.EEstadoMision.CompletadaConExito || request.Estado == Mision.EEstadoMision.CompletadaConFracaso))
