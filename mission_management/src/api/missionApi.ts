@@ -22,7 +22,9 @@ interface BackendMission {
   nivelUrgencia?: 'Planificada' | 'Urgente' | 'EmergenciaCritica';
   // Relations currently expressed via join tables; assumed backend will expose flattened arrays we map to sorcererIds/curseIds.
   hechiceros?: Array<{ hechiceroId: number }>; // if returned
-  tecnicas?: Array<{ tecnicaMalditaId: number }>; // placeholder for curse mapping if needed
+  // Backend: single associated maldicion id may be present
+  maldicionId?: number;
+  tecnicas?: Array<{ tecnicaMalditaId: number }>; // legacy placeholder for curse mapping if needed
 }
 
 // Enum translation maps frontend <-> backend
@@ -59,7 +61,8 @@ function normalizeMission(raw: BackendMission | Mission): Mission {
       collateralDamage: raw.dannosColaterales,
       urgency: raw.nivelUrgencia ? urgenciaFromBackend[raw.nivelUrgencia] : 'planned',
       sorcererIds: (raw.hechiceros ?? []).map(h => h.hechiceroId),
-      curseIds: (raw.tecnicas ?? []).map(c => c.tecnicaMalditaId),
+      // Prefer explicit maldicionId, fallback to first tecnica if present
+      curseId: raw.maldicionId ?? ((raw.tecnicas ?? [])[0]?.tecnicaMalditaId) ?? undefined,
     };
   }
   return raw as Mission;
@@ -85,7 +88,23 @@ export const missionApi = {
     const qs = qp.length ? `?${qp.join('&')}` : '';
     const { data } = await apiClient.get(`/missions${qs}`);
     const norm = normalizePaged<BackendMission>(data, { limit: params?.limit });
-    return { ...norm, items: norm.items.map(normalizeMission) };
+    const items = norm.items.map(normalizeMission);
+
+    // If backend list doesn't include associated maldicion id, fetch details for page items
+    const missing = items.filter(i => (i as any).curseId === undefined).map(i => i.id);
+    if (missing.length > 0) {
+      await Promise.all(missing.map(async (id) => {
+        try {
+          const { data: detail } = await apiClient.get<any>(`/missions/${id}/detail`);
+          const found = items.find(x => x.id === id);
+          if (found) (found as any).curseId = detail?.maldicion?.id ?? undefined;
+        } catch (_) {
+          // ignore
+        }
+      }));
+    }
+
+    return { ...norm, items };
   },
 
   /**
@@ -97,6 +116,17 @@ export const missionApi = {
   async get(id: number): Promise<Mission> {
     const { data } = await apiClient.get<BackendMission>(`/missions/${id}`);
     return normalizeMission(data);
+  },
+
+  /**
+   * Fetch a mission with related data (assigned sorcerer ids and associated curse)
+   */
+  async getDetail(id: number): Promise<{ mission: Mission; hechiceroIds: number[]; maldicion: { id: number; nombre: string; grado: string; estadoActual: string } | null }> {
+    const { data } = await apiClient.get<any>(`/missions/${id}/detail`);
+    const mission = normalizeMission(data.mission);
+    // Ensure mission.curseId reflects returned maldicion when provided
+    if (data.maldicion && (mission as any).curseId === undefined) (mission as any).curseId = data.maldicion.id;
+    return { mission, hechiceroIds: data.hechiceroIds ?? [], maldicion: data.maldicion ?? null };
   },
 
   /**
@@ -136,11 +166,15 @@ export const missionApi = {
   async update(id: number, payload: UpdateMissionPayload): Promise<MissionUpdateResponse> {
     try {
       // Convert frontend Mission['state'] to backend Spanish enum values
-      const send = {
+      const send: any = {
         estado: estadoToBackend[payload.estado],
         ubicacionId: payload.ubicacionId,
         hechicerosIds: payload.hechicerosIds,
       };
+
+      // Include events and collateral damage if provided
+      if (payload.eventosOcurridos !== undefined) send.eventosOcurridos = payload.eventosOcurridos;
+      if (payload.dannosColaterales !== undefined) send.dannosColaterales = payload.dannosColaterales;
       
       const { data } = await apiClient.put<MissionUpdateResponse>(`/missions/${id}`, send);
       

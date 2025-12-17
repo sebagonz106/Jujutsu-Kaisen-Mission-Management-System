@@ -94,12 +94,14 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
                 <span key={c.value} className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs
                   bg-indigo-500 text-white border border-indigo-600">
                   {c.label}
-                  <button
-                    type="button"
+                  <span
+                    role="button"
+                    tabIndex={0}
                     aria-label={`Remove ${c.label}`}
-                    className="text-white hover:text-slate-100"
+                    className="ml-1 text-white hover:text-slate-100"
                     onClick={(e) => { e.stopPropagation(); toggleValue(c.value); }}
-                  >×</button>
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); toggleValue(c.value); } }}
+                  >×</span>
                 </span>
               ))}
               {overflow > 0 && (

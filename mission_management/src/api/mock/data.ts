@@ -59,7 +59,19 @@ export const missions: Mission[] = [
     collateralDamage: '',
     urgency: MISSION_URGENCY.planned,
     sorcererIds: [1],
-    curseIds: [1],
+    curseId: 1,
+  },
+  {
+    id: 2,
+    startAt: new Date(Date.now() - 86400000).toISOString(),
+    endAt: new Date().toISOString(),
+    locationId: 1,
+    state: MISSION_STATE.success,
+    events: 'Se enfrentó a la maldición de grado especial. El hechicero Yuta logró sellar la maldición usando Copy Technique.',
+    collateralDamage: 'Edificio completamente destruido. 3 civiles evacuados correctamente.',
+    urgency: MISSION_URGENCY.critical,
+    sorcererIds: [1],
+    curseId: 1,
   },
 ];
 

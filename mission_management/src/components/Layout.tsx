@@ -10,8 +10,6 @@ type LayoutProps = { children: React.ReactNode };
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [entitiesOpen, setEntitiesOpen] = useState(true);
-  const [queriesOpen, setQueriesOpen] = useState(true);
   
   const canMutate = canMutateByRole(user);
 
@@ -34,65 +32,15 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             {t('nav.home')}
           </NavLink>
           
-          {/* Entities Section */}
-          <div>
-            <button 
-              onClick={() => setEntitiesOpen(!entitiesOpen)}
-              className="nav-link w-full text-left flex items-center justify-between"
-            >
-              <span>{t('nav.entities')}</span>
-              <svg className={`w-4 h-4 transition-transform ${entitiesOpen ? 'rotate-90' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-            {entitiesOpen && (
-              <div className="ml-4 flex flex-col gap-1 mt-1">
-                <NavLink to="/sorcerers" className={({ isActive }) => `nav-link text-sm ${isActive ? 'nav-link--active' : ''}`}>{t('nav.sorcerers')}</NavLink>
-                <NavLink to="/curses" className={({ isActive }) => `nav-link text-sm ${isActive ? 'nav-link--active' : ''}`}>{t('nav.curses')}</NavLink>
-                <NavLink to="/missions" className={({ isActive }) => `nav-link text-sm ${isActive ? 'nav-link--active' : ''}`}>{t('nav.missions')}</NavLink>
-                <NavLink to="/locations" className={({ isActive }) => `nav-link text-sm ${isActive ? 'nav-link--active' : ''}`}>{t('nav.locations')}</NavLink>
-                <NavLink to="/techniques" className={({ isActive }) => `nav-link text-sm ${isActive ? 'nav-link--active' : ''}`}>{t('nav.techniques')}</NavLink>
-                <NavLink to="/resources" className={({ isActive }) => `nav-link text-sm ${isActive ? 'nav-link--active' : ''}`}>{t('nav.resources')}</NavLink>
-                <NavLink to="/requests" className={({ isActive }) => `nav-link text-sm ${isActive ? 'nav-link--active' : ''}`}>{t('nav.requests')}</NavLink>
-                <NavLink to="/support-staff" className={({ isActive }) => `nav-link text-sm ${isActive ? 'nav-link--active' : ''}`}>{t('nav.supportStaff')}</NavLink>
-                <NavLink to="/transfers" className={({ isActive }) => `nav-link text-sm ${isActive ? 'nav-link--active' : ''}`}>{t('nav.transfers')}</NavLink>
-                <NavLink to="/resource-usages" className={({ isActive }) => `nav-link text-sm ${isActive ? 'nav-link--active' : ''}`}>{t('nav.resourceUsages')}</NavLink>
-                <NavLink to="/sorcerers-in-charge" className={({ isActive }) => `nav-link text-sm ${isActive ? 'nav-link--active' : ''}`}>{t('nav.sorcerersInCharge')}</NavLink>
-                <NavLink to="/mastered-techniques" className={({ isActive }) => `nav-link text-sm ${isActive ? 'nav-link--active' : ''}`}>{t('nav.masteredTechniques')}</NavLink>
-                <NavLink to="/subordinations" className={({ isActive }) => `nav-link text-sm ${isActive ? 'nav-link--active' : ''}`}>{t('nav.subordinations')}</NavLink>
-                {canMutate && (
-                  <NavLink to="/entities/recent-actions" className={({ isActive }) => `nav-link text-sm ${isActive ? 'nav-link--active' : ''}`}>{t('nav.recentActions')}</NavLink>
-                )}
-              </div>
-            )}
-          </div>
+          {/* Entities Section - Link to /entities */}
+          <NavLink to="/entities" className={({ isActive }) => `nav-link ${isActive ? 'nav-link--active' : ''}`}>
+            {t('nav.entities')}
+          </NavLink>
 
-          {/* Queries Section */}
-          <div>
-            <button 
-              onClick={() => setQueriesOpen(!queriesOpen)}
-              className="nav-link w-full text-left flex items-center justify-between"
-            >
-              <span>{t('nav.queriesSection')}</span>
-              <svg className={`w-4 h-4 transition-transform ${queriesOpen ? 'rotate-90' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-            {queriesOpen && (
-              <div className="ml-4 flex flex-col gap-1 mt-1">
-                <NavLink to="/queries/curses-by-state" className={({ isActive }) => `nav-link text-sm ${isActive ? 'nav-link--active' : ''}`}>{t('pages.queries.rf12.title')}</NavLink>
-                <NavLink to="/queries/missions-in-range" className={({ isActive }) => `nav-link text-sm ${isActive ? 'nav-link--active' : ''}`}>{t('pages.queries.rf13.title')}</NavLink>
-                <NavLink to="/queries/sorcerer-stats" className={({ isActive }) => `nav-link text-sm ${isActive ? 'nav-link--active' : ''}`}>{t('pages.queries.rf14.title')}</NavLink>
-                <NavLink to="/queries/sorcerer-missions" className={({ isActive }) => `nav-link text-sm ${isActive ? 'nav-link--active' : ''}`}>{t('pages.queries.sorcererMissions.title')}</NavLink>
-                <NavLink to="/queries/technique-effectiveness" className={({ isActive }) => `nav-link text-sm ${isActive ? 'nav-link--active' : ''}`}>{t('pages.queries.techniqueEffectiveness.title')}</NavLink>
-                <NavLink to="/queries/master-disciples" className={({ isActive }) => `nav-link text-sm ${isActive ? 'nav-link--active' : ''}`}>{t('pages.queries.masterDisciples.title')}</NavLink>
-                <NavLink to="/queries/ranking" className={({ isActive }) => `nav-link text-sm ${isActive ? 'nav-link--active' : ''}`}>{t('pages.queries.sorcererRanking.title')}</NavLink>
-                {/* {canMutate && (
-                  <NavLink to="/queries/history" className={({ isActive }) => `nav-link text-sm ${isActive ? 'nav-link--active' : ''}`}>{t('nav.queryHistory')}</NavLink>
-                )} */}
-              </div>
-            )}
-          </div>
+          {/* Queries Section - Link to /querys */}
+          <NavLink to="/queries" className={({ isActive }) => `nav-link ${isActive ? 'nav-link--active' : ''}`}>
+            {t('nav.queriesSection')}
+          </NavLink>
 
           {/* Admin Section */}
           {user?.role === 'admin' && (

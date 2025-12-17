@@ -67,16 +67,15 @@ export interface Mission {
 
   /** Array of sorcerer IDs assigned to this mission. */
   sorcererIds: number[];
-
-  /** Array of curse IDs targeted by this mission. */
-  curseIds: number[];
+  /** Associated curse (single) */
+  curseId?: number;
 }
 /**
  * Payload for updating a mission with cascading logic.
  * 
  * Used when changing mission state:
  * - `pending` → `in_progress`: Requires ubicacionId and hechicerosIds
- * - `in_progress` → `success` | `failure` | `canceled`: No additional fields
+ * - `in_progress` → `success` | `failure` | `canceled`: eventosOcurridos and dannosColaterales required
  */
 export interface UpdateMissionPayload {
   /**
@@ -100,6 +99,18 @@ export interface UpdateMissionPayload {
    * Must contain at least one sorcerer ID.
    */
   hechicerosIds?: number[];
+
+  /**
+   * Events that occurred during the mission.
+   * Required when mission state is 'success', 'failure', or 'canceled'.
+   */
+  eventosOcurridos?: string;
+
+  /**
+   * Collateral damage caused during the mission.
+   * Required when mission state is 'success', 'failure', or 'canceled'.
+   */
+  dannosColaterales?: string;
 }
 
 /**

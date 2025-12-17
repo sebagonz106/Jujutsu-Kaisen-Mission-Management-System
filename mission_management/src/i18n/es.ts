@@ -512,6 +512,7 @@ export const es = {
       urgencyRequiredPending: 'La urgencia es obligatoria en misiones pendientes.',
       eventsRequiredFinished: 'Debe detallar los eventos para misiones finalizadas.',
       collateralRequiredFinished: 'Debe indicar los daños colaterales para misiones finalizadas.',
+      sorcerersRequiredInProgress: 'Debe asignar al menos un hechicero para iniciar la misión.',
       startDateRequired: 'La fecha de inicio es obligatoria.',
       startDateNotFuture: 'La fecha de inicio no puede ser futura.',
       endDateRequiredFinished: 'La fecha de fin es obligatoria para misiones finalizadas.',

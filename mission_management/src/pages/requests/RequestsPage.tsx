@@ -10,6 +10,7 @@ import { useInfiniteRequests } from '../../hooks/useInfiniteRequests';
 import { useRequests } from '../../hooks/useRequests';
 import { useCurses } from '../../hooks/useCurses';
 import { useSorcerers } from '../../hooks/useSorcerers';
+import { requestApi } from '../../api/requestApi';
 import type { PagedResponse } from '../../api/pagedApi';
 import type { Request, RequestStatus, UpdateRequestPayload } from '../../types/request';
 import type { Curse } from '../../types/curse';
@@ -87,10 +88,20 @@ export const RequestsPage = () => {
   const openEdit = (r: Request) => {
     setEditId(r.id);
     setCurrentRequest(r);
-    resetUpdate({ 
-      estado: r.estado, 
-      hechiceroEncargadoId: undefined, 
-      nivelUrgencia: undefined 
+    // Load detailed info from backend to get hechiceroEncargadoId and nivelUrgencia
+    requestApi.getDetail(r.id).then(detail => {
+      resetUpdate({ 
+        estado: r.estado, 
+        hechiceroEncargadoId: detail.hechiceroEncargadoId, 
+        nivelUrgencia: detail.nivelUrgencia 
+      });
+    }).catch(() => {
+      // Fallback if detail load fails
+      resetUpdate({ 
+        estado: r.estado, 
+        hechiceroEncargadoId: undefined, 
+        nivelUrgencia: undefined 
+      });
     });
     setShowForm(true);
   };

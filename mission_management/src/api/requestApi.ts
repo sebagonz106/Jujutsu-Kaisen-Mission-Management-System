@@ -46,6 +46,14 @@ export const requestApi = {
   },
 
   /**
+   * Fetches detailed information for a request including assigned sorcerer and urgency.
+   */
+  async getDetail(id: number): Promise<{ id: number; maldicionId: number; estado: string; hechiceroEncargadoId?: number; nivelUrgencia?: string }> {
+    const { data } = await apiClient.get(`/requests/${id}/detail`);
+    return data;
+  },
+
+  /**
    * Creates a new request.
    */
   async create(payload: NewRequest): Promise<Request> {
