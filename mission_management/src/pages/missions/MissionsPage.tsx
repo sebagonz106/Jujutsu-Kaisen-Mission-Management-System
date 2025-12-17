@@ -464,10 +464,9 @@ export const MissionsPage = () => {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
   <h1 className="page-title">{t('pages.missions.title')}</h1>
-    {canMutate && <Button onClick={openCreate}>{t('ui.new_fem')}</Button>}
       </div>
   {(sortedData.length ?? 0) === 0 ? (
-  <EmptyState title={t('pages.missions.emptyTitle')} description={canMutate ? t('pages.missions.emptyDescHasPerms') : t('pages.missions.emptyDescNoPerms')} action={canMutate ? <Button onClick={openCreate}>{t('pages.missions.createAction')}</Button> : undefined} />
+  <EmptyState title={t('pages.missions.emptyTitle')} description={canMutate ? t('pages.missions.emptyDescHasPerms') : t('pages.missions.emptyDescNoPerms')} />
       ) : (
         <div className="card-surface p-4 overflow-x-auto">
           <Table>

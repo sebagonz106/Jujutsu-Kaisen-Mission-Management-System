@@ -17,8 +17,8 @@ type FormValues = z.infer<typeof schema>;
 export const LoginPage = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
-  const fromPath = (location.state as { from?: Location } | null)?.from?.pathname;
+  // const location = useLocation();
+  // const fromPath = (location.state as { from?: Location } | null)?.from?.pathname;
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormValues>({ resolver: zodResolver(schema) });
 
   const onSubmit = handleSubmit(async (values) => {
@@ -26,8 +26,8 @@ export const LoginPage = () => {
       const { accessToken, user } = await authApi.login(values);
       login(accessToken, user);
       toast.success(t('auth.welcome'));
-      const target = fromPath && fromPath !== '/login' ? fromPath : '/entities';
-      navigate(target, { replace: true });
+      // Always redirect to home page after login, ignoring previous location
+      navigate('/', { replace: true });
     } catch (err) {
       if (axios.isAxiosError(err)) {
         if (err.response) {

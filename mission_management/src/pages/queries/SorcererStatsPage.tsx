@@ -173,10 +173,10 @@ export const SorcererStatsPage = () => {
               <THead>
                 <tr>
                   <TH onClick={() => toggleSort('nombre')}>
-                    <SortHeader active={sortKey === 'nombre'} direction={sortDir} label={t('common.name')} onClick={() => {}} />
+                    <SortHeader active={sortKey === 'nombre'} direction={sortDir} label={t('pages.queries.query4.name')} onClick={() => {}} />
                   </TH>
                   <TH onClick={() => toggleSort('grado')}>
-                    <SortHeader active={sortKey === 'grado'} direction={sortDir} label={t('common.grade')} onClick={() => {}} />
+                    <SortHeader active={sortKey === 'grado'} direction={sortDir} label={t('pages.queries.query4.grade')} onClick={() => {}} />
                   </TH>
                   <TH onClick={() => toggleSort('misionesTotales')}>
                     <SortHeader active={sortKey === 'misionesTotales'} direction={sortDir} label={t('pages.queries.rf14.totalMissions')} onClick={() => {}} />
