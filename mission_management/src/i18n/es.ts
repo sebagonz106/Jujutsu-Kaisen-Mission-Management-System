@@ -43,6 +43,7 @@ export const es = {
   },
   ui: {
     id: 'ID',
+    numero: 'Número',
     errorLoadingRecentActions: 'Error cargando acciones recientes',
     noRecentActivity: 'Sin actividad reciente',
     loadMore: 'Ver más',
@@ -60,6 +61,8 @@ export const es = {
     errorLoading: 'Error al cargar',
     yes: 'Sí',
     no: 'No',
+    view: 'Ver',
+    close: 'Cerrar',
   },
   nav: {
     panel: 'Panel',
@@ -399,12 +402,12 @@ export const es = {
   },
   toast: {
     sorcerer: { created: 'Creado', updated: 'Actualizado', deleted: 'Eliminado' },
-    curse: { created: 'Creada', updated: 'Actualizada', deleted: 'Eliminada' },
+    curse: { created: 'Creada', updated: 'Actualizada', deleted: 'Eliminada', createdWithSolicitud: 'Maldición creada: La solicitud de misión se creó correctamente' },
     mission: { created: 'Creada', updated: 'Actualizada', deleted: 'Eliminada' },
     location: { created: 'Creada', updated: 'Actualizada', deleted: 'Eliminada' },
     technique: { created: 'Creada', updated: 'Actualizada', deleted: 'Eliminada' },
     resource: { created: 'Creado', updated: 'Actualizado', deleted: 'Eliminado' },
-    request: { created: 'Creada', updated: 'Actualizada', deleted: 'Eliminada' },
+    request: { created: 'Solicitud creada', updated: 'Solicitud actualizada', deleted: 'Solicitud eliminada' },
     supportStaff: { created: 'Creado', updated: 'Actualizado', deleted: 'Eliminado' },
     transfer: { created: 'Creado', updated: 'Actualizado', deleted: 'Eliminado' },
     resourceUsage: { created: 'Creado', updated: 'Actualizado', deleted: 'Eliminado' },
@@ -415,6 +418,7 @@ export const es = {
     pdf: { exported: 'PDF exportado correctamente', emptyResponse: 'Respuesta vacía del servidor', exportError: 'Error al exportar PDF' },
     saveError: 'Error al guardar',
     deleteError: 'Error al eliminar',
+    created: 'creada',
   },
   errors: {
     loadSorcerers: 'Error al cargar hechiceros',
@@ -463,6 +467,7 @@ export const es = {
       mission: 'Misión',
       sorcerers: 'Hechiceros',
       sorcerer: 'Hechicero',
+      sorcererInCharge: 'Hechicero Encargado',
       reason: 'Motivo',
       resource: 'Recurso',
       startDate: 'Fecha Inicio',

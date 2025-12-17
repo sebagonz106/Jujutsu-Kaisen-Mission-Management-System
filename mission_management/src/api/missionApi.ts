@@ -8,7 +8,7 @@
 
 import { apiClient } from './client';
 import { normalizePaged } from './pagedApi';
-import type { Mission } from '../types/mission';
+import type { Mission, UpdateMissionPayload, MissionUpdateResponse } from '../types/mission';
 
 // Backend mission shape (PascalCase + enum names + navigation objects)
 interface BackendMission {
@@ -121,23 +121,41 @@ export const missionApi = {
   },
 
   /**
-   * Updates an existing mission.
+   * Updates an existing mission with cascading logic support.
+   * 
+   * Handles state transitions with validation:
+   * - 'pending' → 'in_progress': requires ubicacionId and hechicerosIds
+   * - 'in_progress' → 'success' | 'failure' | 'canceled': no additional fields needed
+   * 
+   * Automatically updates associated Solicitud and Maldicion states.
    *
-   * @param id - The mission ID.
-   * @param payload - Partial mission data to update.
-   * @returns Promise resolving to the updated mission.
+   * @param id - The mission ID to update.
+   * @param payload - Update payload with new estado and optional ubicacionId/hechicerosIds.
+   * @returns Promise resolving to response with success status, message, and optional generatedData containing auto-created entity IDs.
    */
-  async update(id: number, payload: Partial<Omit<Mission, 'id'>>): Promise<void> {
-    const send: Partial<BackendMission> = {};
-    if (payload.startAt !== undefined) send.fechaYHoraDeInicio = payload.startAt;
-    if (payload.endAt !== undefined) send.fechaYHoraDeFin = payload.endAt ?? null;
-    if (payload.locationId !== undefined) send.ubicacionId = payload.locationId;
-    if (payload.state !== undefined) send.estado = estadoToBackend[payload.state];
-    if (payload.events !== undefined) send.eventosOcurridos = payload.events;
-    if (payload.collateralDamage !== undefined) send.dannosColaterales = payload.collateralDamage;
-    if (payload.urgency !== undefined) send.nivelUrgencia = urgenciaToBackend[payload.urgency];
-    // Relations (sorcererIds/curseIds) omitted until backend endpoints for assignment exist.
-    await apiClient.put(`/missions/${id}`, send);
+  async update(id: number, payload: UpdateMissionPayload): Promise<MissionUpdateResponse> {
+    try {
+      // Convert frontend Mission['state'] to backend Spanish enum values
+      const send = {
+        estado: estadoToBackend[payload.estado],
+        ubicacionId: payload.ubicacionId,
+        hechicerosIds: payload.hechicerosIds,
+      };
+      
+      const { data } = await apiClient.put<MissionUpdateResponse>(`/missions/${id}`, send);
+      
+      // Validate response structure
+      if (!data.success) {
+        throw new Error(data.message || 'Failed to update mission');
+      }
+      
+      return data;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('Unknown error updating mission');
+    }
   },
 
   /**

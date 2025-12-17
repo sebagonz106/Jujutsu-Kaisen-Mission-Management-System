@@ -112,7 +112,18 @@ export const CursesPage = () => {
         toast.success(t('toast.curse.updated'));
       } else {
         await create.mutateAsync(payload);
-        toast.success(t('toast.curse.created'));
+        // Maldición creada - automáticamente genera Solicitud en backend (cascading)
+        toast.success(
+          t('toast.curse.createdWithSolicitud') //,
+          // {
+          //   action: {
+          //     label: t('ui.view'),
+          //     onClick: () => {
+          //       window.location.hash = '/requests';
+          //     },
+          //   },
+          // }
+        );
       }
       setShowForm(false);
     } catch {
@@ -199,7 +210,27 @@ export const CursesPage = () => {
                   <TD>{c.nombre}</TD>
                   <TD>{curseGradeLabel(c.grado)}</TD>
                   <TD>{curseTypeLabel(c.tipo)}</TD>
-                  <TD>{curseStateLabel(c.estadoActual)}</TD>
+                  <TD>
+                    <span
+                      className="px-3 py-1 rounded-md font-medium text-sm"
+                      style={{
+                        backgroundColor:
+                          c.estadoActual === CURSE_STATE.activa
+                            ? '#7f1d1d'
+                            : c.estadoActual === CURSE_STATE.en_proceso_de_exorcismo
+                              ? '#7c2d12'
+                              : '#1b4332',
+                        color:
+                          c.estadoActual === CURSE_STATE.activa
+                            ? '#fca5a5'
+                            : c.estadoActual === CURSE_STATE.en_proceso_de_exorcismo
+                              ? '#fed7aa'
+                              : '#a7e957',
+                      }}
+                    >
+                      {curseStateLabel(c.estadoActual)}
+                    </span>
+                  </TD>
                   <TD>{curseDangerLabel(c.nivelPeligro)}</TD>
                   {canMutate && (
                     <TD className="flex gap-2">
